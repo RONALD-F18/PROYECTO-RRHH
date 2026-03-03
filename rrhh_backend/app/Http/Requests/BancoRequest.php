@@ -3,47 +3,36 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule; 
+use Illuminate\Validation\Rule;
 
 class BancoRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
-      $isMethodPut = $this->isMethod('put'); $this->isMethod('patch');
-      return [
-            'nombre_banco' => [
-                'required',
-                'string',
-                'max:100',
-                // Evita duplicados si es actualización
-                $isMethodPut 
-                    ? Rule::unique('bancos', 'nombre_banco')->ignore($bancoId)
-                    : Rule::unique('bancos', 'nombre_banco')
-            ],
-            'descripcion_banco' => [
-                'required',
-                'string',
-                'max:200',
-            ],
-        ];
-    }
+   public function rules(): array
+{
+    $bancoId = $this->route('banco');
 
-    /**
-     * Mensajes personalizados para errores de validación.
-     */
+    return [
+        'nombre_banco' => [
+            'required',
+            'string',
+            'max:100',
+            $this->isMethod('put') || $this->isMethod('patch')
+                ? Rule::unique('bancos', 'nombre_banco')->ignore($bancoId, 'cod_banco')
+                : Rule::unique('bancos', 'nombre_banco'),
+        ],
+
+        // required solo si es método POST, en update es opcional
+        'descripcion_banco' => $this->isMethod('post')
+            ? ['required', 'string', 'max:200']
+            : ['sometimes', 'string', 'max:200'],
+    ];
+}
+
     public function messages(): array
     {
         return [
