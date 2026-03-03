@@ -12,6 +12,7 @@ class BancoRequest extends FormRequest
         return true;
     }
 
+    //hola
    public function rules(): array
 {
     $bancoId = $this->route('banco');
