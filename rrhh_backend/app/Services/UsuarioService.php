@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Repositories\Interfaces\UsuarioInterface;
+use Illuminate\Support\Facades\Hash;
+
 
 class UsuarioService
 {
@@ -25,6 +27,8 @@ class UsuarioService
 
     public function createUsuario(array $data)
     {
+
+        $data['contrasena_usuario'] = Hash::make($data['contrasena_usuario']);
         return $this->usuarioRepository->createUsuario($data);
     }
 
