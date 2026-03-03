@@ -1,10 +1,30 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RolController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\RolController;
 
 
-Route::apiResource('roles', RolController::class);
-Route::apiResource('usuarios', UsuarioController::class);
+// Todas las rutas que tengan el prefijo /v1
+Route::prefix('v1')->group(function () {
+    // Login
+    Route::post('/login', action: [AuthController::class, 'login']); //todos los usuarios pueden acceder a esta ruta para iniciar sesión
+
+    Route::apiResource('usuarios', UsuarioController::class); 
+     
+    // Rutas protegidas con JWT
+    Route::middleware('auth.api')->group(function () {
+
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::middleware('role:administrador')->group(function () {
+            // Rutas para administración de usuarios
+            
+        });
+
+        Route::middleware('role:editor, administrador')->group(function () {
+            Route::apiResource('/roles', RolController::class);
+        });
+    });
+});
