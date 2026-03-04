@@ -24,7 +24,7 @@ class AuthRequest extends FormRequest
         return [
 
             // Validación del campo email
-            'email' => [
+            'email_usuario' => [
 
                 // bail: detiene la validación en el primer error encontrado
                 // evita validar reglas innecesarias y mejora rendimiento/seguridad
@@ -44,7 +44,7 @@ class AuthRequest extends FormRequest
             ],
 
             // Validación del campo password
-            'password' => [
+            'contrasena_usuario' => [
 
                 // Detiene validación al primer fallo
                 'bail',
@@ -71,15 +71,15 @@ class AuthRequest extends FormRequest
         return [
 
             // Mensajes para email
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email'    => 'El correo electrónico no es válido.',
-            'email.max'      => 'El correo electrónico es demasiado largo.',
+            'email_usuario.required' => 'El correo electrónico es obligatorio.',
+            'email_usuario.email'    => 'El correo electrónico no es válido.',
+            'email_usuario.max'      => 'El correo electrónico es demasiado largo.',
 
             // Mensajes para password
             // Nota: aquí se usan mensajes genéricos para no dar pistas de seguridad
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min'      => 'La contraseña es incorrecta.',
-            'password.max'      => 'La contraseña es incorrecta.',
+            'contrasena_usuario.required' => 'La contraseña es obligatoria.',
+            'contrasena_usuario.min'      => 'La contraseña es incorrecta.',
+            'contrasena_usuario.max'      => 'La contraseña es incorrecta.',
         ];
     }
 }

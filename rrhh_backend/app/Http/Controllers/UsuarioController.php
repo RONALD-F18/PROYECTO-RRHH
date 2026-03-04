@@ -15,26 +15,29 @@ class UsuarioController extends Controller
         $this->usuarioService = $usuarioService;
     }
 
-    // LISTAR USUARIOS — solo administrador
+    // Solo admins llegan aquí (middleware lo garantiza)
+    // Otros admins aparecen enmascarados en el listado
     public function index()
     {
         $userAuth = request()->user('api');
+        $data     = $this->usuarioService->getAllUsuarios();
 
-        if (!$userAuth) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Debes estar autenticado'
-            ], 401);
-        }
+        $data = $data->map(function ($usuario) use ($userAuth) {
+            $esOtroAdmin = $usuario->roles->nombre_rol === 'administrador'
+                        && $usuario->cod_usuario !== $userAuth->cod_usuario;
 
-        if ($userAuth->roles->nombre_rol !== 'administrador') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Solo los administradores pueden listar usuarios'
-            ], 403);
-        }
+            // Otro admin → solo nombre y rol, sin datos sensibles
+            if ($esOtroAdmin) {
+                return [
+                    'cod_usuario' => $usuario->cod_usuario,
+                    'nombre'      => $usuario->nombre,
+                    'rol'         => $usuario->roles->nombre_rol,
+                    'detalle'     => 'Información restringida',
+                ];
+            }
 
-        $data = $this->usuarioService->getAllUsuarios();
+            return $usuario;
+        });
 
         return response()->json([
             'success' => true,
@@ -43,7 +46,9 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // VER USUARIO — admin ve cualquiera, otros solo a sí mismos
+    // Policy 'view' maneja los permisos finos:
+    // admin ve funcionarios y su propio perfil, NO a otros admins
+    // funcionario solo ve su propio perfil
     public function show($id)
     {
         $usuario = $this->usuarioService->getUsuarioById($id);
@@ -58,7 +63,7 @@ class UsuarioController extends Controller
         if (Gate::denies('view', $usuario)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tienes permisos para acceder'
+                'message' => 'No tienes permisos para ver este usuario'
             ], 403);
         }
 
@@ -69,26 +74,22 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // CREAR USUARIO — solo admin puede crear administradores
+    // Solo admins llegan aquí (middleware lo garantiza)
+    // Policy 'create' bloquea crear admins por API, solo se crean funcionarios
     public function store(UsuarioRequest $request)
     {
-        $userAuth = request()->user('api');
-        $codRol   = (int) $request['cod_rol'];
+        $codRol    = (int) $request->input('cod_rol');
+        $nombreRol = \App\Models\Rol::find($codRol)?->nombre_rol ?? '';
 
-        if ($codRol === 1) { // 1 = administrador
-            if (!$userAuth) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Debes estar autenticado para crear un administrador'
-                ], 401);
-            }
+        if (Gate::denies('create', [\App\Models\Usuario::class, $nombreRol])) {
+            $mensaje = $nombreRol === 'administrador'
+                ? 'Los administradores no se crean por API, usa el seeder'
+                : 'No tienes permisos para crear este usuario';
 
-            if ($userAuth->roles->nombre_rol !== 'administrador') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Solo los administradores pueden crear otros administradores'
-                ], 403);
-            }
+            return response()->json([
+                'success' => false,
+                'message' => $mensaje
+            ], 403);
         }
 
         $data = $this->usuarioService->createUsuario($request->validated());
@@ -100,7 +101,9 @@ class UsuarioController extends Controller
         ], 201);
     }
 
-    // ACTUALIZAR USUARIO — admin a todos, otros solo a sí mismos
+    // Policy 'update' maneja los permisos finos:
+    // admin edita funcionarios y su propio perfil, NO a otros admins
+    // funcionario solo edita su propio perfil
     public function update(UsuarioRequest $request, $id)
     {
         $usuario = $this->usuarioService->getUsuarioById($id);
@@ -128,18 +131,10 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    // ELIMINAR USUARIO — solo admin
+    // Solo admins llegan aquí (middleware lo garantiza)
+    // Policy 'delete' bloquea eliminar admins, solo se eliminan funcionarios
     public function destroy($id)
     {
-        $userAuth = request()->user('api');
-
-        if (!$userAuth) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Debes estar autenticado para eliminar usuarios'
-            ], 401);
-        }
-
         $usuario = $this->usuarioService->getUsuarioById($id);
 
         if (!$usuario) {

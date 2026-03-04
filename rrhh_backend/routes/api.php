@@ -5,26 +5,30 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RolController;
 
-
-// Todas las rutas que tengan el prefijo /v1
 Route::prefix('v1')->group(function () {
-    // Login
-    Route::post('/login', action: [AuthController::class, 'login']); //todos los usuarios pueden acceder a esta ruta para iniciar sesión
 
-    Route::apiResource('usuarios', UsuarioController::class); 
-     
-    // Rutas protegidas con JWT
+    // ─── PÚBLICA ─────────────────────────────────────────────────────────────
+    Route::post('/login', [AuthController::class, 'login']);
+
+    // ─── PROTEGIDAS CON JWT ───────────────────────────────────────────────────
     Route::middleware('auth.api')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
 
+        // ─── SOLO ADMINISTRADORES ─────────────────────────────────────────────
+        // Módulo de usuarios y roles completamente restringido a admins.
+        // Las policies dentro del controller manejan los casos finos
+        // (no ver/editar/eliminar a otros admins)
         Route::middleware('role:administrador')->group(function () {
-            // Rutas para administración de usuarios
-            
+            Route::apiResource('usuarios', UsuarioController::class);
+            Route::apiResource('roles', RolController::class);
         });
 
-        Route::middleware('role:editor, administrador')->group(function () {
-            Route::apiResource('/roles', RolController::class);
+        // ─── ADMINISTRADORES Y FUNCIONARIOS ───────────────────────────────────
+        // Rutas compartidas, todo menos el módulo de usuarios.
+        // TODO: agregar rutas según módulos que se vayan desarrollando
+        Route::middleware('role:administrador,funcionario')->group(function () {
+            // Ejemplo: Route::apiResource('nomina', NominaController::class);
         });
     });
 });

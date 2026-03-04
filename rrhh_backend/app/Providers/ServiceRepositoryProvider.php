@@ -32,6 +32,6 @@ class ServiceRepositoryProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        
     }
 }

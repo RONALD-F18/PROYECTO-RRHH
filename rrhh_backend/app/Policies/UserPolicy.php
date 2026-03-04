@@ -6,47 +6,60 @@ use App\Models\Usuario;
 
 class UserPolicy
 {
-    // VER USUARIO — admin ve todos, otros solo a sí mismos
-    public function view(?Usuario $userAuth, Usuario $userRequest): bool
+    // VER usuario
+    // Admin: ve funcionarios y su propio perfil, NO a otros admins
+    // Funcionario: solo su propio perfil
+    public function view(?Usuario $usuarioAutenticado, Usuario $usuarioObjetivo): bool
     {
-        if (!$userAuth) {
-            return false;
-        }
+        if (!$usuarioAutenticado) return false;
 
-        return $userAuth->cod_usuario === $userRequest->cod_usuario
-            || $userAuth->roles->nombre_rol === 'administrador';
+        $esSuPropiaCuenta   = $usuarioAutenticado->cod_usuario    === $usuarioObjetivo->cod_usuario;
+        $esAdminAutenticado = $usuarioAutenticado->roles->nombre_rol === 'administrador';
+        $esAdminObjetivo    = $usuarioObjetivo->roles->nombre_rol    === 'administrador';
+
+        if ($esSuPropiaCuenta) return true;
+        if ($esAdminAutenticado && $esAdminObjetivo) return false;
+
+        return $esAdminAutenticado;
     }
 
-    // CREAR USUARIO — admin crea cualquiera, público puede registrarse (validación extra en controller)
-    public function create(?Usuario $userAuth = null): bool
+    // CREAR usuario
+    // Solo admins crean funcionarios, los admins NUNCA se crean por API
+    public function create(?Usuario $usuarioAutenticado, string $nombreRolNuevoUsuario): bool
     {
-        return true;
+        if (!$usuarioAutenticado) return false;
+        if ($nombreRolNuevoUsuario === 'administrador') return false;
+
+        return $usuarioAutenticado->roles->nombre_rol === 'administrador';
     }
 
-    // ACTUALIZAR USUARIO — admin actualiza a todos, otros solo a sí mismos
-    // admin NO puede ser actualizado por otro rol que no sea admin
-    public function update(?Usuario $userAuth, Usuario $userRequest): bool
+    // ACTUALIZAR usuario
+    // Admin: edita funcionarios y su propio perfil, NO a otros admins
+    // Funcionario: solo su propio perfil
+    public function update(?Usuario $usuarioAutenticado, Usuario $usuarioObjetivo): bool
     {
-        if (!$userAuth) {
-            return false;
-        }
+        if (!$usuarioAutenticado) return false;
 
-        // Si el usuario a actualizar es admin, solo otro admin puede hacerlo
-        if ($userRequest->roles->nombre_rol === 'administrador') {
-            return $userAuth->roles->nombre_rol === 'administrador';
-        }
+        $esSuPropiaCuenta   = $usuarioAutenticado->cod_usuario       === $usuarioObjetivo->cod_usuario;
+        $esAdminAutenticado = $usuarioAutenticado->roles->nombre_rol  === 'administrador';
+        $esAdminObjetivo    = $usuarioObjetivo->roles->nombre_rol     === 'administrador';
 
-        return $userAuth->cod_usuario === $userRequest->cod_usuario
-            || $userAuth->roles->nombre_rol === 'administrador';
+        if ($esSuPropiaCuenta) return true;
+        if ($esAdminAutenticado && $esAdminObjetivo) return false;
+
+        return $esAdminAutenticado;
     }
 
-    // ELIMINAR USUARIO — solo admin
-    public function delete(?Usuario $userAuth, Usuario $userRequest): bool
+    // ELIMINAR usuario
+    // Solo admins eliminan, y NUNCA a otros admins
+    public function delete(?Usuario $usuarioAutenticado, Usuario $usuarioObjetivo): bool
     {
-        if (!$userAuth) {
-            return false;
-        }
+        if (!$usuarioAutenticado) return false;
 
-        return $userAuth->roles->nombre_rol === 'administrador';
+        $esAdminObjetivo = $usuarioObjetivo->roles->nombre_rol === 'administrador';
+
+        if ($esAdminObjetivo) return false;
+
+        return $usuarioAutenticado->roles->nombre_rol === 'administrador';
     }
 }

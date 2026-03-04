@@ -18,7 +18,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $login)
     {
-        $credentials = $login->only('email', 'password');
+        $credentials = $login->only('email_usuario', 'contrasena_usuario');
     
         try {
             $result = $this->authService->login(credentials: $credentials);
@@ -39,7 +39,7 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
 
-            $invalidCredentials = 'Invalid credentials';
+            $invalidCredentials = 'Credenciales inválidas';
 
 
             $statusCode = $e->getMessage() === $invalidCredentials ? 401 : 500;

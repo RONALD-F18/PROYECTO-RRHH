@@ -16,7 +16,12 @@ class AuthRepository implements AuthInterface
     {
         try
         {
-            return JWTAuth::attempt($credentials);
+            $credencialesJWT = [
+                'email'    => $credentials['email_usuario'],
+                'password' => $credentials['contrasena_usuario'],
+            ];
+
+            return JWTAuth::attempt($credencialesJWT);
         }
         catch (JWTException $e)
         {
