@@ -35,11 +35,10 @@ class Usuario extends Authenticatable implements JWTSubject
     }
 
     // 🔥 MUY IMPORTANTE (le dice a Laravel cuál es el password real)
-    public function getAuthPassword()
-    {
-        return $this->contrasena_usuario;
-    }
-
+public function getAuthPassword()
+{
+    return $this->contrasena_usuario;
+}
     // JWT METHODS
     public function getJWTIdentifier()
     {
