@@ -10,7 +10,7 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $rolAdmin = DB::table('roles')
+            $rolAdmin = DB::table('roles')
             ->where('nombre_rol', 'administrador')
             ->first();
 
@@ -18,15 +18,33 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        DB::table('usuarios')->insert([
-            'cod_rol'            => $rolAdmin->cod_rol,
-            'nombre_usuario'     => 'admin',
-            'email_usuario'      => 'admin@gmail.com',
-            'contrasena_usuario' => Hash::make('admin123'),
-            'estado_usuario'     => true,
-            'fecha_registro'     => now(),
-            'created_at'         => now(),
-            'updated_at'         => now(),
-        ]);
+        // Admin 1
+        DB::table('usuarios')->updateOrInsert(
+            ['email_usuario' => 'admin@gmail.com'], // condición
+            [
+                'cod_rol'            => $rolAdmin->cod_rol,
+                'nombre_usuario'     => 'admin',
+                'contrasena_usuario' => Hash::make('admin123'),
+                'estado_usuario'     => true,
+                'fecha_registro'     => now(),
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ]
+        );
+
+        // Admin 2
+        DB::table('usuarios')->updateOrInsert(
+            ['email_usuario' => 'admin2@gmail.com'],
+            [
+                'cod_rol'            => $rolAdmin->cod_rol,
+                'nombre_usuario'     => 'admin2',
+                'contrasena_usuario' => Hash::make('admin456'),
+                'estado_usuario'     => true,
+                'fecha_registro'     => now(),
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ]
+        );
     }
 }
+
