@@ -5,8 +5,14 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Repositories\Interfaces\RolInterface;
 use App\Http\Controllers\RolController;
+use App\Http\Controllers\PasswordResetController; // ← agregar este import
+
 
 Route::prefix('v1')->group(function () {
+
+    // Dentro de Route::prefix('v1'):
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+    Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
 
     // ─── PÚBLICA ─────────────────────────────────────────────────────────────
     Route::post('/login', [AuthController::class, 'login']);

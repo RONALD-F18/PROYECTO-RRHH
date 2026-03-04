@@ -20,11 +20,11 @@ class AdminUserSeeder extends Seeder
 
         // Admin 1
         DB::table('usuarios')->updateOrInsert(
-            ['email_usuario' => 'admin@gmail.com'], // condición
+            ['email_usuario' => 'ronaldacademy223@gmail.com'], // condición
             [
                 'cod_rol'            => $rolAdmin->cod_rol,
-                'nombre_usuario'     => 'admin',
-                'contrasena_usuario' => Hash::make('admin123'),
+                'nombre_usuario'     => 'adminRonald',
+                'contrasena_usuario' => Hash::make('Donald1234'),
                 'estado_usuario'     => true,
                 'fecha_registro'     => now(),
                 'created_at'         => now(),
