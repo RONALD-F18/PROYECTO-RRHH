@@ -1,8 +1,9 @@
 <?php
-namespace App\Repositories\Interfaces;
+namespace App\Repositories\Eloquent;
 
 use App\Models\Empleado;
 use Illuminate\Database\Eloquent\Collection;
+use App\Repositories\Interfaces\EmpleadoInterface;
 
 
 class EmpleadoRepository implements EmpleadoInterface

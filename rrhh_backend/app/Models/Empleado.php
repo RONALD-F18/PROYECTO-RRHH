@@ -11,7 +11,7 @@ class Empleado extends Model
     protected $primaryKey = 'cod_empleado';
     protected $fillable = [
     'nombre_empleado',
-    'apellidos_empleado',   // ✅ corregido
+    'apellidos_empleado',   
     'doc_iden',
     'tipo_documento',
     'fecha_nac',
@@ -31,4 +31,8 @@ class Empleado extends Model
     'cod_usuario',
 ];
 
+    public function bancos()
+    {
+        return $this->belongsTo(Banco::class, 'cod_banco', 'cod_banco');
+    }
 }

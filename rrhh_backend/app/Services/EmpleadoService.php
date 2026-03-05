@@ -3,45 +3,39 @@
 namespace App\Services;
 
 use App\Models\Empleado;
+use App\Repositories\Interfaces\EmpleadoInterface;
 
 class EmpleadoService
 {
-    public function getAllEmpleados()
+    protected EmpleadoInterface $empleadoRepository;
+
+    public function __construct(EmpleadoInterface $empleadoRepository)
     {
-        return Empleado::all();
+        $this->empleadoRepository = $empleadoRepository;
     }
 
-    public function getEmpleadoById($id)
+    public function GetAllEmpleados()
     {
-        return Empleado::find($id);
+        return $this->empleadoRepository->GetAllEmpleados();
     }
 
-    public function createEmpleado(array $data)
+    public function GetEmpleadoById($id)
     {
-        return Empleado::create($data);
+        return $this->empleadoRepository->GetEmpleadoById($id);
     }
 
-    public function updateEmpleado($id, array $data)
+    public function CreateEmpleado(array $data)
     {
-        $empleado = Empleado::find($id);
-
-        if (!$empleado) {
-            return null;
-        }
-
-        $empleado->update($data);
-
-        return $empleado;
+        return $this->empleadoRepository->CreateEmpleado($data);
     }
 
-    public function deleteEmpleado($id)
+    public function UpdateEmpleado($id, array $data)
     {
-        $empleado = Empleado::find($id);
+        return $this->empleadoRepository->UpdateEmpleado($id, $data);
+    }
 
-        if (!$empleado) {
-            return false;
-        }
-
-        return $empleado->delete();
+    public function DeleteEmpleado($id)
+    {
+        return $this->empleadoRepository->DeleteEmpleado($id);
     }
 }
