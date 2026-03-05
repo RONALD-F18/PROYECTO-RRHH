@@ -14,9 +14,9 @@ return new class extends Migration
     {
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id('cod_usuario');
-            $table->string('nombre_usuario')->unique();
-            $table->string('email_usuario')->unique();
-            $table->string('contrasena_usuario');
+            $table->string('nombre_usuario')->required();
+            $table->string('email_usuario')->required();
+            $table->string('contrasena_usuario')->required();
             $table->foreignId('cod_rol')->constrained('roles', 'cod_rol');
             $table->boolean('estado_usuario')->default(true); // true = activo, false = inactivo
             $table->timestamp('fecha_registro')->useCurrent();

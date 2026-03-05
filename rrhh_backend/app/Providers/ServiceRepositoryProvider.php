@@ -11,6 +11,8 @@ use App\Repositories\Eloquent\AuthRepository;
 use App\Repositories\Interfaces\AuthInterface;
 use App\Repositories\Interfaces\BancoInterface;
 use App\Repositories\Eloquent\Banco_Repository;
+use App\Repositories\Interfaces\EmpleadoInterface;
+use App\Repositories\Eloquent\EmpleadoRepository;
 
 
 
@@ -27,7 +29,7 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(UsuarioInterface::class, UsuarioRepository::class);
         $this->app->bind(AuthInterface::class, AuthRepository::class);
         $this->app->bind(BancoInterface::class, Banco_Repository::class);
-        
+        $this->app->bind(EmpleadoInterface::class, EmpleadoRepository::class);   
     }
 
     /**
