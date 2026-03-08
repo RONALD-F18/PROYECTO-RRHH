@@ -13,7 +13,7 @@ class UserPolicy
     {
         if (!$usuarioAutenticado) return false;
 
-        $esSuPropiaCuenta   = $usuarioAutenticado->cod_usuario    === $usuarioObjetivo->cod_usuario;
+        $esSuPropiaCuenta   = $usuarioAutenticado->cod_usuario    ===  $usuarioObjetivo->cod_usuario;
         $esAdminAutenticado = $usuarioAutenticado->roles->nombre_rol === 'administrador';
         $esAdminObjetivo    = $usuarioObjetivo->roles->nombre_rol    === 'administrador';
 
