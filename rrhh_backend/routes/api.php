@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\PasswordResetController; // ← agregar este import
+use App\Http\Controllers\BancoController;
+use App\Http\Controllers\EmpleadoController;
 
 Route::prefix('v1')->group(function () {
 
@@ -13,15 +15,24 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
 
+
+    // Rutas protegidas con JWT
     Route::middleware('auth.api')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        //Empleados
+        //Cualquier usuario autenticado puede trbajar con esto:
+        Route::apiResource('empleados', EmpleadoController::class);
+        Route::apiResource('bancos', BancoController::class);
 
         // Cualquier usuario autenticado puede ver y editar su propio perfil
         // La policy se encarga de verificar que solo vea/edite lo que le corresponde
         Route::get('usuarios/{usuario}',    [UsuarioController::class, 'show'])->name('usuarios.show');
         Route::put('usuarios/{usuario}',    [UsuarioController::class, 'update'])->name('usuarios.update');
         Route::patch('usuarios/{usuario}',  [UsuarioController::class, 'update'])->name('usuarios.update');
+
+        
 
         // Solo administradores: CRUD completo de usuarios
         Route::middleware('role:administrador')->group(function () {

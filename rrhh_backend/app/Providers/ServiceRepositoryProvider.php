@@ -13,6 +13,12 @@ use App\Services\MailService;
 use App\Services\PasswordResetService;
 use App\Repositories\Interfaces\PasswordResetInterface;     
 use App\Repositories\Eloquent\PasswordResetRepository;       
+use App\Repositories\Interfaces\BancoInterface;
+use App\Repositories\Eloquent\Banco_Repository;
+use App\Repositories\Interfaces\EmpleadoInterface;
+use App\Repositories\Eloquent\EmpleadoRepository;
+
+
 
 class ServiceRepositoryProvider extends ServiceProvider
 {
@@ -33,6 +39,8 @@ class ServiceRepositoryProvider extends ServiceProvider
             $app->make(MailService::class),
             $app->make(PasswordResetInterface::class)
         ));
+        $this->app->bind(BancoInterface::class, Banco_Repository::class);
+        $this->app->bind(EmpleadoInterface::class, EmpleadoRepository::class);   
     }
 
     /**
