@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('fondo_pensiones', function (Blueprint $table) {
-            $table->id('cod_fondo_pension');
+            $table->id('cod_fondo_pensiones');
             $table->string('nombre_fondo_pension', 50)->unique();
             $table->string('descripcion_fondo_pension', 100);
             $table->timestamps();

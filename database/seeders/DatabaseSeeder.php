@@ -16,13 +16,19 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
         $this->call([
             RoleSeeder::class,
             AdminUserSeeder::class,
             BancoSeeder::class,
             FuncionarioUserSeeder::class,
             EmpleadoSeeder::class,
+            EpsSeeder::class,
+            ArlSeeder::class,
+            PensionSeeder::class,
+            CesantiaSeeder::class,
+            CompensacionSeeder::class,
+            RiesgoSeeder::class,
+            AfiliacionSeeder::class,
         ]);
     }
 }

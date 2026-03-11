@@ -30,7 +30,7 @@ use App\Repositories\Eloquent\CesantiaRepository;
 use App\Repositories\Interfaces\CompensacionInterface;
 use App\Repositories\Eloquent\CompensacionRepository;
 use App\Repositories\Interfaces\AfiliacionInterface;
-use App\Repositories\Eloquent\AfiliacionRepository;
+use App\Repositories\Eloquent\AfiliacionesRepository;
 
 
 
@@ -63,7 +63,7 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(PensionInterface::class, PensionRepository::class);
         $this->app->bind(CesantiaInterface::class, CesantiaRepository::class);
         $this->app->bind(CompensacionInterface::class, CompensacionRepository::class);
-        $this->app->bind(AfiliacionInterface::class, AfiliacionRepository::class);
+        $this->app->bind(AfiliacionInterface::class, AfiliacionesRepository::class);
 
     }
 

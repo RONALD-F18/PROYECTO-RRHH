@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('fondo_cesantias', function (Blueprint $table) {
-            $table->id('cod_fondo_cesantia');
+            $table->id('cod_fondo_cesantias');
             $table->string('nombre_fondo_cesantia', 50)->unique();
             $table->string('descripcion_fondo_cesantia', 100);
             $table->timestamps();
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropExists('fondo_cesantias');
-}
+        Schema::dropIfExists('fondo_cesantias');
+    }
 };

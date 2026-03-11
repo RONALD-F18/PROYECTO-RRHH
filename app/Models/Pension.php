@@ -10,7 +10,7 @@ class Pension extends Model
     use HasFactory;
 
     protected $table = 'fondo_pensiones';
-    protected $primaryKey = 'cod_fondo_pension';
+    protected $primaryKey = 'cod_fondo_pensiones';
 
     protected $fillable = [
         'nombre_fondo_pension',
@@ -19,7 +19,7 @@ class Pension extends Model
 
     public function afiliaciones()
     {
-        return $this->hasMany(Afiliacion::class, 'cod_fondo_pension', 'cod_fondo_pension');
+        return $this->hasMany(Afiliacion::class, 'cod_fondo_pensiones', 'cod_fondo_pensiones');
     }
 
 }

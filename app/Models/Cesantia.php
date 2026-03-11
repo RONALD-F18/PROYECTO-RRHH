@@ -10,7 +10,7 @@ class Cesantia extends Model
     use HasFactory;
 
     protected $table = 'fondo_cesantias';
-    protected $primaryKey = 'cod_fondo_cesantia'; 
+    protected $primaryKey = 'cod_fondo_cesantias'; 
 
     protected $fillable = [
         'nombre_fondo_cesantia',
@@ -19,6 +19,6 @@ class Cesantia extends Model
 
     public function afiliaciones()
     {
-        return $this->hasMany(Afiliacion::class, 'cod_fondo_cesantia', 'cod_fondo_cesantia');
+        return $this->hasMany(Afiliacion::class, 'cod_fondo_cesantias', 'cod_fondo_cesantias');
     }
 }
