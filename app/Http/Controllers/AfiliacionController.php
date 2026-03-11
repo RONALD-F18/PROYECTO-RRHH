@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\AfiliacionRequest;
 use App\Services\AfiliacionService;
 
+
+//RRHH
 class AfiliacionController extends Controller
 {
     protected $afiliacionService;
