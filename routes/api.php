@@ -1,12 +1,25 @@
 <?php
 
+//Modulo Usuario
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\PasswordResetController; // ← agregar este import
+
+//Modulo Empleados
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\EmpleadoController;
+
+
+//Modulo afiliaciones
+use App\Http\Controllers\EpsController;
+use App\Http\Controllers\RiesgoController;
+use App\Http\Controllers\ArlController;
+use App\Http\Controllers\PensionController;
+use App\Http\Controllers\CesantiaController;
+use App\Http\Controllers\CompensacionController;
+use App\Http\Controllers\AfiliacionController;
 
 Route::prefix('v1')->group(function () {
 
@@ -25,6 +38,16 @@ Route::prefix('v1')->group(function () {
         //Cualquier usuario autenticado puede trbajar con esto:
         Route::apiResource('empleados', EmpleadoController::class);
         Route::apiResource('bancos', BancoController::class);
+
+        //Catálogos de afiliaciones (EPS, ARL, fondos, etc.)
+        //Cualquier usuario autenticado puede trabajar con estos recursos
+        Route::apiResource('eps', EpsController::class);
+        Route::apiResource('riesgos', RiesgoController::class);
+        Route::apiResource('arls', ArlController::class);
+        Route::apiResource('pensiones', PensionController::class);
+        Route::apiResource('cesantias', CesantiaController::class);
+        Route::apiResource('compensaciones', CompensacionController::class);
+        Route::apiResource('afiliaciones', AfiliacionController::class);
 
         // Cualquier usuario autenticado puede ver y editar su propio perfil
         // La policy se encarga de verificar que solo vea/edite lo que le corresponde

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\UsuarioService;
 use App\Http\Requests\UsuarioRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
@@ -15,7 +16,6 @@ class UsuarioController extends Controller
         $this->usuarioService = $usuarioService;
     }
 
-    // Solo admins llegan aquí (middleware lo garantiza)
     // Otros admins aparecen enmascarados en el listado
     public function index()
     {
