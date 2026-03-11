@@ -10,9 +10,11 @@ return new class extends Migration {
             $table->id('cod_afi'); // PK
 
             // Fechas de afiliación opcionales
-            $table->date('fecha_afiliacion_eps')->nullable();
-            $table->date('fecha_afiliacion_arl')->nullable();
-            $table->date('fecha_afiliacion_caja')->nullable();
+            $table->date('fecha_afiliacion_eps');
+            $table->date('fecha_afiliacion_arl');
+            $table->date('fecha_afiliacion_caja');
+            $table->date('fecha_afiliacion_fondo_pensiones');
+            $table->date('fecha_afiliacion_fondo_cesantias');
 
             // Relación con EPS
             $table->foreignId('cod_eps')->constrained('eps', 'cod_eps')->onDelete('cascade');

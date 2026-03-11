@@ -13,11 +13,8 @@ class Compensacion extends Model
     protected $primaryKey = 'cod_caja_compensacion'; 
 
     protected $fillable = [
-        'nombre',
-        'nit',
-        'direccion',
-        'telefono',
-        'email',
+        'nombre_caja_compensacion',
+        'descripcion_caja_compensacion',
     ];
     
 
