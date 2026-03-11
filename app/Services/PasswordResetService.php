@@ -29,7 +29,7 @@ class PasswordResetService
             'expires_at'    => now()->addMinutes(30),
         ]);
 
-        $resetUrl = 'http://localhost:8080/reset-password.html'
+        $resetUrl = 'http://localhost:8000/reset-password.html'
             . '?token=' . $tokenPlano
             . '&email=' . urlencode($email);
 
