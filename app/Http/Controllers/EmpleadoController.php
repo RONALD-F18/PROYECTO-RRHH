@@ -39,7 +39,10 @@ class EmpleadoController extends Controller
 
     public function store(EmpleadoRequest $request)
     {
-        $data = $request->validated();
+        $data = array_merge($request->validated(), [
+            'cod_usuario' => auth()->user()->cod_usuario,
+            'estado_emp'  => $request->input('estado_emp', 'ACTIVO'),
+        ]);
         $Empleado = $this->empleadoService->createEmpleado($data);
         return response()->json($Empleado, 201);
     }

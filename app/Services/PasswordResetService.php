@@ -29,7 +29,7 @@ class PasswordResetService
             'expires_at'    => now()->addMinutes(30),
         ]);
 
-        $resetUrl = 'https://literate-zebra-x5vpxjw654pq267jv-8080.app.github.dev/reset-password.html'
+        $resetUrl = 'http://localhost:8080/reset-password.html'
             . '?token=' . $tokenPlano
             . '&email=' . urlencode($email);
 

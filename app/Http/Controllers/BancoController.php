@@ -3,21 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\BancoServices;
+use App\Services\BancoService;
 use App\Http\Requests\BancoRequest;
 
 class BancoController extends Controller
 {
-    protected $bancoServices;
+    protected $bancoService;
 
-    public function __construct(BancoServices $bancoServices)
+    public function __construct(BancoService $bancoService)
     {
-        $this->bancoServices = $bancoServices;
+        $this->bancoService = $bancoService;
     }
 
     public function index()
     {
-        $data = $this->bancoServices->getAllBancos();
+        $data = $this->bancoService->getAllBancos();
 
         return response()->json([
             'message' => 'Lista de bancos obtenida exitosamente',
@@ -27,7 +27,7 @@ class BancoController extends Controller
 
     public function show($id)
     {
-        $data = $this->bancoServices->getBancoById($id);
+        $data = $this->bancoService->getBancoById($id);
 
         if (!$data) {
             return response()->json([
@@ -43,7 +43,7 @@ class BancoController extends Controller
 
     public function store(BancoRequest $request)
     {
-        $data = $this->bancoServices->createBanco($request->validated());
+        $data = $this->bancoService->createBanco($request->validated());
 
         return response()->json([
             'message' => 'Banco creado exitosamente',
@@ -53,7 +53,7 @@ class BancoController extends Controller
 
     public function update(BancoRequest $request, $id)
     {
-        $data = $this->bancoServices->updateBanco($id, $request->validated());
+        $data = $this->bancoService->updateBanco($id, $request->validated());
 
         if (!$data) {
             return response()->json([
@@ -69,7 +69,7 @@ class BancoController extends Controller
 
     public function destroy($id)
     {
-        $deleted = $this->bancoServices->deleteBanco($id);
+        $deleted = $this->bancoService->deleteBanco($id);
 
         if (!$deleted) {
             return response()->json([

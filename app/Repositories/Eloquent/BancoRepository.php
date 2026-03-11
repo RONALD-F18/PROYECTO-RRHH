@@ -6,7 +6,7 @@ use App\Models\Banco;
 use App\Repositories\Interfaces\BancoInterface;
 
 
-class Banco_Repository implements BancoInterface
+class BancoRepository implements BancoInterface
 {
     public function getAllBancos()
     {

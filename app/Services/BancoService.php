@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\Interfaces\BancoInterface;
-class BancoServices
+class BancoService
 {
     protected $bancoRepository;
 

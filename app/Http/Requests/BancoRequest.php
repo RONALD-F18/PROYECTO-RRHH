@@ -12,27 +12,28 @@ class BancoRequest extends FormRequest
         return true;
     }
 
-    //hola
-   public function rules(): array
-{
-    $bancoId = $this->route('banco');
+    public function rules(): array
+    {
+        $bancoId = $this->route('banco');
 
-    return [
-        'nombre_banco' => [
-            'required',
-            'string',
-            'max:100',
-            $this->isMethod('put') || $this->isMethod('patch')
-                ? Rule::unique('bancos', 'nombre_banco')->ignore($bancoId, 'cod_banco')
-                : Rule::unique('bancos', 'nombre_banco'),
-        ],
+        return [
 
-        // required solo si es método POST, en update es opcional
-        'descripcion_banco' => $this->isMethod('post')
-            ? ['required', 'string', 'max:200']
-            : ['sometimes', 'string', 'max:200'],
-    ];
-}
+            'nombre_banco' => [
+                'bail',
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[\pL0-9\s]+$/u',
+                $this->isMethod('put') || $this->isMethod('patch')
+                    ? Rule::unique('bancos', 'nombre_banco')->ignore($bancoId, 'cod_banco')
+                    : Rule::unique('bancos', 'nombre_banco'),
+            ],
+
+            'descripcion_banco' => $this->isMethod('post')
+                ? ['bail', 'required', 'string', 'max:200']
+                : ['bail', 'sometimes', 'string', 'max:200'],
+        ];
+    }
 
     public function messages(): array
     {
@@ -41,6 +42,7 @@ class BancoRequest extends FormRequest
             'nombre_banco.string' => 'El nombre del banco debe ser texto.',
             'nombre_banco.max' => 'El nombre del banco no puede superar los 100 caracteres.',
             'nombre_banco.unique' => 'Este nombre de banco ya está registrado.',
+            'nombre_banco.regex' => 'El nombre del banco solo puede contener letras, números y espacios.',
 
             'descripcion_banco.required' => 'La descripción del banco es obligatoria.',
             'descripcion_banco.string' => 'La descripción del banco debe ser texto.',
