@@ -14,4 +14,9 @@ class Arl extends Model
         'nombre_arl',
         'descripcion_arl',
     ];
+
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_arl', 'cod_arl');
+    }
 }

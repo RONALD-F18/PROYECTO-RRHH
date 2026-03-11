@@ -16,4 +16,9 @@ class Cesantia extends Model
         'nombre_fondo_cesantia',
         'descripcion_fondo_cesantia',
     ];  
+
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_fondo_cesantia', 'cod_fondo_cesantia');
+    }
 }

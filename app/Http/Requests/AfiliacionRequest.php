@@ -24,49 +24,97 @@ class AfiliacionRequest extends FormRequest
        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch');
 
         return [
-
-    'cod_empleado' => $isMethodPut
-        ? 'sometimes|integer|exists:empleados,cod_empleado'
-        : 'required|integer|exists:empleados,cod_empleado',
-
-    'cod_arl' => $isMethodPut
-        ? 'sometimes|integer|exists:arl,cod_arl'
-        : 'required|integer|exists:arl,cod_arl',
-
-    'cod_fondo_pensiones' => $isMethodPut
-        ? 'sometimes|integer|exists:fondo_pensiones,cod_fondo_pensiones'
-        : 'required|integer|exists:fondo_pensiones,cod_fondo_pensiones',
-
-    'cod_fondo_cesantias' => $isMethodPut
-        ? 'sometimes|integer|exists:fondo_cesantias,cod_fondo_cesantias'
-        : 'required|integer|exists:fondo_cesantias,cod_fondo_cesantias',
-
-    'cod_caja_compensacion' => $isMethodPut
-        ? 'sometimes|integer|exists:caja_compensaciones,cod_caja_compensacion'
-        : 'required|integer|exists:caja_compensaciones,cod_caja_compensacion',
+            'fecha_afiliacion_eps' => $isMethodPut
+            ? 'sometimes|required|date'
+            : 'required|date',
+            'fecha_afiliacion_arl' => $isMethodPut
+            ? 'sometimes|required|date'
+            : 'required|date',
+            'fecha_afiliacion_caja' => $isMethodPut
+            ? 'sometimes|required|date'
+            : 'required|date',
+            'fecha_afiliacion_fondo_pensiones' => $isMethodPut
+            ? 'sometimes|required|date'
+            : 'required|date',
+            'fecha_afiliacion_fondo_cesantias' => $isMethodPut
+            ? 'sometimes|required|date'
+            : 'required|date',
+            'estado_afiliacion' => $isMethodPut
+            ? 'sometimes|required|string|max:20'
+            : 'required|string|max:20',
+            'cod_eps' => $isMethodPut
+            ? 'sometimes|required|integer|exists:eps,cod_eps'
+            : 'required|integer|exists:eps,cod_eps',
+            'cod_riesgo' => $isMethodPut
+            ? 'sometimes|required|integer|exists:riesgos,cod_riesgo'
+            : 'required|integer|exists:riesgos,cod_riesgo',
+            'cod_arl' => $isMethodPut
+            ? 'sometimes|required|integer|exists:arls,cod_arl'
+            : 'required|integer|exists:arls,cod_arl',
+            'cod_fondo_pensiones' => $isMethodPut
+            ? 'sometimes|required|integer|exists:fondo_pensiones,cod_fondo_pensiones'
+            : 'required|integer|exists:fondo_pensiones,cod_fondo_pensiones',
+            'cod_fondo_cesantias' => $isMethodPut
+            ? 'sometimes|required|integer|exists:fondo_cesantias,cod_fondo_cesantias'
+            : 'required|integer|exists:fondo_cesantias,cod_fondo_cesantias',
+            'cod_caja_compensacion' => $isMethodPut
+            ? 'sometimes|required|integer|exists:caja_compensaciones,cod_caja_compensacion'
+            : 'required|integer|exists:caja_compensaciones,cod_caja_compensacion',
+            'cod_empleado' => $isMethodPut
+            ? 'sometimes|required|integer|exists:empleados,cod_empleado'
+            : 'required|integer|exists:empleados,cod_empleado',
+            'descripcion' => $isMethodPut
+            ? 'sometimes|required|string|max:200'
+            : 'required|string|max:200',
+            'tipo_regimen' => $isMethodPut
+            ? 'sometimes|required|string|max:12'
+            : 'required|string|max:12',
 ];
     }
 
     public function messages(): array
     {
-        return [
-            
-
+        return[
+            'fecha_afiliacion_eps.required' => 'La fecha de afiliación a la EPS es obligatoria.',
+            'fecha_afiliacion_eps.date' => 'La fecha de afiliación a la EPS debe ser una fecha válida.',
+            'fecha_afiliacion_arl.required' => 'La fecha de afiliación a la ARL es obligatoria.',
+            'fecha_afiliacion_arl.date' => 'La fecha de afiliación a la ARL debe ser una fecha válida.',
+            'fecha_afiliacion_caja.required' => 'La fecha de afiliación a la caja es obligatoria.',
+            'fecha_afiliacion_caja.date' => 'La fecha de afiliación a la caja debe ser una fecha válida.',
+            'fecha_afiliacion_fondo_pensiones.required' => 'La fecha de afiliación a los fondos de pensiones es obligatoria.',
+            'fecha_afiliacion_fondo_pensiones.date' => 'La fecha de afiliación a los fondos de pensiones debe ser una fecha válida.',
+            'fecha_afiliacion_fondo_cesantias.required' => 'La fecha de afiliación a los fondos de cesantías es obligatoria.',
+            'fecha_afiliacion_fondo_cesantias.date' => 'La fecha de afiliación a los fondos de cesantías debe ser una fecha válida.',
+            'estado_afiliacion.required' => 'El estado de la afiliación es obligatorio.',
+            'estado_afiliacion.string' => 'El estado de la afiliación debe ser una cadena de texto.',
+            'estado_afiliacion.max' => 'El estado de la afiliación no debe exceder los 20 caracteres.',
+            'cod_eps.required' => 'El código de la EPS es obligatorio.',
+            'cod_eps.integer' => 'El código de la EPS debe ser un número entero.',
+            'cod_eps.exists' => 'El código de la EPS no existe.',
+            'cod_riesgo.required' => 'El código de la riesgo es obligatorio.',
+            'cod_riesgo.integer' => 'El código de la riesgo debe ser un número entero.',
+            'cod_riesgo.exists' => 'El código de la riesgo no existe.',
             'cod_arl.required' => 'El código de la ARL es obligatorio.',
             'cod_arl.integer' => 'El código de la ARL debe ser un número entero.',
-            'cod_arl.exists' => 'El código de la ARL no existe en la base de datos.',
-
-            'cod_fondo_pensiones.required' => 'El código del fondo de pensiones es obligatorio.',
-            'cod_fondo_pensiones.integer' => 'El código del fondo de pensiones debe ser un número entero.',
-            'cod_fondo_pensiones.exists' => 'El código del fondo de pensiones no existe en la base de datos.',
-
-            'cod_fondo_cesantias.required' => 'El código del fondo de cesantías es obligatorio.',
-            'cod_fondo_cesantias.integer' => 'El código del fondo de cesantías debe ser un número entero.',
-            'cod_fondo_cesantias.exists' => 'El código del fondo de cesantías no existe en la base de datos.',
-
+            'cod_arl.exists' => 'El código de la ARL no existe.',
+            'cod_fondo_pensiones.required' => 'El código de los fondos de pensiones es obligatorio.',
+            'cod_fondo_pensiones.integer' => 'El código de los fondos de pensiones debe ser un número entero.',
+            'cod_fondo_pensiones.exists' => 'El código de los fondos de pensiones no existe.',
+            'cod_fondo_cesantias.required' => 'El código de los fondos de cesantías es obligatorio.',
+            'cod_fondo_cesantias.integer' => 'El código de los fondos de cesantías debe ser un número entero.',
+            'cod_fondo_cesantias.exists' => 'El código de los fondos de cesantías no existe.',
             'cod_caja_compensacion.required' => 'El código de la caja de compensación es obligatorio.',
             'cod_caja_compensacion.integer' => 'El código de la caja de compensación debe ser un número entero.',
-            'cod_caja_compensacion.exists' => 'El código de la caja de compensación no existe en la base de datos.',
+            'cod_caja_compensacion.exists' => 'El código de la caja de compensación no existe.',
+            'cod_empleado.required' => 'El código del empleado es obligatorio.',
+            'cod_empleado.integer' => 'El código del empleado debe ser un número entero.',
+            'cod_empleado.exists' => 'El código del empleado no existe.',
+            'descripcion.required' => 'La descripción es obligatoria.',
+            'descripcion.string' => 'La descripción debe ser una cadena de texto.',
+            'descripcion.max' => 'La descripción no debe exceder los 200 caracteres.',
+            'tipo_regimen.required' => 'El tipo de régimen es obligatorio.',
+            'tipo_regimen.string' => 'El tipo de régimen debe ser una cadena de texto.',
+            'tipo_regimen.max' => 'El tipo de régimen no debe exceder los 12 caracteres.',
         ];
     }
 }

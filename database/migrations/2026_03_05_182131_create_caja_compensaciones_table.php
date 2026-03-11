@@ -13,11 +13,8 @@ return new class extends Migration
     {
         Schema::create('caja_compensaciones', function (Blueprint $table) {
             $table->id('cod_caja_compensacion'); // <-- clave primaria con el mismo nombre que la FK en afiliaciones
-            $table->string('nombre');
-            $table->string('nit')->nullable();
-            $table->string('direccion')->nullable();
-            $table->string('telefono')->nullable();
-            $table->string('email')->nullable();
+            $table->string('nombre_caja_compensacion', 50)->unique();
+            $table->string('descripcion_caja_compensacion', 100);
             $table->timestamps();
         });
     }

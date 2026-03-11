@@ -17,4 +17,9 @@ class Pension extends Model
         'descripcion_fondo_pension',
     ];
 
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_fondo_pension', 'cod_fondo_pension');
+    }
+
 }

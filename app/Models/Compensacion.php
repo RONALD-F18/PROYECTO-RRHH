@@ -18,4 +18,8 @@ class Compensacion extends Model
     ];
     
 
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_caja_compensacion', 'cod_caja_compensacion');
+    }
 }

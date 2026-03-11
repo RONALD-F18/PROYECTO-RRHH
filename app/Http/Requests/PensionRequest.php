@@ -24,30 +24,26 @@ class PensionRequest extends FormRequest
         $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
 
         return [
-            'nombre_fondo_pension' => [
-                'bail',
-                'required',
-                'string',
-                'max:50',
-            ],
-
+            'nombre_fondo_pension' => $isMethodPut
+            ? 'sometimes|required|string|max:50|unique:fondo_pensiones,nombre_fondo_pension,' . $this->route('fondo_pension') . ',cod_fondo_pension'
+            : 'required|string|max:50|unique:fondo_pensiones,nombre_fondo_pension',
             'descripcion_fondo_pension' => $isMethodPut
-                ? 'sometimes|string|max:100'
-                : 'required|string|max:100',
+            ? 'sometimes|required|string|max:100'
+            : 'required|string|max:100',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'nombre_fondo_pension.required' => 'El nombre del fondo de pensión es obligatorio.',
-            'nombre_fondo_pension.string' => 'El nombre del fondo de pensión debe ser una cadena de texto.',
-            'nombre_fondo_pension.max' => 'El nombre del fondo de pensión no debe exceder los 50 caracteres.',
-            'nombre_fondo_pension.unique' => 'El nombre del fondo de pensión ya está en uso.',
+            'nombre_fondo_pension.required' => 'El nombre del fondo de pensiones es obligatorio.',
+            'nombre_fondo_pension.string' => 'El nombre del fondo de pensiones debe ser una cadena de texto.',
+            'nombre_fondo_pension.max' => 'El nombre del fondo de pensiones no debe exceder los 50 caracteres.',
+            'nombre_fondo_pension.unique' => 'El nombre del fondo de pensiones ya está en uso.',
 
-            'descripcion_fondo_pension.required' => 'La descripción del fondo de pensión es obligatoria.',
-            'descripcion_fondo_pension.string' => 'La descripción del fondo de pensión debe ser una cadena de texto.',
-            'descripcion_fondo_pension.max' => 'La descripción del fondo de pensión no debe exceder los 100 caracteres.',
+            'descripcion_fondo_pension.required' => 'La descripción del fondo de pensiones es obligatoria.',
+            'descripcion_fondo_pension.string' => 'La descripción del fondo de pensiones debe ser una cadena de texto.',
+            'descripcion_fondo_pension.max' => 'La descripción del fondo de pensiones no debe exceder los 100 caracteres.',
         ];
     }
 }

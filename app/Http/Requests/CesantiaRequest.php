@@ -24,15 +24,11 @@ class CesantiaRequest extends FormRequest
      $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
 
         return [
-        'nombre_fondo_cesantia' => [
-            'bail',
-            'required',
-            'string',
-            'max:50',
-        ],
-
+        'nombre_fondo_cesantia' => $isMethodPut
+            ? 'sometimes|required|string|max:50|unique:fondo_cesantias,nombre_fondo_cesantia,' . $this->route('fondo_cesantia') . ',cod_fondo_cesantia'
+            : 'required|string|max:50|unique:fondo_cesantias,nombre_fondo_cesantia',
         'descripcion_fondo_cesantia' => $isMethodPut
-            ? 'sometimes|string|max:100'
+            ? 'sometimes|required|string|max:100'
             : 'required|string|max:100',
     ];  
     }

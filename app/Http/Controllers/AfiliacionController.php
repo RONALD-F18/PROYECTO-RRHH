@@ -45,6 +45,25 @@ class AfiliacionController extends Controller
             'message' => 'Afiliacion creada exitosamente',
             'data' => $data
         ], 201);    
-}
+    }
 
+    public function update(AfiliacionRequest $request, $id)
+    {
+        $data = $this->afiliacionService->updateAfiliacion($id, $request->validated());
+        if (!$data) {
+            return response()->json([
+                'message' => 'Afiliacion no encontrada'
+            ], 404);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $deleted = $this->afiliacionService->deleteAfiliacion($id);
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Afiliacion no encontrada'
+            ], 404);
+        }
+    }
 }

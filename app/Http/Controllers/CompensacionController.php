@@ -46,4 +46,24 @@ class CompensacionController extends Controller
             'data' => $data
         ], 201);
     }
+
+    public function update(CompensacionRequest $request, $id)
+    {
+        $data = $this->compensacionService->updateCompensacion($id, $request->validated());
+        if (!$data) {
+            return response()->json([
+                'message' => 'Compensacion no encontrada'
+            ], 404);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $deleted = $this->compensacionService->deleteCompensacion($id);
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Compensacion no encontrada'
+            ], 404);
+        }
+    }
 }

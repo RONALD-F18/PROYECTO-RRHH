@@ -24,15 +24,11 @@ class EpsRequest extends FormRequest
         $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
 
         return [
-        'nombre_eps' => [
-            'bail',
-            'required',
-            'string',
-            'max:50',
-        ],
-
+        'nombre_eps' => $isMethodPut
+            ? 'sometimes|required|string|max:50|unique:eps,nombre_eps,' . $this->route('eps') . ',cod_eps'
+            : 'required|string|max:50|unique:eps,nombre_eps',
         'descripcion_eps' => $isMethodPut
-            ? 'sometimes|string|max:100'
+            ? 'sometimes|required|string|max:100'
             : 'required|string|max:100',
     ];
 

@@ -17,4 +17,9 @@ class Riesgo extends Model
         'descripcion_riesgo',
     ];
 
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_riesgo', 'cod_riesgo');
+    }
+
 }

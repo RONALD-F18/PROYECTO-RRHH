@@ -24,53 +24,25 @@ class CompensacionRequest extends FormRequest
        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
 
         return [
-            'nombre' => [
-                'bail',
-                'required',
-                'string',
-                'max:255',
-            ],
-
-            'nit' => $isMethodPut
-                ? 'sometimes|string|max:50'
-                : 'required|string|max:50',
-
-            'direccion' => $isMethodPut
-                ? 'sometimes|string|max:255'
-                : 'required|string|max:255',
-
-            'telefono' => $isMethodPut
-                ? 'sometimes|string|max:20'
-                : 'required|string|max:20',
-
-            'email' => $isMethodPut
-                ? 'sometimes|email|max:255'
-                : 'required|email|max:255',
+            'nombre' => $isMethodPut
+            ? 'sometimes|required|string|max:50|unique:caja_compensaciones,nombre_caja_compensacion,' . $this->route('caja_compensacion') . ',cod_caja_compensacion'
+            : 'required|string|max:50|unique:caja_compensaciones,nombre_caja_compensacion',
+            'descripcion_caja_compensacion' => $isMethodPut
+            ? 'sometimes|required|string|max:100'
+            : 'required|string|max:100',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'nombre.required' => 'El nombre de la caja de compensación es obligatorio.',
-            'nombre.string' => 'El nombre de la caja de compensación debe ser una cadena de texto.',
-            'nombre.max' => 'El nombre de la caja de compensación no debe exceder los 255 caracteres.',
-
-            'nit.required' => 'El NIT de la caja de compensación es obligatorio.',
-            'nit.string' => 'El NIT de la caja de compensación debe ser una cadena de texto.',
-            'nit.max' => 'El NIT de la caja de compensación no debe exceder los 50 caracteres.',
-
-            'direccion.required' => 'La dirección de la caja de compensación es obligatoria.',
-            'direccion.string' => 'La dirección de la caja de compensación debe ser una cadena de texto.',
-            'direccion.max' => 'La dirección de la caja de compensación no debe exceder los 255 caracteres.',
-
-            'telefono.required' => 'El teléfono de la caja de compensación es obligatorio.',
-            'telefono.string' => 'El teléfono de la caja de compensación debe ser una cadena de texto.',
-            'telefono.max' => 'El teléfono de la caja de compensación no debe exceder los 20 caracteres.',
-
-            'email.required' => 'El correo electrónico de la caja de compensación es obligatorio.',
-            'email.email' => 'El correo electrónico de la caja de compensación debe ser una dirección válida.',
-            'email.max' => 'El correo electrónico de la caja de compensación no debe exceder los 255 caracteres.',
+            'nombre_caja_compensacion.required' => 'El nombre de la caja de compensación es obligatorio.',
+            'nombre_caja_compensacion.string' => 'El nombre de la caja de compensación debe ser una cadena de texto.',
+            'nombre_caja_compensacion.max' => 'El nombre de la caja de compensación no debe exceder los 50 caracteres.',
+            'nombre_caja_compensacion.unique' => 'El nombre de la caja de compensación ya está en uso.',
+            'descripcion_caja_compensacion.required' => 'La descripción de la caja de compensación es obligatoria.',
+            'descripcion_caja_compensacion.string' => 'La descripción de la caja de compensación debe ser una cadena de texto.',
+            'descripcion_caja_compensacion.max' => 'La descripción de la caja de compensación no debe exceder los 100 caracteres.',
         ];
     }
 }

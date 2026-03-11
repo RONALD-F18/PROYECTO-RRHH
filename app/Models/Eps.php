@@ -13,4 +13,9 @@ class Eps extends Model
         'nombre_eps',
         'descripcion_eps',
     ];
+
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_eps', 'cod_eps');
+    }
 }

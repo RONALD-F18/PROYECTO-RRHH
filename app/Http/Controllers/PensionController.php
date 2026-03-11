@@ -66,4 +66,15 @@ class PensionController extends Controller
             'data' => $data
         ], 200);        
 }
+
+    public function destroy($id)
+    {
+        $deleted = $this->pensionService->deletePension($id);
+
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Pensión no encontrada'
+            ], 404);
+        }
+    }
 }

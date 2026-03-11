@@ -24,15 +24,11 @@ class ArlRequest extends FormRequest
        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
 
         return [
-        'nombre_arl' => [
-            'bail',
-            'required',
-            'string',
-            'max:50',
-        ],
-
+        'nombre_arl' => $isMethodPut
+            ? 'sometimes|required|string|max:50|unique:arls,nombre_arl,' . $this->route('arl') . ',cod_arl'
+            : 'required|string|max:50|unique:arls,nombre_arl',
         'descripcion_arl' => $isMethodPut
-            ? 'sometimes|string|max:100'
+            ? 'sometimes|required|string|max:100'
             : 'required|string|max:100',
     ];
 }
@@ -45,7 +41,6 @@ class ArlRequest extends FormRequest
             'nombre_arl.string' => 'El nombre de la ARL debe ser una cadena de texto.',
             'nombre_arl.max' => 'El nombre de la ARL no debe exceder los 50 caracteres.',
             'nombre_arl.unique' => 'El nombre de la ARL ya está en uso.',
-
             'descripcion_arl.required' => 'La descripción de la ARL es obligatoria.',
             'descripcion_arl.string' => 'La descripción de la ARL debe ser una cadena de texto.',
             'descripcion_arl.max' => 'La descripción de la ARL no debe exceder los 100 caracteres.',
