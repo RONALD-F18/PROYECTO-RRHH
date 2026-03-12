@@ -31,7 +31,8 @@ use App\Repositories\Interfaces\CompensacionInterface;
 use App\Repositories\Eloquent\CompensacionRepository;
 use App\Repositories\Interfaces\AfiliacionInterface;
 use App\Repositories\Eloquent\AfiliacionesRepository;
-
+use App\Repositories\Interfaces\Inasistenciasface;
+use App\Repositories\Eloquent\InasistenciaRepository;
 
 
 class ServiceRepositoryProvider extends ServiceProvider
@@ -64,6 +65,7 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(CesantiaInterface::class, CesantiaRepository::class);
         $this->app->bind(CompensacionInterface::class, CompensacionRepository::class);
         $this->app->bind(AfiliacionInterface::class, AfiliacionesRepository::class);
+        $this->app->bind(Inasistenciasface::class, InasistenciaRepository::class);
 
     }
 

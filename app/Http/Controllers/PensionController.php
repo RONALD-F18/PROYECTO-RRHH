@@ -76,5 +76,9 @@ class PensionController extends Controller
                 'message' => 'Pensión no encontrada'
             ], 404);
         }
+        return response()->json([
+            'message' => 'Pensión eliminada exitosamente'
+        ], 200);
     }
 }
+

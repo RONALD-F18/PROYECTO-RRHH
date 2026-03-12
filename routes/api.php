@@ -21,12 +21,17 @@ use App\Http\Controllers\CesantiaController;
 use App\Http\Controllers\CompensacionController;
 use App\Http\Controllers\AfiliacionController;
 
+//Modulo Inasistencias
+use App\Http\Controllers\InasistenciaController;
+
 Route::prefix('v1')->group(function () {
 
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
 
     Route::post('/login', [AuthController::class, 'login']);
+
+    Route::apiResource('inasistencias', InasistenciaController::class);
 
 
     // Rutas protegidas con JWT
