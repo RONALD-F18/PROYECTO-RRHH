@@ -3,11 +3,9 @@
 namespace App\Repositories\Eloquent;
 use App\Models\Inasistencia;
 use Illuminate\Database\Eloquent\Collection;
-use App\Repositories\Interfaces\Inasistenciasface;
+use App\Repositories\Interfaces\InasistenciaInterface;
 
-
-
-class InasistenciaRepository implements Inasistenciasface
+class InasistenciaRepository implements InasistenciaInterface
 
 {
     public function getAllInasistencias(): Collection

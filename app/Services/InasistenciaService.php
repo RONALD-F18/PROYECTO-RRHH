@@ -1,13 +1,13 @@
 <?php   
 namespace App\Services;
 
-use App\Repositories\Interfaces\Inasistenciasface;
+use App\Repositories\Interfaces\InasistenciaInterface;
 
 class InasistenciaService
 {
-    protected $inasistenciaRepository;
+    protected $inasistenciaRepository;  
 
-    public function __construct(Inasistenciasface $inasistenciaRepository)
+    public function __construct(InasistenciaInterface $inasistenciaRepository)
     {
         $this->inasistenciaRepository = $inasistenciaRepository;
     }

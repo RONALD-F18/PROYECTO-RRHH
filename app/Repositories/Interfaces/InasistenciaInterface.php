@@ -3,7 +3,7 @@
 namespace App\Repositories\Interfaces;
 
 
-interface Inasistenciasface
+interface InasistenciaInterface
 {
     public function getAllInasistencias();
     public function getInasistenciaById($cod_inasistencias);

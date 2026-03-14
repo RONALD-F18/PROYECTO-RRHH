@@ -46,4 +46,31 @@ class InasistenciaController extends Controller
             'data' => $data
         ], 201);
     }
+
+    public function update(InasistenciaRequest $request, $id)
+    {
+        $data = $this->inasistenciaService->updateInasistencia($id, $request->validated());
+        if (!$data) {
+            return response()->json([
+                'message' => 'Inasistencia no encontrada'
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Inasistencia actualizada exitosamente',
+            'data' => $data
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $deleted = $this->inasistenciaService->deleteInasistencia($id);
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Inasistencia no encontrada'
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Inasistencia eliminada exitosamente'
+        ], 200);
+    }
 }
