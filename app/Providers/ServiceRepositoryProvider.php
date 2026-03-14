@@ -44,6 +44,10 @@ use App\Repositories\Eloquent\EpsRepository;
 use App\Repositories\Eloquent\PensionRepository;
 use App\Repositories\Eloquent\RiesgoRepository;
 
+// Módulo Inasistencia (inasistencia)
+use App\Repositories\Interfaces\InasistenciaInterface;
+use App\Repositories\Eloquent\InasistenciaRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -80,6 +84,9 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(CesantiaInterface::class, CesantiaRepository::class);
         $this->app->bind(CompensacionInterface::class, CompensacionRepository::class);
         $this->app->bind(AfiliacionInterface::class, AfiliacionesRepository::class);
+
+        // Módulo Inasistencia
+        $this->app->bind(InasistenciaInterface::class, InasistenciaRepository::class);
     }
 
     /**
