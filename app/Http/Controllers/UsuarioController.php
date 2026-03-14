@@ -30,7 +30,7 @@ class UsuarioController extends Controller
             if ($esOtroAdmin) {
                 return [
                     'cod_usuario' => $usuario->cod_usuario,
-                    'nombre'      => $usuario->nombre,
+                    'nombre'      => $usuario->nombre_usuario,
                     'rol'         => $usuario->roles->nombre_rol,
                     'detalle'     => 'Información restringida',
                 ];

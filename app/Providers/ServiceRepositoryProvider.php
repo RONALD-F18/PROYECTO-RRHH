@@ -3,36 +3,46 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Repositories\Interfaces\RolInterface;
-use App\Repositories\Eloquent\RolRepository;
-use App\Repositories\Interfaces\UsuarioInterface;
-use App\Repositories\Eloquent\UsuarioRepository;
-use App\Repositories\Eloquent\AuthRepository;
+
+// Módulo Auth / Usuarios
 use App\Repositories\Interfaces\AuthInterface;
+use App\Repositories\Interfaces\PasswordResetInterface;
+use App\Repositories\Interfaces\RolInterface;
+use App\Repositories\Interfaces\UsuarioInterface;
+use App\Repositories\Eloquent\AuthRepository;
+use App\Repositories\Eloquent\PasswordResetRepository;
+use App\Repositories\Eloquent\RolRepository;
+use App\Repositories\Eloquent\UsuarioRepository;
 use App\Services\MailService;
 use App\Services\PasswordResetService;
-use App\Repositories\Interfaces\PasswordResetInterface;     
-use App\Repositories\Eloquent\PasswordResetRepository;       
+
+// Módulo Empleado (empleado, banco)
 use App\Repositories\Interfaces\BancoInterface;
-use App\Repositories\Eloquent\BancoRepository;
 use App\Repositories\Interfaces\EmpleadoInterface;
+use App\Repositories\Eloquent\BancoRepository;
 use App\Repositories\Eloquent\EmpleadoRepository;
-use App\Repositories\Interfaces\EpsInterface;
-use App\Repositories\Eloquent\EpsRepository;
-use App\Repositories\Interfaces\RiesgoInterface;
-use App\Repositories\Eloquent\RiesgoRepository;
-use App\Repositories\Interfaces\ArlInterface;
-use App\Repositories\Eloquent\ArlRepository;
-use App\Repositories\Interfaces\PensionInterface;
-use App\Repositories\Eloquent\PensionRepository;
-use App\Repositories\Interfaces\CesantiaInterface;
-use App\Repositories\Eloquent\CesantiaRepository;
-use App\Repositories\Interfaces\CompensacionInterface;
-use App\Repositories\Eloquent\CompensacionRepository;
+
+// Módulo Contrato (contrato, cargo)
+use App\Repositories\Interfaces\CargoInterface;
+use App\Repositories\Interfaces\ContratoInterface;
+use App\Repositories\Eloquent\CargoRepository;
+use App\Repositories\Eloquent\ContratoRepository;
+
+// Módulo Afiliaciones (EPS, caja de compensación, ARL, pensión, cesantías, riesgo, afiliación)
 use App\Repositories\Interfaces\AfiliacionInterface;
+use App\Repositories\Interfaces\ArlInterface;
+use App\Repositories\Interfaces\CesantiaInterface;
+use App\Repositories\Interfaces\CompensacionInterface;
+use App\Repositories\Interfaces\EpsInterface;
+use App\Repositories\Interfaces\PensionInterface;
+use App\Repositories\Interfaces\RiesgoInterface;
 use App\Repositories\Eloquent\AfiliacionesRepository;
-
-
+use App\Repositories\Eloquent\ArlRepository;
+use App\Repositories\Eloquent\CesantiaRepository;
+use App\Repositories\Eloquent\CompensacionRepository;
+use App\Repositories\Eloquent\EpsRepository;
+use App\Repositories\Eloquent\PensionRepository;
+use App\Repositories\Eloquent\RiesgoRepository;
 
 class ServiceRepositoryProvider extends ServiceProvider
 {
@@ -43,20 +53,26 @@ class ServiceRepositoryProvider extends ServiceProvider
      */
     public function register()
     {
+        // Módulo Auth / Usuarios
         $this->app->bind(RolInterface::class, RolRepository::class);
         $this->app->bind(UsuarioInterface::class, UsuarioRepository::class);
         $this->app->bind(AuthInterface::class, AuthRepository::class);
         $this->app->bind(PasswordResetInterface::class, PasswordResetRepository::class);
-
-        $this->app->bind(MailService::class, fn() => new MailService());
-        $this->app->bind(PasswordResetService::class, fn($app) => new PasswordResetService(
+        $this->app->bind(MailService::class, fn () => new MailService());
+        $this->app->bind(PasswordResetService::class, fn ($app) => new PasswordResetService(
             $app->make(MailService::class),
             $app->make(PasswordResetInterface::class)
         ));
 
+        // Módulo Empleado (empleado, banco)
+        $this->app->bind(EmpleadoInterface::class, EmpleadoRepository::class);
         $this->app->bind(BancoInterface::class, BancoRepository::class);
-        $this->app->bind(EmpleadoInterface::class, EmpleadoRepository::class);   
-        
+
+        // Módulo Contrato (contrato, cargo)
+        $this->app->bind(ContratoInterface::class, ContratoRepository::class);
+        $this->app->bind(CargoInterface::class, CargoRepository::class);
+
+        // Módulo Afiliaciones (EPS, caja compensación, ARL, pensión, cesantías, riesgo, afiliación)
         $this->app->bind(EpsInterface::class, EpsRepository::class);
         $this->app->bind(RiesgoInterface::class, RiesgoRepository::class);
         $this->app->bind(ArlInterface::class, ArlRepository::class);
@@ -64,7 +80,6 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(CesantiaInterface::class, CesantiaRepository::class);
         $this->app->bind(CompensacionInterface::class, CompensacionRepository::class);
         $this->app->bind(AfiliacionInterface::class, AfiliacionesRepository::class);
-
     }
 
     /**

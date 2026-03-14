@@ -10,6 +10,8 @@ use App\Http\Controllers\PasswordResetController; // ← agregar este import
 //Modulo Empleados
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\EmpleadoController;
+use App\Http\Controllers\CargoController;
+use App\Http\Controllers\ContratoController;
 
 
 //Modulo afiliaciones
@@ -25,7 +27,6 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
-
     Route::post('/login', [AuthController::class, 'login']);
 
 
@@ -38,9 +39,10 @@ Route::prefix('v1')->group(function () {
         //Cualquier usuario autenticado puede trbajar con esto:
         Route::apiResource('empleados', EmpleadoController::class);
         Route::apiResource('bancos', BancoController::class);
+        Route::apiResource('cargos', CargoController::class);
+        Route::apiResource('contratos', ContratoController::class);
 
-        //Catálogos de afiliaciones (EPS, ARL, fondos, etc.)
-        //Cualquier usuario autenticado puede trabajar con estos recursos
+        // Catálogos de afiliaciones (EPS, ARL, fondos, etc.)
         Route::apiResource('eps', EpsController::class);
         Route::apiResource('riesgos', RiesgoController::class);
         Route::apiResource('arls', ArlController::class);
