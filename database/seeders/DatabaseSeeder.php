@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             BancoSeeder::class,
             FuncionarioUserSeeder::class,
             EmpleadoSeeder::class,
+            CargoSeeder::class,
+            ContratoSeeder::class,
             EpsSeeder::class,
             ArlSeeder::class,
             PensionSeeder::class,
