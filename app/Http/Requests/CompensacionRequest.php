@@ -21,11 +21,12 @@ class CompensacionRequest extends FormRequest
      */
     public function rules(): array
     {
-       $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
+        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch');
+        $id = $isMethodPut ? collect($this->route()->parameters())->first() : null;
 
         return [
             'nombre' => $isMethodPut
-            ? 'sometimes|required|string|max:50|unique:caja_compensaciones,nombre_caja_compensacion,' . $this->route('caja_compensacion') . ',cod_caja_compensacion'
+            ? 'sometimes|required|string|max:50|unique:caja_compensaciones,nombre_caja_compensacion,' . $id . ',cod_caja_compensacion'
             : 'required|string|max:50|unique:caja_compensaciones,nombre_caja_compensacion',
             'descripcion_caja_compensacion' => $isMethodPut
             ? 'sometimes|required|string|max:100'
@@ -36,10 +37,10 @@ class CompensacionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre_caja_compensacion.required' => 'El nombre de la caja de compensación es obligatorio.',
-            'nombre_caja_compensacion.string' => 'El nombre de la caja de compensación debe ser una cadena de texto.',
-            'nombre_caja_compensacion.max' => 'El nombre de la caja de compensación no debe exceder los 50 caracteres.',
-            'nombre_caja_compensacion.unique' => 'El nombre de la caja de compensación ya está en uso.',
+            'nombre.required' => 'El nombre de la caja de compensación es obligatorio.',
+            'nombre.string' => 'El nombre de la caja de compensación debe ser una cadena de texto.',
+            'nombre.max' => 'El nombre de la caja de compensación no debe exceder los 50 caracteres.',
+            'nombre.unique' => 'El nombre de la caja de compensación ya está en uso.',
             'descripcion_caja_compensacion.required' => 'La descripción de la caja de compensación es obligatoria.',
             'descripcion_caja_compensacion.string' => 'La descripción de la caja de compensación debe ser una cadena de texto.',
             'descripcion_caja_compensacion.max' => 'La descripción de la caja de compensación no debe exceder los 100 caracteres.',

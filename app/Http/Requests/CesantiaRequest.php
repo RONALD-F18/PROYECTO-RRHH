@@ -25,7 +25,7 @@ class CesantiaRequest extends FormRequest
 
         return [
         'nombre_fondo_cesantia' => $isMethodPut
-            ? 'sometimes|required|string|max:50|unique:fondo_cesantias,nombre_fondo_cesantia,' . $this->route('fondo_cesantia') . ',cod_fondo_cesantia'
+            ? 'sometimes|required|string|max:50|unique:fondo_cesantias,nombre_fondo_cesantia,' . $this->route('cesantia') . ',cod_fondo_cesantias'
             : 'required|string|max:50|unique:fondo_cesantias,nombre_fondo_cesantia',
         'descripcion_fondo_cesantia' => $isMethodPut
             ? 'sometimes|required|string|max:100'

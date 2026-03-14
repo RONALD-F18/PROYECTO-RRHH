@@ -8,6 +8,7 @@ use App\Services\AfiliacionService;
 
 
 //RRHH
+//2
 class AfiliacionController extends Controller
 {
     protected $afiliacionService;
@@ -57,6 +58,10 @@ class AfiliacionController extends Controller
                 'message' => 'Afiliacion no encontrada'
             ], 404);
         }
+        return response()->json([
+            'message' => 'Afiliación actualizada exitosamente',
+            'data' => $data
+        ], 200);
     }
 
     public function destroy($id)
@@ -67,5 +72,8 @@ class AfiliacionController extends Controller
                 'message' => 'Afiliacion no encontrada'
             ], 404);
         }
+        return response()->json([
+            'message' => 'Afiliación eliminada exitosamente'
+        ], 200);
     }
 }

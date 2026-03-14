@@ -40,7 +40,8 @@ class CompensacionController extends Controller
 
     public function store(CompensacionRequest $request)
     {
-        $data = $this->compensacionService->createCompensacion($request->validated());
+        $data = $this->prepareCompensacionData($request->validated());
+        $data = $this->compensacionService->createCompensacion($data);
         return response()->json([
             'message' => 'Compensacion creada exitosamente',
             'data' => $data
@@ -49,12 +50,17 @@ class CompensacionController extends Controller
 
     public function update(CompensacionRequest $request, $id)
     {
-        $data = $this->compensacionService->updateCompensacion($id, $request->validated());
+        $data = $this->prepareCompensacionData($request->validated());
+        $data = $this->compensacionService->updateCompensacion($id, $data);
         if (!$data) {
             return response()->json([
                 'message' => 'Compensacion no encontrada'
             ], 404);
         }
+        return response()->json([
+            'message' => 'Compensacion actualizada exitosamente',
+            'data' => $data
+        ], 200);
     }
 
     public function destroy($id)
@@ -65,5 +71,17 @@ class CompensacionController extends Controller
                 'message' => 'Compensacion no encontrada'
             ], 404);
         }
+    }
+
+    /**
+     * El Request valida "nombre"; el modelo y la BD usan "nombre_caja_compensacion".
+     */
+    private function prepareCompensacionData(array $data): array
+    {
+        if (array_key_exists('nombre', $data)) {
+            $data['nombre_caja_compensacion'] = $data['nombre'];
+            unset($data['nombre']);
+        }
+        return $data;
     }
 }

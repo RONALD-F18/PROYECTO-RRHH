@@ -21,11 +21,12 @@ class PensionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
+        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch');
+        $id = $isMethodPut ? collect($this->route()->parameters())->first() : null;
 
         return [
             'nombre_fondo_pension' => $isMethodPut
-            ? 'sometimes|required|string|max:50|unique:fondo_pensiones,nombre_fondo_pension,' . $this->route('fondo_pension') . ',cod_fondo_pension'
+            ? 'sometimes|required|string|max:50|unique:fondo_pensiones,nombre_fondo_pension,' . $id . ',cod_fondo_pensiones'
             : 'required|string|max:50|unique:fondo_pensiones,nombre_fondo_pension',
             'descripcion_fondo_pension' => $isMethodPut
             ? 'sometimes|required|string|max:100'

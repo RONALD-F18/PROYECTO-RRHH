@@ -21,11 +21,12 @@ class EpsRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch'); 
+        $isMethodPut = $this->isMethod('put') || $this->isMethod('patch');
+        $id = $isMethodPut ? collect($this->route()->parameters())->first() : null;
 
         return [
         'nombre_eps' => $isMethodPut
-            ? 'sometimes|required|string|max:50|unique:eps,nombre_eps,' . $this->route('eps') . ',cod_eps'
+            ? 'sometimes|required|string|max:50|unique:eps,nombre_eps,' . $id . ',cod_eps'
             : 'required|string|max:50|unique:eps,nombre_eps',
         'descripcion_eps' => $isMethodPut
             ? 'sometimes|required|string|max:100'
