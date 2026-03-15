@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             CompensacionSeeder::class,
             RiesgoSeeder::class,
             AfiliacionSeeder::class,
+            PrestacionSocialPeriodoSeeder::class,
         ]);
     }
 }

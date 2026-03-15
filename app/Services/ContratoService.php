@@ -19,7 +19,12 @@ class ContratoService
 
     public function getContratoById($id)
     {
-        return $this->contratoRepository->getContratoById($id);
+        return $this->contratoRepository->GetContratoById($id);
+    }
+
+    public function getContratosVigentes()
+    {
+        return $this->contratoRepository->GetContratosVigentes();
     }
 
     public function createContrato(array $data)

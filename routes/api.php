@@ -26,6 +26,9 @@ use App\Http\Controllers\RiesgoController;
 // Inasistencias
 use App\Http\Controllers\InasistenciaController;
 
+// Prestaciones sociales
+use App\Http\Controllers\PrestacionSocialController;
+
 Route::prefix('v1')->group(function () {
 
     // ——— Públicas (sin autenticación) ———
@@ -49,6 +52,15 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+
+        // Prestaciones sociales (resumen, por contrato, calcular, gestionar estado, eliminar)
+        Route::get('prestaciones-sociales', [PrestacionSocialController::class, 'index']);
+        Route::get('prestaciones-sociales/totales', [PrestacionSocialController::class, 'totalesPendientes']);
+        Route::get('prestaciones-sociales/listar', [PrestacionSocialController::class, 'listarTodos']);
+        Route::get('contratos/{cod_contrato}/prestaciones', [PrestacionSocialController::class, 'showByContrato']);
+        Route::post('contratos/{cod_contrato}/calcular-prestaciones', [PrestacionSocialController::class, 'calcular']);
+        Route::post('prestaciones-sociales/gestionar', [PrestacionSocialController::class, 'gestionar']);
+        Route::delete('prestaciones-sociales/{cod_prestacion_social_periodo}', [PrestacionSocialController::class, 'destroy']);
 
         // Catálogos de afiliaciones
         Route::apiResource('eps', EpsController::class);

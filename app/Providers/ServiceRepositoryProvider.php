@@ -48,6 +48,10 @@ use App\Repositories\Eloquent\RiesgoRepository;
 use App\Repositories\Interfaces\InasistenciaInterface;
 use App\Repositories\Eloquent\InasistenciaRepository;
 
+// Módulo Prestaciones Sociales
+use App\Repositories\Interfaces\PrestacionSocialInterface;
+use App\Repositories\Eloquent\PrestacionSocialRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -87,6 +91,9 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Inasistencia
         $this->app->bind(InasistenciaInterface::class, InasistenciaRepository::class);
+
+        // Módulo Prestaciones Sociales
+        $this->app->bind(PrestacionSocialInterface::class, PrestacionSocialRepository::class);
     }
 
     /**

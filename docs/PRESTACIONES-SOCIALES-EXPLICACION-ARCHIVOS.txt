@@ -1,0 +1,218 @@
+================================================================================
+  MÓDULO PRESTACIONES SOCIALES - EXPLICACIÓN ARCHIVO POR ARCHIVO
+  (Modelo, Repository, Service, Controller y cómo se relacionan)
+================================================================================
+
+
+-------- 1. MIGRACIÓN (database/migrations/..._create_prestacion_social_periodo_table.php) --------
+
+QUÉ HACE:
+  Crea la tabla "prestacion_social_periodo" en la base de datos.
+
+CÓDIGO DETRÁS:
+  - id('cod_prestacion_social_periodo')  → La llave primaria se llama cod_prestacion_social_periodo (número auto-incremental).
+  - foreignId('cod_contrato')->constrained('contrato', 'cod_contrato')  → Cada período pertenece a UN contrato. Si borras el contrato, se borran sus períodos (onDelete cascade).
+  - fecha_periodo_inicio / fecha_periodo_fin  → Del día X al día Y que se está liquidando.
+  - dias_trabajados  → Cantidad de días en ese rango (para las fórmulas).
+  - salario_base, auxilio_transporte  → "Foto" del salario y auxilio en el momento del cálculo (así el historial no cambia si después suben el salario).
+  - cesantias_valor, intereses_cesantias_valor, prima_valor, vacaciones_valor  → Los cuatro conceptos calculados (en dinero).
+  - estado_pago  → 'Pendiente', 'Pagado' o 'Trasladado'.
+  - fecha_pago_cancelacion  → Se llena cuando pasa a Pagado o Trasladado.
+  - fecha_calculo, observaciones  → Opcionales para auditoría.
+
+POR QUÉ UNA TABLA ASÍ:
+  Cada vez que alguien "calcula prestaciones" se crea UN REGISTRO NUEVO (un período). No se actualiza el mismo registro. Así tienes historial: período 1 (ene-mar), período 2 (abr-jun), etc.
+
+
+-------- 2. MODELO (app/Models/PrestacionSocialPeriodo.php) --------
+
+QUÉ HACE:
+  Es la clase Eloquent que representa una fila de la tabla prestacion_social_periodo. Laravel usa el modelo para leer/escribir en la BD.
+
+CÓDIGO DETRÁS:
+  - $table = 'prestacion_social_periodo'  → Nombre de la tabla.
+  - $primaryKey = 'cod_prestacion_social_periodo'  → La PK no es "id" sino cod_prestacion_social_periodo.
+  - $fillable  → Lista de columnas que se pueden asignar en masa (create/update). Lo que no está aquí no se guarda por asignación masiva.
+  - $casts  → Convierte tipos: las fechas a Carbon, los decimales a float en PHP. Así en el código trabajas con tipos correctos.
+  - contrato()  → Relación belongsTo: "este período pertenece a un contrato". Con $prestacion->contrato accedes al Contrato; con $prestacion->contrato->empleado al empleado.
+
+NO LLEVA LÓGICA DE NEGOCIO:
+  El modelo solo define estructura (tabla, PK, fillable, casts) y relaciones. La lógica de "cómo se calculan" las prestaciones va en el Service.
+
+
+-------- 3. INTERFAZ (app/Repositories/Interfaces/PrestacionSocialInterface.php) --------
+
+QUÉ HACE:
+  Define el "contrato" que debe cumplir quien trabaje con prestaciones: qué métodos debe tener y qué devuelven. No tiene código que se ejecute; solo firma de métodos.
+
+CÓDIGO DETRÁS (cada método):
+  - getAllPrestacionesSociales()  → Devuelve una colección de todos los períodos.
+  - getPrestacionSocialById($id)  → Un período por su código, o null.
+  - createPrestacionSocial(array $data)  → Crea un período y devuelve el modelo creado.
+  - getTotalesPendientes()  → Un array con las sumas de cesantías, intereses, prima y vacaciones solo de los que están en "Pendiente".
+  - getByContratoId($cod_contrato)  → Todos los períodos de un contrato (para mostrar historial).
+  - getUltimoPeriodoByContratoId($cod_contrato)  → El período con fecha_periodo_fin más reciente de ese contrato (para saber desde qué día calcular el siguiente).
+  - actualizarEstado($id, $estado_pago)  → Cambia estado_pago (y fecha_pago_cancelacion) de un período.
+  - deletePrestacionSocial($id)  → Borra un período.
+
+POR QUÉ EXISTE:
+  El Controller y el Service no dependen de "PrestacionSocialRepository" concreto, sino de esta interfaz. Así puedes cambiar la implementación (por ejemplo otro tipo de almacenamiento) sin tocar Service ni Controller (inyección de dependencias).
+
+
+-------- 4. REPOSITORIO (app/Repositories/Eloquent/PrestacionSocialRepository.php) --------
+
+QUÉ HACE:
+  Es la implementación concreta de PrestacionSocialInterface. Habla con la base de datos usando el modelo PrestacionSocialPeriodo (y a veces DB directo). NO contiene reglas de negocio; solo "cómo se lee y escribe" en BD.
+
+CÓDIGO DETRÁS (método por método):
+
+  - getAllPrestacionesSociales()
+    Usa PrestacionSocialPeriodo::with('contrato.empleado', 'contrato.cargo')->orderBy(...)->get().
+    with() carga la relación contrato y dentro de contrato las relaciones empleado y cargo, para no hacer N+1 consultas. Ordena por fecha_periodo_fin descendente.
+
+  - getPrestacionSocialById($id)
+    find($id) sobre el modelo (con with de contrato, empleado, cargo). Si no existe, devuelve null.
+
+  - createPrestacionSocial(array $data)
+    PrestacionSocialPeriodo::create($data). Laravel usa $fillable del modelo para saber qué campos asignar. Inserta una fila y devuelve el modelo creado.
+
+  - getTotalesPendientes()
+    Usa DB::table('prestacion_social_periodo')->where('estado_pago','Pendiente')->selectRaw('SUM(...)')->first().
+    Una sola consulta que suma cesantías, intereses, prima y vacaciones de todos los períodos pendientes. Devuelve un array con esos cuatro totales (en float).
+
+  - getByContratoId($cod_contrato)
+    where('cod_contrato', $cod_contrato), orderBy('fecha_periodo_fin','desc'), get(). Lista de períodos de ese contrato, del más reciente al más antiguo.
+
+  - getUltimoPeriodoByContratoId($cod_contrato)
+    Igual que getByContratoId pero ->first() en lugar de ->get(). El primer resultado (el de fecha_periodo_fin más reciente) es el "último período calculado".
+
+  - actualizarEstado($id, $estado_pago)
+    Busca el período por id. Asigna estado_pago y, si es Pagado o Trasladado, asigna fecha_pago_cancelacion = hoy. save() y devuelve el modelo. Si no existe, devuelve null.
+
+  - deletePrestacionSocial($id)
+    find + delete. Devuelve true si lo borró, false si no existía.
+
+RESUMEN:
+  El Repository solo hace: "dame todos", "dame uno por id", "crea esto", "suma esto", "actualiza este campo", "borra este". No decide "desde qué fecha calcular" ni "qué fórmulas usar"; eso lo hace el Service.
+
+
+-------- 5. SERVICE (app/Services/PrestacionSocialService.php) --------
+
+QUÉ HACE:
+  Aquí está la LÓGICA DE NEGOCIO. Usa el Repository (y el de Contrato) para leer/escribir, pero las reglas ("solo contratos vigentes", "desde último periodo + 1 día", fórmulas legales) viven aquí.
+
+CÓDIGO DETRÁS:
+
+  - Constantes al inicio (DIAS_ANIO_LABORAL, TASA_INTERESES_CESANTIAS_ANUAL, etc.)
+    Son valores fijos de la normativa colombiana (360 días, 12% intereses, auxilio, tope 2 SMMLV). Se usan en calcularPrestaciones().
+
+  - __construct(PrestacionSocialInterface, ContratoInterface)
+    Laravel inyecta las implementaciones (los Repositories). El Service no crea repositorios; los recibe. Así se puede probar o cambiar implementaciones.
+
+  - getTotalesPendientes() / getContratosVigentesParaLiquidacion() / getPrestacionesByContratoId()
+    Solo delegan en el Repository (o en ContratoRepository). No añaden lógica; son "pasarelas" para que el Controller no hable directo con el Repository.
+
+  - getContratoConPrestaciones($cod_contrato)
+    Pide el contrato al ContratoRepository y los períodos de ese contrato al PrestacionSocialRepository. Devuelve un array ['contrato' => ..., 'prestaciones' => ...]. Si el contrato no existe, devuelve null.
+
+  - calcularPrestaciones($cod_contrato)  ← AQUÍ ESTÁ EL CORE
+    1) Obtiene el contrato. Si no existe o no está ACTIVO/Vigente, lanza excepción.
+    2) Calcula el rango de fechas:
+       - Pide getUltimoPeriodoByContratoId($cod_contrato).
+       - Si hay último período: inicio = fecha_periodo_fin del último + 1 día.
+       - Si no hay: inicio = fecha_ingreso del contrato.
+       - Fin = hoy.
+    3) Si inicio > hoy o días trabajados < 1, lanza "No hay días nuevos para calcular".
+    4) Auxilio: si el contrato tiene auxilio_transporte y salario < 2 SMMLV, usa AUXILIO_TRANSPORTE_MENSUAL; si no, 0.
+    5) Base para cesantías/prima = salario + auxilio.
+    6) Fórmulas:
+       - Cesantías = (base * días) / 360.
+       - Intereses cesantías = cesantías * 0.12 * (días/360).
+       - Prima: solo días del semestre en curso (ene-jun o jul-dic). inicioSemestre según mes de "hoy"; inicioPrima = el mayor entre inicioSemestre y inicioCalculo, pero nunca antes de fecha_ingreso. Prima = (base * diasPrima) / 360.
+       - Vacaciones = (salario * días) / 720 (15 días por año; no lleva auxilio).
+    7) Arma el array $data con todos los campos del período y llama createPrestacionSocial($data) al Repository. Devuelve el array del modelo creado.
+
+  - actualizarEstado($id, $estado_pago)
+    Valida que estado_pago sea Pagado o Trasladado. Pide el período al Repository; si no existe devuelve null. Si existe pero no está en Pendiente, lanza excepción (no se puede "desmarcar" un pago). Si está Pendiente, llama al Repository actualizarEstado().
+
+  - eliminarPrestacion($id)
+    Pide el período; si no existe devuelve false. Si no está Pendiente, lanza excepción (no se borran períodos ya pagados/trasladados). Si está Pendiente, llama deletePrestacionSocial().
+
+RESUMEN:
+  El Service decide QUÉ se puede hacer y CÓMO se calculan las cosas. El Repository solo ejecuta las operaciones en BD que el Service le pide.
+
+
+-------- 6. REQUEST (app/Http/Requests/PrestacionSocialGestionarRequest.php) --------
+
+QUÉ HACE:
+  Valida el body del POST cuando el usuario "gestiona" un período (Pagar o Trasladar). Asegura que venga cod_prestacion_social_periodo (entero, existe en BD) y estado_pago (exactamente "Pagado" o "Trasladado").
+
+CÓDIGO DETRÁS:
+  - rules(): required, integer, min:1, exists:prestacion_social_periodo,cod_prestacion_social_periodo para el id; required, string, in:Pagado,Trasladado para estado_pago. bail hace que pare en la primera regla que falle.
+  - messages(): mensajes en español para cada regla.
+
+El Controller recibe ya $request->validated() solo con datos válidos; si la validación falla, Laravel responde 422 antes de llegar al Controller.
+
+
+-------- 7. CONTROLLER (app/Http/Controllers/PrestacionSocialController.php) --------
+
+QUÉ HACE:
+  Recibe las peticiones HTTP (GET/POST/DELETE), llama al Service con los parámetros correctos y devuelve JSON. No contiene fórmulas ni reglas de negocio; solo orquesta.
+
+CÓDIGO DETRÁS (acción por acción):
+
+  - index()
+    Llama a getTotalesPendientes() y getContratosVigentesParaLiquidacion(). Devuelve JSON con totales_pendientes y contratos_vigentes (para el dashboard).
+
+  - totalesPendientes()
+    Solo getTotalesPendientes(). JSON con los cuatro totales.
+
+  - showByContrato($cod_contrato)
+    getContratoConPrestaciones($cod_contrato). Si es null → 404. Si no, JSON con contrato y prestaciones (historial del contrato).
+
+  - calcular($cod_contrato)
+    calcularPrestaciones($cod_contrato). Si lanza InvalidArgumentException → 422 con el mensaje. Si no, 201 con el período creado.
+
+  - gestionar(PrestacionSocialGestionarRequest $request)
+    Lee cod_prestacion_social_periodo y estado_pago del request validado. Llama actualizarEstado($id, $estado). Si devuelve null → 404. Si lanza excepción (ej. ya no está Pendiente) → 422. Si no, 200 con el período actualizado.
+
+  - destroy($cod_prestacion_social_periodo)
+    eliminarPrestacion($id). Si false → 404. Si excepción → 422. Si true → 200 con mensaje de eliminado.
+
+  - listarTodos()
+    getAllPrestacionesSociales(). JSON con todos los períodos (y relaciones contrato, empleado, cargo).
+
+RESUMEN:
+  Controller = "recibo esto del usuario, le pido esto al Service, devuelvo este JSON o este código de error". Toda la decisión y las fórmulas están en el Service; el Controller solo traduce HTTP ↔ Service.
+
+
+-------- 8. FLUJO COMPLETO (ejemplo: calcular prestaciones) --------
+
+  1. Cliente hace POST /api/v1/contratos/1/calcular-prestaciones
+  2. Laravel llama PrestacionSocialController::calcular(1)
+  3. El Controller llama $this->prestacionSocialService->calcularPrestaciones(1)
+  4. El Service:
+     - Pide el contrato 1 al ContratoRepository
+     - Pide el último período del contrato 1 al PrestacionSocialRepository
+     - Calcula fechas, días, auxilio, cesantías, intereses, prima, vacaciones
+     - Llama $this->prestacionSocialRepository->createPrestacionSocial($data)
+  5. El Repository hace PrestacionSocialPeriodo::create($data) y devuelve el modelo
+  6. El Service devuelve el array de ese modelo al Controller
+  7. El Controller devuelve response()->json([...], 201)
+
+  En ningún paso el Controller ni el Repository conocen las fórmulas; solo el Service.
+
+
+-------- 9. RESUMEN POR CAPA --------
+
+  - Migración: define la tabla.
+  - Modelo: representa la fila, fillable, casts, relación contrato().
+  - Interfaz: define qué métodos debe tener quien "acceda a prestaciones" (contrato para inyección).
+  - Repository: implementa esos métodos con Eloquent/DB; solo lectura/escritura en BD.
+  - Service: lógica de negocio (fórmulas, reglas, desde qué fecha calcular, qué se puede o no hacer).
+  - Request: valida el body de "gestionar" (id + estado).
+  - Controller: recibe HTTP, llama al Service, devuelve JSON y códigos de estado.
+
+================================================================================
+  Fin del documento.
+================================================================================

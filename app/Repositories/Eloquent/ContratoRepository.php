@@ -16,8 +16,16 @@ class ContratoRepository implements ContratoInterface
 
     public function GetContratoById($id): ?Contrato
     {
-        $Contrato = Contrato::find($id);
+        $Contrato = Contrato::with('empleado', 'cargo')->find($id);
         return !$Contrato ? null : $Contrato;
+    }
+
+    public function GetContratosVigentes(): Collection
+    {
+        return Contrato::with('empleado', 'cargo')
+            ->whereIn('estado_contrato', ['ACTIVO', 'Vigente'])
+            ->orderBy('fecha_ingreso', 'desc')
+            ->get();
     }
 
     public function CreateContrato(array $data): Contrato
