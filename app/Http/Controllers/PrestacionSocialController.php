@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PrestacionSocialGestionarRequest;
 use App\Services\PrestacionSocialService;
 
+/**
+ * Controlador del módulo de Prestaciones Sociales (cesantías, intereses, prima, vacaciones).
+ * Todas las acciones requieren autenticación (middleware auth.api).
+ */
 class PrestacionSocialController extends Controller
 {
     protected $prestacionSocialService;
@@ -15,11 +19,14 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Resumen: totales pendientes y contratos vigentes para liquidación.
+     * Pantalla principal del módulo: totales pendientes + lista de contratos vigentes.
+     * Ruta: GET prestaciones-sociales
      */
     public function index()
     {
+        // Suma de cesantías, intereses, prima y vacaciones con estado_pago = Pendiente
         $totales = $this->prestacionSocialService->getTotalesPendientes();
+        // Contratos activos/vigentes para mostrar fila "Ver prestaciones" por cada uno
         $contratosVigentes = $this->prestacionSocialService->getContratosVigentesParaLiquidacion();
 
         return response()->json([
@@ -32,7 +39,8 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Totales globales de prestaciones pendientes (para dashboard).
+     * Solo los totales pendientes (útil para dashboard o widgets).
+     * Ruta: GET prestaciones-sociales/totales
      */
     public function totalesPendientes()
     {
@@ -44,7 +52,8 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Contrato con sus períodos de prestaciones (historial y pendientes).
+     * Detalle de un contrato con empleado/cargo y todos sus períodos de prestaciones.
+     * Ruta: GET contratos/{cod_contrato}/prestaciones
      */
     public function showByContrato($cod_contrato)
     {
@@ -59,7 +68,8 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Calcular prestaciones para un contrato (desde último período o fecha ingreso hasta hoy).
+     * Calcula y guarda un nuevo período de prestaciones para el contrato (desde último periodo_fin o fecha_ingreso hasta hoy).
+     * Ruta: POST contratos/{cod_contrato}/calcular-prestaciones
      */
     public function calcular($cod_contrato)
     {
@@ -75,7 +85,9 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Cambiar estado de un período: Pendiente → Pagado o Trasladado.
+     * Marca un período como Pagado o Trasladado (solo si está Pendiente).
+     * Body: cod_prestacion_social_periodo, estado_pago (Pagado|Trasladado).
+     * Ruta: POST prestaciones-sociales/gestionar
      */
     public function gestionar(PrestacionSocialGestionarRequest $request)
     {
@@ -96,7 +108,8 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Eliminar un período solo si está en estado Pendiente.
+     * Elimina un período de prestaciones. Solo permitido si estado_pago = Pendiente.
+     * Ruta: DELETE prestaciones-sociales/{cod_prestacion_social_periodo}
      */
     public function destroy($cod_prestacion_social_periodo)
     {
@@ -112,7 +125,8 @@ class PrestacionSocialController extends Controller
     }
 
     /**
-     * Listar todos los períodos de prestaciones (con contrato, empleado, cargo).
+     * Listado global: todos los períodos de todos los contratos (cada cálculo guardado).
+     * Ruta: GET prestaciones-sociales/listar
      */
     public function listarTodos()
     {

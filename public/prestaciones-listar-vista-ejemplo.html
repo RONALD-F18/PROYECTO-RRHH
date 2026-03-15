@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prestaciones - Listar todos (listar) - Vista ejemplo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f5f9;
+      padding: 24px;
+      color: #1e293b;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    .header {
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .header h1 { font-size: 1.25rem; margin-bottom: 4px; }
+    .header p { font-size: 0.85rem; opacity: 0.9; }
+    .header code { background: rgba(255,255,255,0.25); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    thead { background: #0ea5e9; color: white; }
+    th {
+      text-align: left;
+      padding: 12px 10px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.8rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #f8fafc; }
+    .empleado { font-weight: 600; color: #1e293b; }
+    .periodo { white-space: nowrap; }
+    .estado {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .estado.pendiente { background: #fef3c7; color: #92400e; }
+    .estado.pagado   { background: #d1fae5; color: #065f46; }
+    .estado.trasladado { background: #e0e7ff; color: #3730a3; }
+    .monto { text-align: right; font-variant-numeric: tabular-nums; }
+    .note {
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: #e0f2fe;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #0369a1;
+    }
+    .note strong { display: block; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Listar todos los períodos de prestaciones</h1>
+      <p>Ruta: <code>GET /api/v1/prestaciones-sociales/listar</code> — Devuelve todos los períodos de todos los contratos (historial global).</p>
+    </header>
+
+    <h2 class="section-title">Todos los períodos (data = array de prestacion_social_periodo con contrato, empleado, cargo)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Empleado</th>
+            <th>Contrato</th>
+            <th>Cargo</th>
+            <th>Período</th>
+            <th class="monto">Cesantías</th>
+            <th class="monto">Intereses</th>
+            <th class="monto">Prima</th>
+            <th class="monto">Vacaciones</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Ejemplo: varios contratos, varios períodos mezclados -->
+          <tr>
+            <td>1</td>
+            <td class="empleado">Carlos Andrés Gomez</td>
+            <td>N° 1</td>
+            <td>Desarrollador</td>
+            <td class="periodo">01-ene-24 → 30-jun-24</td>
+            <td class="monto">2.500.000</td>
+            <td class="monto">150.000</td>
+            <td class="monto">1.800.000</td>
+            <td class="monto">1.200.000</td>
+            <td><span class="estado pagado">Pagado</span></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="empleado">Carlos Andrés Gomez</td>
+            <td>N° 1</td>
+            <td>Desarrollador</td>
+            <td class="periodo">01-jul-24 → 31-dic-24</td>
+            <td class="monto">2.800.000</td>
+            <td class="monto">168.000</td>
+            <td class="monto">2.100.000</td>
+            <td class="monto">1.400.000</td>
+            <td><span class="estado pendiente">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="empleado">María Fernanda López</td>
+            <td>N° 2</td>
+            <td>Aux Contable</td>
+            <td class="periodo">01-mar-24 → 30-jun-24</td>
+            <td class="monto">1.200.000</td>
+            <td class="monto">72.000</td>
+            <td class="monto">900.000</td>
+            <td class="monto">600.000</td>
+            <td><span class="estado trasladado">Trasladado</span></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td class="empleado">María Fernanda López</td>
+            <td>N° 2</td>
+            <td>Aux Contable</td>
+            <td class="periodo">01-jul-24 → 31-dic-24</td>
+            <td class="monto">1.500.000</td>
+            <td class="monto">90.000</td>
+            <td class="monto">1.100.000</td>
+            <td class="monto">750.000</td>
+            <td><span class="estado pendiente">Pendiente</span></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td class="empleado">Juan Pablo Martínez</td>
+            <td>N° 3</td>
+            <td>RRHH</td>
+            <td class="periodo">10-jun-24 → 31-dic-24</td>
+            <td class="monto">1.800.000</td>
+            <td class="monto">108.000</td>
+            <td class="monto">1.350.000</td>
+            <td class="monto">900.000</td>
+            <td><span class="estado pendiente">Pendiente</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      <strong>Diferencia con el index</strong><br>
+      • <strong>index</strong> (<code>GET prestaciones-sociales</code>): pantalla principal → totales pendientes + lista de contratos vigentes; cada fila es un contrato y entras a “Ver prestaciones” de ese contrato.<br>
+      • <strong>listar</strong> (<code>GET prestaciones-sociales/listar</code>): historial global → una fila por cada período de prestaciones de todos los contratos; sirve para reportes o ver todo en una sola tabla.
+    </p>
+  </div>
+</body>
+</html>

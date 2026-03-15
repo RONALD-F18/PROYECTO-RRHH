@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('cod_inasistencias');
             $table->string('motivo_inasistencia', 50);
             $table->date('fecha_inasistencia');
-            $table->foreignId('cod_empleado')->nullable();
+            $table->foreignId('cod_empleado')->constrained('empleados', 'cod_empleado')->onDelete('cascade');
             $table->string('observaciones', 80)->nullable();
             $table->string('justificado',2)->nullable();
             $table->timestamps();

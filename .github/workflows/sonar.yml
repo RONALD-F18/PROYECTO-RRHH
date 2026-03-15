@@ -1,5 +1,6 @@
 name: SonarQube Analysis
 
+#Se ejecuta cuando se hace un push a la rama feature
 on:
   push:
     branches:
@@ -7,13 +8,16 @@ on:
 
 jobs:
   sonar:
+  #maquina virtual de github actions
     runs-on: ubuntu-latest
 
     steps:
+    # clona el repositorio en la maquina virtual de github actions
       - uses: actions/checkout@v3
 
+    # ejecuta el scanner de sonar
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://gb97p4kk-9000.use.devtunnels.ms
+          SONAR_HOST_URL: https://s0rmgbcs-9000.use2.devtunnels.ms

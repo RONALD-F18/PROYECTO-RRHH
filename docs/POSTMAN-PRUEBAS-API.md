@@ -25,8 +25,8 @@ En todas las peticiones con Body usa **Body → raw → JSON** y **Content-Type:
 
 ```json
 {
-  "email_usuario": "ronaldacademy223@gmail.com",
-  "contrasena_usuario": "Donald1234"
+  "email_usuario": "tu_email@ejemplo.com",
+  "contrasena_usuario": "tu_clave"
 }
 ```
 
@@ -41,7 +41,7 @@ En todas las peticiones con Body usa **Body → raw → JSON** y **Content-Type:
 
 ```json
 {
-  "email_usuario": "ronaldacademy223@gmail.com"
+  "email_usuario": "tu_email@ejemplo.com"
 }
 ```
 
@@ -56,14 +56,14 @@ En todas las peticiones con Body usa **Body → raw → JSON** y **Content-Type:
 
 ```json
 {
-  "email_usuario": "ronaldacademy223@gmail.com",
+  "email_usuario": "tu_email@ejemplo.com",
   "token": "TU_TOKEN_DEL_CORREO",
-  "contrasena_usuario": "NuevaClave123",
-  "contrasena_usuario_confirmation": "NuevaClave123"
+  "contrasena_usuario": "tu_nueva_clave",
+  "contrasena_usuario_confirmation": "tu_nueva_clave"
 }
 ```
 
-- **Qué ver:** 200 = contraseña actualizada. 422 = token inválido o expirado. Luego prueba Login con `NuevaClave123`.
+- **Qué ver:** 200 = contraseña actualizada. 422 = token inválido o expirado. Luego prueba Login con tu nueva clave.
 
 ---
 
