@@ -8,7 +8,7 @@ use App\Services\AfiliacionService;
 
 
 //RRHH
-//3
+//5
 class AfiliacionController extends Controller
 {
     protected $afiliacionService;
