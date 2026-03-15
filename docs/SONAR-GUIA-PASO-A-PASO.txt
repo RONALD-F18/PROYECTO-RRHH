@@ -1,0 +1,327 @@
+================================================================================
+  GUÍA: PASO A PASO PARA ANALIZAR ESTE PROYECTO CON SONAR
+  (Solo información — no modifica la configuración del proyecto)
+  ÚNICO ARCHIVO QUE SE MODIFICA: este .txt. No se toca Dockerfile, 
+  docker-compose, sonar-project.properties ni ningún otro archivo.
+================================================================================
+
+
+================================================================================
+  PARTE A — CONCEPTOS DE SONAR
+================================================================================
+
+--- 1. ¿QUÉ ES SONAR? ---
+
+  Sonar (SonarQube o SonarCloud) es una herramienta de ANÁLISIS ESTÁTICO de 
+  código. "Estático" significa que revisa el código sin ejecutarlo (como un 
+  corrector que lee el texto y señala errores o mejoras).
+
+  Qué hace Sonar:
+  • Bugs: errores que pueden hacer fallar la aplicación.
+  • Vulnerabilidades: problemas de seguridad (inyección, exposición de datos).
+  • Code smells: código que funciona pero es difícil de mantener o entender.
+  • Duplicación: mismo código repetido en varios sitios.
+  • Cobertura de tests: qué porcentaje del código está cubierto por pruebas (opcional).
+  • Deuda técnica: tiempo estimado para arreglar los issues.
+
+  Para qué sirve: mejorar calidad y seguridad antes de hacer merge o desplegar,
+  y mantener un estándar en el equipo.
+
+
+--- 2. CÓMO FUNCIONA SONAR (FLUJO GENERAL) ---
+
+  1) Servidor Sonar (SonarQube): es la aplicación que muestra la interfaz web,
+     guarda los análisis y las reglas. Puede estar en tu PC (Docker), en un 
+     servidor o en la nube (SonarCloud).
+
+  2) SonarScanner: es un programa que se ejecuta en tu PC, dentro de la carpeta
+     del proyecto. Lee tu código y el archivo sonar-project.properties, y envía
+     los datos al servidor Sonar. No modifica tu código.
+
+  3) El servidor recibe los datos, aplica reglas (por lenguaje: PHP, JS, etc.),
+     genera issues (problemas encontrados) y métricas, y muestra todo en el 
+     dashboard. Cada vez que ejecutas "sonar-scanner" se sube un nuevo análisis.
+
+
+--- 3. CONCEPTOS CLAVE ---
+
+  • Project Key: identificador único del proyecto en Sonar (ej: ejemplo1).
+    Lo defines en sonar-project.properties y en el servidor.
+
+  • Análisis: cada ejecución de sonar-scanner genera un análisis (un “reporte”)
+    que el servidor guarda y muestra. Puedes ver el historial.
+
+  • Issues: cada problema que Sonar encuentra (bug, vulnerabilidad, code smell).
+    Tienen severidad: Blocker, Critical, Major, Minor, Info.
+
+  • Quality Gate: “puerta de calidad”. Sonar tiene reglas del tipo “el proyecto
+    pasa si no hay bugs críticos y la duplicación es < 3%”. Si no se cumple,
+    el proyecto “no pasa” (útil en CI/CD para bloquear un merge).
+
+  • Token: clave que generas en Sonar para que el scanner pueda subir análisis
+    sin usar tu usuario/contraseña. Se usa en línea de comando o en CI.
+
+
+--- 4. SONARQUBE vs SONARCLOUD ---
+
+  • SonarQube: lo instalas tú (servidor propio o Docker). Tu sonar-project.properties 
+    apunta con "sonar.host.url" a esa instancia. Los datos están en tu máquina/servidor.
+
+  • SonarCloud: servicio en la nube (sonarcloud.io), gratis para proyectos 
+    públicos. sonar.host.url sería https://sonarcloud.io. Usas token de la organización.
+
+  En este proyecto ya tienes un sonar.host.url (por ejemplo un túnel o servidor).
+  El paso a paso es el mismo; solo cambia a qué servidor apuntas.
+
+
+--- 5. NECESIDAD DE POSTGRESQL ---
+
+  A partir de versiones recientes, SonarQube ya no trae base de datos embebida
+  (antes usaba H2). Necesita una base de datos externa para guardar proyectos,
+  usuarios, análisis e historial. La opción recomendada oficialmente es PostgreSQL.
+
+  Por tanto, si levantas SonarQube con Docker "desde cero", tienes que:
+  1) Tener PostgreSQL corriendo (puede ser otro contenedor Docker).
+  2) Arrancar SonarQube indicando la conexión a esa base (URL, usuario, contraseña).
+
+  Si no configuras PostgreSQL, SonarQube no arrancará bien o te pedirá la
+  configuración en el primer inicio. En la guía con Docker (PARTE B) se indica
+  primero levantar Postgres y luego SonarQube con las variables de conexión.
+
+
+================================================================================
+  PARTE B — PRIMERA VEZ CON DOCKER (PASO A PASO: DÓNDE Y QUÉ COMANDO)
+================================================================================
+
+  Requisito: tener Docker instalado (Docker Desktop en Windows).
+
+  ----- B.1  Dónde ejecutar los comandos de Docker -----
+  DÓNDE: En tu PC, abre PowerShell o CMD (da igual la carpeta para Docker).
+  QUÉ HACER: Inicio → escribir "PowerShell" o "cmd" → abrir.
+  EXPLICACIÓN: Los comandos "docker" se ejecutan en tu máquina; la carpeta
+  actual no importa para crear o arrancar el contenedor.
+
+  ----- B.2  Levantar PostgreSQL (obligatorio para SonarQube) -----
+  DÓNDE: En esa misma ventana de PowerShell o CMD (cualquier carpeta).
+
+  COMANDO EXACTO (copiar y pegar):
+    docker run -d --name sonar-db -e POSTGRES_USER=sonar -e POSTGRES_PASSWORD=sonar -e POSTGRES_DB=sonar -p 5432:5432 postgres:15-alpine
+
+  QUÉ HACE: Crea un contenedor "sonar-db" con PostgreSQL. SonarQube guardará
+  ahí sus datos (proyectos, usuarios, análisis). -p 5432:5432 expone el puerto
+  de la base por si lo necesitas. Usuario/contraseña/base = sonar/sonar/sonar.
+
+  EXPLICACIÓN: Sin esta base, SonarQube (versiones recientes) no puede iniciar
+  correctamente. Primero se levanta Postgres y después SonarQube apuntando a él.
+
+  ----- B.3  Crear y arrancar el contenedor de SonarQube (solo primera vez) -----
+  DÓNDE: En esa misma ventana de PowerShell o CMD (cualquier carpeta). Debe
+  estar ya corriendo el contenedor sonar-db (paso B.2).
+
+  COMANDO EXACTO (copiar y pegar; todo en una línea):
+    docker run -d --name sonarqube --link sonar-db -e SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/sonar -e SONAR_JDBC_USERNAME=sonar -e SONAR_JDBC_PASSWORD=sonar -p 9000:9000 sonarqube:lts-community
+
+  QUÉ HACE: Crea el contenedor "sonarqube" y le indica que use la base de datos
+  del contenedor "sonar-db" (--link sonar-db). Las variables SONAR_JDBC_*
+  son la URL, usuario y contraseña de PostgreSQL. -p 9000:9000 hace que
+  http://localhost:9000 sea la web de Sonar. La primera vez descargará la imagen.
+
+  QUÉ VERÁS: Un ID largo al final = contenedor creado y en ejecución.
+
+  ----- B.3  Esperar a que SonarQube termine de iniciar (1–2 min) -----
+  DÓNDE: Misma PowerShell o CMD.
+
+  COMANDO EXACTO:
+    docker logs sonarqube
+
+  QUÉ HACE: Muestra el log del contenedor. Así ves si ya arrancó.
+  QUÉ BUSCAR: Cuando aparezca "SonarQube is operational", ya puedes abrir
+  el navegador. Si no, espera y vuelve a ejecutar el mismo comando.
+
+  ----- B.4  Abrir Sonar en el navegador -----
+  DÓNDE: En el navegador (Chrome, Edge, etc.), en la barra de direcciones.
+  QUÉ PONER: http://localhost:9000
+  EXPLICACIÓN: "localhost" es tu PC; 9000 es el puerto del contenedor.
+  Si no carga, vuelve a B.4 y comprueba los logs.
+
+  ----- B.5  Iniciar sesión por primera vez -----
+  DÓNDE: En esa página de SonarQube.
+  Usuario: admin   |   Contraseña: admin
+  Te pedirá cambiar la contraseña; guárdala.
+
+  ----- B.6  Crear token para el scanner -----
+  DÓNDE: En SonarQube en el navegador (ya logueado como admin).
+  QUÉ HACER: Clic en tu usuario (arriba derecha) → My Account → pestaña
+  Security → Generate Tokens → nombre ej. "scanner" → Generate. Copiar el
+  token y guardarlo; solo se muestra una vez.
+  EXPLICACIÓN: El token permite que "sonar-scanner" (en la terminal) envíe
+  el análisis al servidor sin poner tu contraseña en la consola.
+
+  B.7 — Crear el proyecto en Sonar (si usas “Create project manually”):
+  ----- B.8  Crear el proyecto en Sonar -----
+  DÓNDE: En SonarQube en el navegador, menú Projects, Create project manually.
+  QUÉ PONER: Project key = ejemplo1 (igual que en sonar-project.properties).
+  Display name = el que quieras (ej: PROYECTO-RRHH).
+  EXPLICACIÓN: Si el key no coincide con el del archivo, el análisis iría a otro proyecto.
+
+  ----- B.9  Revisar el archivo del proyecto (no es un comando) -----
+  DÓNDE: En la raíz de tu proyecto Laravel, archivo sonar-project.properties.
+  Para Docker en tu PC: sonar.projectKey=ejemplo1, sonar.sources=.,
+  sonar.host.url=http://localhost:9000. Si usas otra URL (túnel), déjala.
+
+  ----- B.10 Instalar SonarScanner en tu PC (solo una vez) -----
+  DÓNDE: En tu PC (descargar e instalar; añadir "bin" al PATH de Windows).
+  Descarga: docs.sonarqube.org → Scanners → SonarScanner → Windows.
+  Para comprobar (PowerShell/CMD, cualquier carpeta):
+    sonar-scanner -v
+  Si muestra la versión, está bien. Si "no se reconoce", revisa el PATH.
+
+  ----- B.11 Ejecutar el primer análisis -----
+  DÓNDE: En PowerShell o CMD, DENTRO de la carpeta del proyecto.
+
+  COMANDO 1 (entrar a la carpeta del proyecto):
+    cd c:\Users\ronal\Documents\SENA\PROYECTO-RRHH
+
+  COMANDO 2 (analizar; sustituir por tu token real):
+    sonar-scanner -Dsonar.token=EL_TOKEN_QUE_COPIASTE
+
+  QUÉ HACE: Lee sonar-project.properties, escanea el código y lo envía al
+  servidor. No modifica archivos. Al final verás "ANALYSIS SUCCESSFUL" o similar.
+
+  ----- B.12 Ver el resultado -----
+  DÓNDE: Navegador → http://localhost:9000 → Projects → "ejemplo1".
+  Ahí verás el dashboard con issues y métricas.
+
+
+================================================================================
+  PARTE C — USO HABITUAL (CUANDO YA ESTÁ TODO CONFIGURADO)
+================================================================================
+
+  ----- C.1  (Solo si apagaste los contenedores) Arrancar Postgres y SonarQube -----
+  DÓNDE: PowerShell o CMD, en cualquier carpeta.
+  COMANDOS (primero la base, luego Sonar):
+    docker start sonar-db
+    docker start sonarqube
+  QUÉ HACE: Enciende primero la base de datos (sonar-db) y luego SonarQube.
+  Si no los paraste antes, no hace falta. Para ver si ya estaban: docker ps.
+
+  ----- C.2  Ejecutar el análisis -----
+  DÓNDE: PowerShell o CMD, DENTRO de la carpeta del proyecto.
+
+  COMANDO 1 (entrar a la carpeta):
+    cd c:\Users\ronal\Documents\SENA\PROYECTO-RRHH
+
+  COMANDO 2 (analizar; usa tu token real):
+    sonar-scanner -Dsonar.token=TU_TOKEN
+
+  QUÉ HACE: Igual que B.11: lee sonar-project.properties, escanea y sube el
+  análisis. Cada ejecución actualiza el proyecto en la web.
+
+  ----- C.3  Ver el resultado -----
+  DÓNDE: Navegador → http://localhost:9000 (o tu sonar.host.url) → proyecto "ejemplo1".
+
+  --- Resumen comandos Docker (DÓNDE: PowerShell/CMD, cualquier carpeta) ---
+  Ver si están corriendo:   docker ps
+  Parar SonarQube:         docker stop sonarqube
+  Parar Postgres:          docker stop sonar-db
+  Arrancar (orden):        docker start sonar-db   luego   docker start sonarqube
+  Ver log de SonarQube:    docker logs sonarqube
+
+
+================================================================================
+  PARTE D — PASO A PASO GENÉRICO (SIN DOCKER O YA CON SERVIDOR)
+================================================================================
+
+  D.1 — Tener el servidor Sonar corriendo (Docker, instalación o SonarCloud).
+
+  D.2 — Instalar el scanner (solo una vez): ver opciones en PARTE B, paso B.9.
+
+  D.3 — (Opcional) Token: si el servidor requiere login, generarlo en Sonar
+        y usarlo con -Dsonar.token=...
+
+  D.4 — Desde la raíz del proyecto:
+
+        cd c:\Users\ronal\Documents\SENA\PROYECTO-RRHH
+        sonar-scanner
+        (o sonar-scanner -Dsonar.token=TU_TOKEN)
+
+  D.5 — Ver resultados en la URL de Sonar (sonar.host.url), proyecto por projectKey.
+
+
+================================================================================
+  PARTE E — CÓMO FUNCIONA CADA ARCHIVO
+================================================================================
+
+  En este proyecto solo interviene un archivo de configuración de Sonar:
+  sonar-project.properties (en la raíz del proyecto).
+
+  --- sonar-project.properties ---
+
+  Es un archivo de texto (propiedades clave=valor) que el SonarScanner lee
+  cuando ejecutas "sonar-scanner" desde la raíz. Define:
+
+  • sonar.projectKey=ejemplo1
+    Identificador único del proyecto en el servidor Sonar. Debe coincidir con
+    el proyecto que creaste (o que creará Sonar) en la interfaz web. Si cambias
+    el key aquí, en el servidor aparecerá como proyecto distinto.
+
+  • sonar.sources=.
+    Dónde está el código a analizar. "." significa "la carpeta actual y sus
+    subcarpetas". Puedes poner "app" si solo quieres analizar esa carpeta, o
+    "app,config" para varias. El scanner solo enviará esos directorios.
+
+  • sonar.host.url=https://...
+    URL del servidor Sonar. El scanner envía aquí el análisis. Si usas Docker
+    en tu PC es http://localhost:9000. Si usas un túnel o servidor remoto,
+    es la URL que te den (ej: https://gb97p4kk-9000.use.devtunnels.ms).
+
+  Otras propiedades que puedes añadir (opcional, no las estoy tocando):
+
+  • sonar.projectName=Mi Proyecto RRHH
+    Nombre que se muestra en la web (si no lo pones, suele usarse projectKey).
+
+  • sonar.exclusions=**/vendor/**,**/node_modules/**
+    Patrones para excluir carpetas/archivos del análisis (vendor de PHP,
+    node_modules, etc.) y que no generen ruido.
+
+  • sonar.php.coverage.reportPaths=ruta/al/reporte.xml
+    Si tienes tests PHP y generas un reporte de cobertura en formato compatible,
+    aquí indicas la ruta para que Sonar muestre % de cobertura.
+
+  --- No hay más archivos obligatorios ---
+
+  El SonarScanner es un ejecutable que instalas en tu PC (o usas por npm).
+  No es un archivo dentro del proyecto. Cuando lo ejecutas, busca en el directorio
+  actual el archivo "sonar-project.properties" y usa sus valores para conectar
+  al servidor y enviar el análisis. No crea ni modifica archivos en tu código;
+  solo lee y envía.
+
+
+--- QUÉ HACE EL SCANNER (resumen) ---
+
+  1. Lee sonar-project.properties (projectKey, sources, host url, etc.).
+  2. Escanea los archivos indicados en sonar.sources (respetando exclusions).
+  3. Envía los resultados al servidor Sonar (sonar.host.url).
+  4. El servidor procesa y muestra el dashboard. No modifica tu código.
+
+
+--- RESUMEN RÁPIDO DE COMANDOS ---
+
+  Primera vez (Docker):  1) docker run -d --name sonar-db ... postgres:15-alpine
+                        2) docker run -d --name sonarqube ... (con SONAR_JDBC_* a sonar-db)
+  Uso habitual:         docker start sonar-db   y   docker start sonarqube
+  Analizar proyecto:    cd PROYECTO-RRHH  →  sonar-scanner -Dsonar.token=TU_TOKEN
+  Ver resultados:       Abrir sonar.host.url en el navegador → proyecto "ejemplo1".
+
+
+--- SI ALGO FALLA ---
+
+  • "sonar-scanner no reconocido" → El scanner no está en el PATH (instalar y añadir bin al PATH).
+  • Error de conexión → Comprobar sonar.host.url y que el servidor esté arriba (docker ps o ping).
+  • 401 Unauthorized → Hace falta token; usar -Dsonar.token=...
+  • Proyecto no aparece → Ver que projectKey en sonar-project.properties coincida con el del servidor.
+  • Docker: "port already in use" → Otro programa usa el 9000; cambiar -p 9001:9000 y usar http://localhost:9001.
+
+================================================================================
+  Fin de la guía. No se ha modificado la configuración del proyecto.
+================================================================================

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prestaciones Sociales - Vista de ejemplo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f5f9;
+      padding: 24px;
+      color: #1e293b;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    /* Header del módulo */
+    .header {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 24px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .header p { font-size: 0.9rem; opacity: 0.9; }
+
+    /* Tarjetas de totales (GET prestaciones-sociales → data.totales_pendientes) */
+    .totales-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .total-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 4px solid;
+    }
+    .total-card.prima    { border-left-color: #22c55e; }
+    .total-card.cesantias { border-left-color: #3b82f6; }
+    .total-card.intereses { border-left-color: #8b5cf6; }
+    .total-card.vacaciones { border-left-color: #f59e0b; }
+    .total-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .total-card .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .total-card.prima .value    { color: #22c55e; }
+    .total-card.cesantias .value { color: #3b82f6; }
+    .total-card.intereses .value { color: #8b5cf6; }
+    .total-card.vacaciones .value { color: #f59e0b; }
+
+    /* Título de la tabla */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #334155;
+    }
+
+    /* Tabla de contratos vigentes (GET prestaciones-sociales → data.contratos_vigentes) */
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead {
+      background: #3b82f6;
+      color: white;
+    }
+    th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #f8fafc; }
+    .btn-ver {
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-ver:hover { background: #2563eb; }
+    .empleado-nombre { font-weight: 600; color: #1e293b; }
+    .empleado-doc { font-size: 0.8rem; color: #64748b; }
+    .note {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: #fef3c7;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado del módulo -->
+    <header class="header">
+      <h1>Prestaciones Sociales</h1>
+      <p>Gestión, cálculo y pagos de beneficios laborales</p>
+    </header>
+
+    <!-- Tarjetas: vienen de GET prestaciones-sociales → data.totales_pendientes -->
+    <h2 class="section-title">Totales pendientes</h2>
+    <div class="totales-grid">
+      <div class="total-card prima">
+        <div class="label">Prima de Servicios</div>
+        <div class="value">$14.500.000</div>
+      </div>
+      <div class="total-card cesantias">
+        <div class="label">Cesantías</div>
+        <div class="value">$7.500.000</div>
+      </div>
+      <div class="total-card intereses">
+        <div class="label">Intereses Cesantías</div>
+        <div class="value">$4.500.000</div>
+      </div>
+      <div class="total-card vacaciones">
+        <div class="label">Vacaciones</div>
+        <div class="value">$4.500.000</div>
+      </div>
+    </div>
+
+    <!-- Tabla: viene de GET prestaciones-sociales → data.contratos_vigentes -->
+    <h2 class="section-title">Contratos vigentes para liquidación</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Contrato</th>
+            <th>Cargo</th>
+            <th>Fecha Inicio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span class="empleado-nombre">Carlos Andrés Gomez</span><br>
+              <span class="empleado-doc">C.C 1015432390</span>
+            </td>
+            <td><strong>N° 1</strong><br><span class="empleado-doc">Desde Ene 2024</span></td>
+            <td>Desarrollador</td>
+            <td>15-01-2024</td>
+            <td><a href="#" class="btn-ver">Ver prestaciones</a></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="empleado-nombre">María Fernanda López</span><br>
+              <span class="empleado-doc">C.C 1020567634</span>
+            </td>
+            <td><strong>N° 2</strong><br><span class="empleado-doc">Desde Mar 2024</span></td>
+            <td>Aux Contable</td>
+            <td>01-03-2024</td>
+            <td><a href="#" class="btn-ver">Ver prestaciones</a></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="empleado-nombre">Juan Pablo Martínez</span><br>
+              <span class="empleado-doc">C.C 1025678901</span>
+            </td>
+            <td><strong>N° 3</strong><br><span class="empleado-doc">Desde Jun 2024</span></td>
+            <td>RRHH</td>
+            <td>10-06-2024</td>
+            <td><a href="#" class="btn-ver">Ver prestaciones</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      <strong>Vista de ejemplo.</strong> Los datos reales vienen de <code>GET /api/v1/prestaciones-sociales</code> (totales_pendientes + contratos_vigentes). 
+      "Ver prestaciones" llevaría a otra pantalla que llama <code>GET /api/v1/contratos/{cod_contrato}/prestaciones</code>. Puedes borrar este archivo cuando ya no lo necesites.
+    </p>
+  </div>
+</body>
+</html>
