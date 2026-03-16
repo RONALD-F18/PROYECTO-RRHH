@@ -16,18 +16,32 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    // Limita los métodos HTTP permitidos en lugar de permitir todos
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // Restringe los orígenes permitidos usando variables de entorno
+    // Ajusta FRONTEND_URL y FRONTEND_URL_ALT en tu archivo .env
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL', null),
+        env('FRONTEND_URL_ALT', null),
+    ]),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    // Limita los encabezados permitidos a los habituales
+    'allowed_headers' => [
+        'Content-Type',
+        'X-Requested-With',
+        'Authorization',
+        'Accept',
+        'Origin',
+    ],
 
     'exposed_headers' => [],
 
     'max_age' => 0,
 
+    // Mantener en false evita enviar cookies/credenciales a cualquier origen
     'supports_credentials' => false,
 
 ];
