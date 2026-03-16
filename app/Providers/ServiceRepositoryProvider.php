@@ -48,6 +48,10 @@ use App\Repositories\Eloquent\RiesgoRepository;
 use App\Repositories\Interfaces\InasistenciaInterface;
 use App\Repositories\Eloquent\InasistenciaRepository;
 
+// Módulo Calendario
+use App\Repositories\Interfaces\CalendarioActividadesInterface;
+use App\Repositories\Eloquent\CalendarioActividadesRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -87,6 +91,12 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Inasistencia
         $this->app->bind(InasistenciaInterface::class, InasistenciaRepository::class);
+
+        // Módulo Calendario
+        $this->app->bind(
+            CalendarioActividadesInterface::class,
+            CalendarioActividadesRepository::class
+        );
     }
 
     /**
