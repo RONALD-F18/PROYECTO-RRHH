@@ -28,6 +28,10 @@ use App\Http\Controllers\InasistenciaController;
 
 // Prestaciones sociales
 use App\Http\Controllers\PrestacionSocialController;
+// Incapacidades (entidad principal y catálogos por capas)
+use App\Http\Controllers\IncapacidadController;
+use App\Http\Controllers\TipoIncapacidadController;
+use App\Http\Controllers\ClasificacionEnfermedadController;
 
 Route::prefix('v1')->group(function () {
 
@@ -61,6 +65,15 @@ Route::prefix('v1')->group(function () {
         Route::post('contratos/{cod_contrato}/calcular-prestaciones', [PrestacionSocialController::class, 'calcular']);
         Route::post('prestaciones-sociales/gestionar', [PrestacionSocialController::class, 'gestionar']);
         Route::delete('prestaciones-sociales/{cod_prestacion_social_periodo}', [PrestacionSocialController::class, 'destroy']);
+
+        // Catálogos de incapacidades (cada entidad con su propia capa)
+        Route::apiResource('tipos-incapacidad', TipoIncapacidadController::class);
+        Route::apiResource('clasificaciones-enfermedad', ClasificacionEnfermedadController::class);
+
+        // Incapacidades (gestión y normativa colombiana de pago)
+        Route::get('incapacidades/resumen', [IncapacidadController::class, 'resumen']);
+        Route::get('empleados/{cod_empleado}/incapacidades', [IncapacidadController::class, 'byEmpleado']);
+        Route::apiResource('incapacidades', IncapacidadController::class);
 
         // Catálogos de afiliaciones
         Route::apiResource('eps', EpsController::class);

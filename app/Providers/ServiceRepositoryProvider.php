@@ -52,6 +52,14 @@ use App\Repositories\Eloquent\InasistenciaRepository;
 use App\Repositories\Interfaces\PrestacionSocialInterface;
 use App\Repositories\Eloquent\PrestacionSocialRepository;
 
+// Módulo Incapacidades (incapacidad, tipo_incapacidad, clasificacion_enfermedad)
+use App\Repositories\Interfaces\IncapacidadInterface;
+use App\Repositories\Interfaces\TipoIncapacidadInterface;
+use App\Repositories\Interfaces\ClasificacionEnfermedadInterface;
+use App\Repositories\Eloquent\IncapacidadRepository;
+use App\Repositories\Eloquent\TipoIncapacidadRepository;
+use App\Repositories\Eloquent\ClasificacionEnfermedadRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -94,6 +102,11 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Prestaciones Sociales
         $this->app->bind(PrestacionSocialInterface::class, PrestacionSocialRepository::class);
+
+        // Módulo Incapacidades
+        $this->app->bind(IncapacidadInterface::class, IncapacidadRepository::class);
+        $this->app->bind(TipoIncapacidadInterface::class, TipoIncapacidadRepository::class);
+        $this->app->bind(ClasificacionEnfermedadInterface::class, ClasificacionEnfermedadRepository::class);
     }
 
     /**
