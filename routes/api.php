@@ -22,6 +22,8 @@ use App\Http\Controllers\CompensacionController;
 use App\Http\Controllers\EpsController;
 use App\Http\Controllers\PensionController;
 use App\Http\Controllers\RiesgoController;
+use App\Http\Controllers\ActividadCalendarioController;
+
 
 // Inasistencias
 use App\Http\Controllers\InasistenciaController;
@@ -56,6 +58,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+        Route::apiResource('calendario-actividades', ActividadCalendarioController::class);
 
         // Prestaciones sociales (resumen, por contrato, calcular, gestionar estado, eliminar)
         Route::get('prestaciones-sociales', [PrestacionSocialController::class, 'index']);

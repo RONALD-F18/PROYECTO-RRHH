@@ -60,6 +60,10 @@ use App\Repositories\Eloquent\IncapacidadRepository;
 use App\Repositories\Eloquent\TipoIncapacidadRepository;
 use App\Repositories\Eloquent\ClasificacionEnfermedadRepository;
 
+// Módulo Actividades de calendario
+use App\Repositories\Interfaces\ActividadCalendarioInterface;
+use App\Repositories\Eloquent\ActividadCalendarioRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -107,6 +111,9 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(IncapacidadInterface::class, IncapacidadRepository::class);
         $this->app->bind(TipoIncapacidadInterface::class, TipoIncapacidadRepository::class);
         $this->app->bind(ClasificacionEnfermedadInterface::class, ClasificacionEnfermedadRepository::class);
+
+        // Módulo Actividades de calendario
+        $this->app->bind(ActividadCalendarioInterface::class, ActividadCalendarioRepository::class);
     }
 
     /**

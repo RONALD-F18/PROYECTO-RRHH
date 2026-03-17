@@ -15,7 +15,8 @@ class TipoIncapacidadRepository implements TipoIncapacidadInterface
 
     public function getTipoIncapacidadById($cod_tipo_incapacidad): ?TipoIncapacidad
     {
-        return TipoIncapacidad::find($cod_tipo_incapacidad);
+        $tipo = TipoIncapacidad::find($cod_tipo_incapacidad);
+        return !$tipo ? null : $tipo;
     }
 
     public function createTipoIncapacidad(array $data): TipoIncapacidad

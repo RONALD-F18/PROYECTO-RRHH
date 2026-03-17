@@ -33,6 +33,15 @@ class Usuario extends Authenticatable implements JWTSubject
         return $this->belongsTo(Rol::class, 'cod_rol', 'cod_rol');
     }
 
+    /**
+     * Actividades de calendario (tareas, reuniones, recordatorios)
+     * creadas por este usuario (funcionario o administrador).
+     */
+    public function actividadesCalendario()
+    {
+        return $this->hasMany(CalendarioActividad::class, 'cod_usuario', 'cod_usuario');
+    }
+
     // 🔥 MUY IMPORTANTE (le dice a Laravel cuál es el password real)
 public function getAuthPassword()
 {

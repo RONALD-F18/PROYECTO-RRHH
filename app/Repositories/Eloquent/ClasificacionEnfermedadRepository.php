@@ -15,7 +15,8 @@ class ClasificacionEnfermedadRepository implements ClasificacionEnfermedadInterf
 
     public function getClasificacionEnfermedadById($cod_clasificacion_enfermedad): ?ClasificacionEnfermedad
     {
-        return ClasificacionEnfermedad::find($cod_clasificacion_enfermedad);
+        $clasif = ClasificacionEnfermedad::find($cod_clasificacion_enfermedad);
+        return !$clasif ? null : $clasif;
     }
 
     public function createClasificacionEnfermedad(array $data): ClasificacionEnfermedad

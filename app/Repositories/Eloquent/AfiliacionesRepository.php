@@ -13,10 +13,10 @@
           return $afiliaciones;
       }
 
-      public function getAfiliacionById($id)
+     public function getAfiliacionById($id)
       {
           $afiliacion = Afiliacion::find($id);
-          return $afiliacion;
+          return !$afiliacion ? null : $afiliacion;
       }
 
       public function createAfiliacion(array $data)

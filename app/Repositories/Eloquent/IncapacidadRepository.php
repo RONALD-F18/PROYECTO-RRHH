@@ -17,7 +17,9 @@ class IncapacidadRepository implements IncapacidadInterface
 
     public function getIncapacidadById($cod_incapacidad): ?Incapacidad
     {
-        return Incapacidad::with('tipoIncapacidad', 'empleado', 'clasificacionEnfermedad')->find($cod_incapacidad);
+        $incapacidad = Incapacidad::with('tipoIncapacidad', 'empleado', 'clasificacionEnfermedad')
+            ->find($cod_incapacidad);
+        return !$incapacidad ? null : $incapacidad;
     }
 
     public function createIncapacidad(array $data): Incapacidad
