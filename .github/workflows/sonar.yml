@@ -1,24 +1,19 @@
-# Nombre del workflow que aparece en GitHub Actions
-name: SonarCloud Analysis
+name: SonarQube Analysis
 
-# Se ejecuta cuando se hace push a la rama feature
 on:
   push:
     branches:
       - feature
 
 jobs:
-  sonarcloud:
-    # Máquina virtual donde se ejecuta el workflow
+  sonar:
     runs-on: ubuntu-latest
 
     steps:
-      # Clona el repositorio completo con todo el historial
       - uses: actions/checkout@v3
 
-      # Ejecuta el análisis de SonarCloud
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://2ggt6n1j-9000.use2.devtunnels.ms/
+          SONAR_HOST_URL: https://s0rmgbcs-9000.use2.devtunnels.ms/
