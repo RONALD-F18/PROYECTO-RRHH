@@ -33,6 +33,9 @@ use App\Http\Controllers\IncapacidadController;
 use App\Http\Controllers\TipoIncapacidadController;
 use App\Http\Controllers\ClasificacionEnfermedadController;
 
+// Comunicaciones disciplinarias
+use App\Http\Controllers\ComunicacionController;
+
 Route::prefix('v1')->group(function () {
 
     // ——— Públicas (sin autenticación) ———
@@ -44,6 +47,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth.api')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
+      
 
         // Cualquier autenticado: ver y editar su propio perfil (policy valida que sea el mismo usuario)
         Route::get('usuarios/{usuario}', [UsuarioController::class, 'show'])->name('usuarios.show');
@@ -56,6 +60,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+        Route::apiResource('comunicaciones', ComunicacionController::class);
+        Route::apiResource('comunicaciones_disciplinarias', ComunicacionController::class);
+
 
         // Prestaciones sociales (resumen, por contrato, calcular, gestionar estado, eliminar)
         Route::get('prestaciones-sociales', [PrestacionSocialController::class, 'index']);

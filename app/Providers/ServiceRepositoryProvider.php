@@ -60,6 +60,12 @@ use App\Repositories\Eloquent\IncapacidadRepository;
 use App\Repositories\Eloquent\TipoIncapacidadRepository;
 use App\Repositories\Eloquent\ClasificacionEnfermedadRepository;
 
+//Módulo Comunicaciones Disciplinarias
+use App\Repositories\Interfaces\ComunicacionInterface;
+use App\Repositories\Eloquent\ComunicacionRepository;
+
+
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -107,6 +113,10 @@ class ServiceRepositoryProvider extends ServiceProvider
         $this->app->bind(IncapacidadInterface::class, IncapacidadRepository::class);
         $this->app->bind(TipoIncapacidadInterface::class, TipoIncapacidadRepository::class);
         $this->app->bind(ClasificacionEnfermedadInterface::class, ClasificacionEnfermedadRepository::class);
+
+        // Módulo Comunicaciones Disciplinarias
+        $this->app->bind(ComunicacionInterface::class, ComunicacionRepository::class);
+        
     }
 
     /**
