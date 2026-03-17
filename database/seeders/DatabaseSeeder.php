@@ -35,6 +35,9 @@ class DatabaseSeeder extends Seeder
             TipoIncapacidadSeeder::class,
             ClasificacionEnfermedadSeeder::class,
             IncapacidadSeeder::class,
+            EmpresaSeeder::class,
+            CalendarioActividadSeeder::class,
+            CertificacionSeeder::class,
         ]);
     }
 }

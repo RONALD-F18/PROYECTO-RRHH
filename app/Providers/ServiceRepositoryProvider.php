@@ -64,6 +64,14 @@ use App\Repositories\Eloquent\ClasificacionEnfermedadRepository;
 use App\Repositories\Interfaces\ActividadCalendarioInterface;
 use App\Repositories\Eloquent\ActividadCalendarioRepository;
 
+// Módulo Empresa
+use App\Repositories\Interfaces\EmpresaInterface;
+use App\Repositories\Eloquent\EmpresaRepository;
+
+// Módulo Certificaciones
+use App\Repositories\Interfaces\CertificacionInterface;
+use App\Repositories\Eloquent\CertificacionRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -114,6 +122,12 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Actividades de calendario
         $this->app->bind(ActividadCalendarioInterface::class, ActividadCalendarioRepository::class);
+
+        // Módulo Empresa
+        $this->app->bind(EmpresaInterface::class, EmpresaRepository::class);
+
+        // Módulo Certificaciones
+        $this->app->bind(CertificacionInterface::class, CertificacionRepository::class);
     }
 
     /**

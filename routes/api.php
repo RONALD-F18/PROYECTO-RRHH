@@ -23,6 +23,8 @@ use App\Http\Controllers\EpsController;
 use App\Http\Controllers\PensionController;
 use App\Http\Controllers\RiesgoController;
 use App\Http\Controllers\ActividadCalendarioController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\CertificacionController;
 
 
 // Inasistencias
@@ -58,6 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+        Route::apiResource('empresas', EmpresaController::class);
 
         // Calendario de actividades
         Route::apiResource('calendario-actividades', ActividadCalendarioController::class);
@@ -88,6 +91,10 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cesantias', CesantiaController::class);
         Route::apiResource('compensaciones', CompensacionController::class);
         Route::apiResource('afiliaciones', AfiliacionController::class);
+
+        // Certificaciones
+        Route::apiResource('certificaciones', CertificacionController::class);
+        Route::get('certificaciones/{certificacion}/pdf-laboral', [CertificacionController::class, 'descargarPdfLaboral']);
 
         // ——— Solo administrador: gestión de usuarios y roles ———
         Route::middleware('role:administrador')->group(function () {
