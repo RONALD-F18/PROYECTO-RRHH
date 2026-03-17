@@ -58,6 +58,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+
+        // Calendario de actividades
         Route::apiResource('calendario-actividades', ActividadCalendarioController::class);
 
         // Prestaciones sociales (resumen, por contrato, calcular, gestionar estado, eliminar)
