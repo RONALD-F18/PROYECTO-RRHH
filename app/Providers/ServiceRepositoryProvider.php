@@ -72,6 +72,10 @@ use App\Repositories\Eloquent\EmpresaRepository;
 use App\Repositories\Interfaces\CertificacionInterface;
 use App\Repositories\Eloquent\CertificacionRepository;
 
+// Módulo Comunicaciones Disciplinarias
+use App\Repositories\Interfaces\ComunicacionDisciplinariaInterface;
+use App\Repositories\Eloquent\ComunicacionDisciplinariaRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -128,6 +132,9 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Certificaciones
         $this->app->bind(CertificacionInterface::class, CertificacionRepository::class);
+
+        // Módulo Comunicaciones Disciplinarias
+        $this->app->bind(ComunicacionDisciplinariaInterface::class, ComunicacionDisciplinariaRepository::class);
     }
 
     /**

@@ -32,10 +32,14 @@ use App\Http\Controllers\InasistenciaController;
 
 // Prestaciones sociales
 use App\Http\Controllers\PrestacionSocialController;
+
 // Incapacidades (entidad principal y catálogos por capas)
 use App\Http\Controllers\IncapacidadController;
 use App\Http\Controllers\TipoIncapacidadController;
 use App\Http\Controllers\ClasificacionEnfermedadController;
+
+// Comunicaciones disciplinarias
+use App\Http\Controllers\ComunicacionDisciplinariaController;
 
 Route::prefix('v1')->group(function () {
 
@@ -61,6 +65,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
         Route::apiResource('empresas', EmpresaController::class);
+        Route::apiResource('comunicaciones_disciplinarias', ComunicacionDisciplinariaController::class);
 
         // Calendario de actividades
         Route::apiResource('calendario-actividades', ActividadCalendarioController::class);
