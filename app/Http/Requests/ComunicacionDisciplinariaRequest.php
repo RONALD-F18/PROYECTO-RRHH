@@ -4,54 +4,45 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ComunicacionRequest extends FormRequest
+class ComunicacionDisciplinariaRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        $ismethodPut = $this->isMethod('put') || $this->isMethod('patch');
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
 
         return [
-            'tipo_comunicacion' => $ismethodPut
+            'tipo_comunicacion' => $isUpdate
                 ? 'bail|sometimes|required|string|max:50'
                 : 'bail|required|string|max:50',
-            'fecha_emision' => $ismethodPut
+            'fecha_emision' => $isUpdate
                 ? 'bail|sometimes|required|date'
                 : 'bail|required|date',
-            'fecha_inicio_suspension' => $ismethodPut
+            'fecha_inicio_suspension' => $isUpdate
                 ? 'bail|sometimes|nullable|date'
                 : 'bail|nullable|date',
-            'fecha_fin_suspension' => $ismethodPut
+            'fecha_fin_suspension' => $isUpdate
                 ? 'bail|sometimes|nullable|date'
                 : 'bail|nullable|date',
-            'estado_comunicacion' => $ismethodPut
+            'estado_comunicacion' => $isUpdate
                 ? 'bail|sometimes|required|string|max:20'
                 : 'bail|required|string|max:20',
-            'motivo_comunicacion' => $ismethodPut
+            'motivo_comunicacion' => $isUpdate
                 ? 'bail|sometimes|required|string|max:20'
                 : 'bail|required|string|max:20',
-            'descripcion' => $ismethodPut
+            'descripcion' => $isUpdate
                 ? 'bail|sometimes|nullable|string'
                 : 'bail|nullable|string',
-            'dias_suspension' => $ismethodPut
+            'dias_suspension' => $isUpdate
                 ? 'bail|sometimes|nullable|integer|min:0'
                 : 'bail|nullable|integer|min:0',
-            'cod_empleado' => 'required|exists:empleados,id',
-            'cod_usuario' => 'required|exists:users,id'
+            'cod_empleado' => 'bail|required|exists:empleados,cod_empleado',
+            'cod_usuario' => 'bail|required|exists:usuarios,cod_usuario',
         ];
-
     }
 
     public function messages(): array
@@ -84,7 +75,8 @@ class ComunicacionRequest extends FormRequest
             'cod_empleado.exists' => 'El código del empleado no existe en la base de datos.',
 
             'cod_usuario.required' => 'El código del usuario es obligatorio.',
-            'cod_usuario.exists' => 'El código del usuario no existe en la base de datos.'
+            'cod_usuario.exists' => 'El código del usuario no existe en la base de datos.',
         ];
     }
 }
+

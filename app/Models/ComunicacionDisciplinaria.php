@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Comunicación extends Model
+class ComunicacionDisciplinaria extends Model
 {
     use HasFactory;
 
     protected $table = 'comunicaciones_disciplinarias';
     protected $primaryKey = 'cod_disciplinario';
+
     protected $fillable = [
         'tipo_comunicacion',
         'fecha_emision',
@@ -21,7 +22,7 @@ class Comunicación extends Model
         'descripcion',
         'dias_suspension',
         'cod_empleado',
-        'cod_usuario'
+        'cod_usuario',
     ];
 
     public function empleado()
@@ -31,6 +32,7 @@ class Comunicación extends Model
 
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'cod_usuario', 'id');
+        return $this->belongsTo(Usuario::class, 'cod_usuario', 'cod_usuario');
     }
 }
+
