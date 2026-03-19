@@ -76,6 +76,10 @@ use App\Repositories\Eloquent\CertificacionRepository;
 use App\Repositories\Interfaces\ComunicacionDisciplinariaInterface;
 use App\Repositories\Eloquent\ComunicacionDisciplinariaRepository;
 
+// Módulo Reportes (historial de reportes generados)
+use App\Repositories\Interfaces\ReporteInterface;
+use App\Repositories\Eloquent\ReporteRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -135,6 +139,9 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Comunicaciones Disciplinarias
         $this->app->bind(ComunicacionDisciplinariaInterface::class, ComunicacionDisciplinariaRepository::class);
+
+        // Módulo Reportes
+        $this->app->bind(ReporteInterface::class, ReporteRepository::class);
     }
 
     /**

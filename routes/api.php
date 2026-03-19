@@ -41,6 +41,9 @@ use App\Http\Controllers\ClasificacionEnfermedadController;
 // Comunicaciones disciplinarias
 use App\Http\Controllers\ComunicacionDisciplinariaController;
 
+// Reportes generales RRHH
+use App\Http\Controllers\ReporteController;
+
 Route::prefix('v1')->group(function () {
 
     // ——— Públicas (sin autenticación) ———
@@ -100,6 +103,9 @@ Route::prefix('v1')->group(function () {
         // Certificaciones
         Route::apiResource('certificaciones', CertificacionController::class);
         Route::get('certificaciones/{certificacion}/pdf-laboral', [CertificacionController::class, 'descargarPdfLaboral']);
+
+        // Reportes generales RRHH (PDF)
+        Route::post('reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
 
         // ——— Solo administrador: gestión de usuarios y roles ———
         Route::middleware('role:administrador')->group(function () {

@@ -6,9 +6,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/var/www/html
-      - app_vendor:/var/www/html/vendor
     ports:
-      - "8080:8000"
+      - "8000:8000"
     depends_on:
       - mysql
     networks:
@@ -70,7 +69,6 @@ services:
       - app-network
 
 volumes:
-  app_vendor:
   mysql_data:
   sonarqube_data:
   sonarqube_logs:
