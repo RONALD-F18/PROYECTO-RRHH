@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             EmpresaSeeder::class,
             CalendarioActividadSeeder::class,
             CertificacionSeeder::class,
+            ReporteSeeder::class,
         ]);
     }
 }
