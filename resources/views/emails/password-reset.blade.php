@@ -10,6 +10,10 @@
 
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f3f8; padding: 48px 16px;">
         <tr>
+            <!-- Encabezado accesible para cumplir la regla de tablas de Sonar -->
+            <th scope="col" style="height:0; padding:0; font-size:0; line-height:0;" aria-hidden="true"></th>
+        </tr>
+        <tr>
             <td align="center">
 
                 <!-- Contenedor principal -->

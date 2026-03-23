@@ -59,6 +59,15 @@
     }
     .info-item .value { font-weight: 600; color: #1e293b; }
 
+    .info-label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
     .valores-table {
       width: 100%;
       border-collapse: collapse;
@@ -160,23 +169,24 @@
       <div class="card-body">
         <div class="info-grid">
           <div class="info-item">
-            <label>Empleado</label>
+            <span class="info-label">Empleado</span>
             <span class="value">Carlos Andrés Gomez</span>
           </div>
           <div class="info-item">
-            <label>Contrato</label>
+            <span class="info-label">Contrato</span>
             <span class="value">N° 1 — Desarrollador</span>
           </div>
           <div class="info-item">
-            <label>Período</label>
+            <span class="info-label">Período</span>
             <span class="value">01-jul-2024 → 31-dic-2024</span>
           </div>
           <div class="info-item">
-            <label>Estado actual</label>
+            <span class="info-label">Estado actual</span>
             <span class="estado-badge pendiente">Pendiente</span>
           </div>
         </div>
         <table class="valores-table">
+          <caption>Resumen de valores de prestaciones sociales por concepto</caption>
           <thead>
             <tr>
               <th>Cesantías</th>

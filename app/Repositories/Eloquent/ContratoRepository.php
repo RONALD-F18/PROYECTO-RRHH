@@ -28,6 +28,15 @@ class ContratoRepository implements ContratoInterface
             ->get();
     }
 
+    public function GetContratoVigenteByEmpleadoId($cod_empleado): ?Contrato
+    {
+        return Contrato::with('empleado', 'cargo')
+            ->where('cod_empleado', $cod_empleado)
+            ->whereIn('estado_contrato', ['ACTIVO', 'Vigente'])
+            ->orderBy('fecha_ingreso', 'desc')
+            ->first();
+    }
+
     public function CreateContrato(array $data): Contrato
     {
         $Contrato = Contrato::create($data);
