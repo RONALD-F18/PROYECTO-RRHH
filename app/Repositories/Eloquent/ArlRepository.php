@@ -16,7 +16,7 @@ class ArlRepository implements ArlInterface
     public function getArlById($id)
     {
         $arl = Arl::find($id);
-        return $arl;
+        return !$arl ? null : $arl;
     }
 
     public function createArl(array $data)

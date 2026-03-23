@@ -32,6 +32,13 @@ class DatabaseSeeder extends Seeder
             RiesgoSeeder::class,
             AfiliacionSeeder::class,
             PrestacionSocialPeriodoSeeder::class,
+            TipoIncapacidadSeeder::class,
+            ClasificacionEnfermedadSeeder::class,
+            IncapacidadSeeder::class,
+            EmpresaSeeder::class,
+            CalendarioActividadSeeder::class,
+            CertificacionSeeder::class,
+            ReporteSeeder::class,
         ]);
     }
 }

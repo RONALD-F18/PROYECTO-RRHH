@@ -22,12 +22,27 @@ use App\Http\Controllers\CompensacionController;
 use App\Http\Controllers\EpsController;
 use App\Http\Controllers\PensionController;
 use App\Http\Controllers\RiesgoController;
+use App\Http\Controllers\ActividadCalendarioController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\CertificacionController;
+
 
 // Inasistencias
 use App\Http\Controllers\InasistenciaController;
 
 // Prestaciones sociales
 use App\Http\Controllers\PrestacionSocialController;
+
+// Incapacidades (entidad principal y catálogos por capas)
+use App\Http\Controllers\IncapacidadController;
+use App\Http\Controllers\TipoIncapacidadController;
+use App\Http\Controllers\ClasificacionEnfermedadController;
+
+// Comunicaciones disciplinarias
+use App\Http\Controllers\ComunicacionDisciplinariaController;
+
+// Reportes generales RRHH
+use App\Http\Controllers\ReporteController;
 
 Route::prefix('v1')->group(function () {
 
@@ -52,6 +67,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
         Route::apiResource('inasistencias', InasistenciaController::class);
+        Route::apiResource('empresas', EmpresaController::class);
+        Route::apiResource('comunicaciones_disciplinarias', ComunicacionDisciplinariaController::class);
+
+        // Calendario de actividades
+        Route::apiResource('calendario-actividades', ActividadCalendarioController::class);
 
         // Prestaciones sociales (resumen, por contrato, calcular, gestionar estado, eliminar)
         Route::get('prestaciones-sociales', [PrestacionSocialController::class, 'index']);
@@ -62,6 +82,15 @@ Route::prefix('v1')->group(function () {
         Route::post('prestaciones-sociales/gestionar', [PrestacionSocialController::class, 'gestionar']);
         Route::delete('prestaciones-sociales/{cod_prestacion_social_periodo}', [PrestacionSocialController::class, 'destroy']);
 
+        // Catálogos de incapacidades (cada entidad con su propia capa)
+        Route::apiResource('tipos-incapacidad', TipoIncapacidadController::class);
+        Route::apiResource('clasificaciones-enfermedad', ClasificacionEnfermedadController::class);
+
+        // Incapacidades (gestión y normativa colombiana de pago)
+        Route::get('incapacidades/resumen', [IncapacidadController::class, 'resumen']);
+        Route::get('empleados/{cod_empleado}/incapacidades', [IncapacidadController::class, 'byEmpleado']);
+        Route::apiResource('incapacidades', IncapacidadController::class);
+
         // Catálogos de afiliaciones
         Route::apiResource('eps', EpsController::class);
         Route::apiResource('riesgos', RiesgoController::class);
@@ -70,6 +99,13 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('cesantias', CesantiaController::class);
         Route::apiResource('compensaciones', CompensacionController::class);
         Route::apiResource('afiliaciones', AfiliacionController::class);
+
+        // Certificaciones
+        Route::apiResource('certificaciones', CertificacionController::class);
+        Route::get('certificaciones/{certificacion}/pdf-laboral', [CertificacionController::class, 'descargarPdfLaboral']);
+
+        // Reportes generales RRHH (PDF)
+        Route::post('reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
 
         // ——— Solo administrador: gestión de usuarios y roles ———
         Route::middleware('role:administrador')->group(function () {

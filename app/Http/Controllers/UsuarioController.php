@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Rol;
 use App\Services\UsuarioService;
 use App\Http\Requests\UsuarioRequest;
 use Illuminate\Support\Facades\Gate;
@@ -120,6 +121,23 @@ class UsuarioController extends Controller
                 'success' => false,
                 'message' => 'No tienes permisos para actualizar este usuario'
             ], 403);
+        }
+
+        $auth = request()->user('api');
+        if ($request->filled('cod_rol') && (int) $request->input('cod_rol') !== (int) $usuario->cod_rol) {
+            if ($auth->roles->nombre_rol === 'funcionario' && $usuario->cod_usuario === $auth->cod_usuario) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No puedes modificar tu propio rol.',
+                ], 403);
+            }
+            if (Rol::find((int) $request->input('cod_rol'))?->nombre_rol === 'administrador'
+                && $usuario->roles->nombre_rol !== 'administrador') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede asignar el rol administrador por la API.',
+                ], 403);
+            }
         }
 
         $updated = $this->usuarioService->updateUsuario($id, $request->validated());

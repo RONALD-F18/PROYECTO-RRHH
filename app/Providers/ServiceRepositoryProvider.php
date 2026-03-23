@@ -52,6 +52,34 @@ use App\Repositories\Eloquent\InasistenciaRepository;
 use App\Repositories\Interfaces\PrestacionSocialInterface;
 use App\Repositories\Eloquent\PrestacionSocialRepository;
 
+// Módulo Incapacidades (incapacidad, tipo_incapacidad, clasificacion_enfermedad)
+use App\Repositories\Interfaces\IncapacidadInterface;
+use App\Repositories\Interfaces\TipoIncapacidadInterface;
+use App\Repositories\Interfaces\ClasificacionEnfermedadInterface;
+use App\Repositories\Eloquent\IncapacidadRepository;
+use App\Repositories\Eloquent\TipoIncapacidadRepository;
+use App\Repositories\Eloquent\ClasificacionEnfermedadRepository;
+
+// Módulo Actividades de calendario
+use App\Repositories\Interfaces\ActividadCalendarioInterface;
+use App\Repositories\Eloquent\ActividadCalendarioRepository;
+
+// Módulo Empresa
+use App\Repositories\Interfaces\EmpresaInterface;
+use App\Repositories\Eloquent\EmpresaRepository;
+
+// Módulo Certificaciones
+use App\Repositories\Interfaces\CertificacionInterface;
+use App\Repositories\Eloquent\CertificacionRepository;
+
+// Módulo Comunicaciones Disciplinarias
+use App\Repositories\Interfaces\ComunicacionDisciplinariaInterface;
+use App\Repositories\Eloquent\ComunicacionDisciplinariaRepository;
+
+// Módulo Reportes (historial de reportes generados)
+use App\Repositories\Interfaces\ReporteInterface;
+use App\Repositories\Eloquent\ReporteRepository;
+
 class ServiceRepositoryProvider extends ServiceProvider
 {
     /**
@@ -94,6 +122,26 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Prestaciones Sociales
         $this->app->bind(PrestacionSocialInterface::class, PrestacionSocialRepository::class);
+
+        // Módulo Incapacidades
+        $this->app->bind(IncapacidadInterface::class, IncapacidadRepository::class);
+        $this->app->bind(TipoIncapacidadInterface::class, TipoIncapacidadRepository::class);
+        $this->app->bind(ClasificacionEnfermedadInterface::class, ClasificacionEnfermedadRepository::class);
+
+        // Módulo Actividades de calendario
+        $this->app->bind(ActividadCalendarioInterface::class, ActividadCalendarioRepository::class);
+
+        // Módulo Empresa
+        $this->app->bind(EmpresaInterface::class, EmpresaRepository::class);
+
+        // Módulo Certificaciones
+        $this->app->bind(CertificacionInterface::class, CertificacionRepository::class);
+
+        // Módulo Comunicaciones Disciplinarias
+        $this->app->bind(ComunicacionDisciplinariaInterface::class, ComunicacionDisciplinariaRepository::class);
+
+        // Módulo Reportes
+        $this->app->bind(ReporteInterface::class, ReporteRepository::class);
     }
 
     /**
