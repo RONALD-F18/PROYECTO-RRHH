@@ -34,6 +34,7 @@ class UsuarioService
 
     public function updateUsuario($id, array $data)
     {
+        $data['contrasena_usuario'] = Hash::make($data['contrasena_usuario']);
         return $this->usuarioRepository->updateUsuario($id, $data);
     }
 
