@@ -11,6 +11,15 @@ class UsuarioRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->isMethod('put') || $this->isMethod('patch')) {
+            if ($this->has('contrasena_usuario') && $this->input('contrasena_usuario') === '') {
+                $this->request->remove('contrasena_usuario');
+            }
+        }
+    }
+
     public function rules(): array
     {
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
