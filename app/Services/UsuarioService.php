@@ -34,7 +34,15 @@ class UsuarioService
 
     public function updateUsuario($id, array $data)
     {
-        $data['contrasena_usuario'] = Hash::make($data['contrasena_usuario']);
+        if (array_key_exists('contrasena_usuario', $data)) {
+            $plain = $data['contrasena_usuario'];
+            if ($plain !== null && $plain !== '') {
+                $data['contrasena_usuario'] = Hash::make($plain);
+            } else {
+                unset($data['contrasena_usuario']);
+            }
+        }
+
         return $this->usuarioRepository->updateUsuario($id, $data);
     }
 

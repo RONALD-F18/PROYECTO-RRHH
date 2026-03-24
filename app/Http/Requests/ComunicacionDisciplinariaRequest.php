@@ -40,8 +40,9 @@ class ComunicacionDisciplinariaRequest extends FormRequest
             'dias_suspension' => $isUpdate
                 ? 'bail|sometimes|nullable|integer|min:0'
                 : 'bail|nullable|integer|min:0',
-            'cod_empleado' => 'bail|required|exists:empleados,cod_empleado',
-            'cod_usuario' => 'bail|required|exists:usuarios,cod_usuario',
+            'cod_empleado' => $isUpdate
+                ? 'bail|sometimes|required|integer|exists:empleados,cod_empleado'
+                : 'bail|required|integer|exists:empleados,cod_empleado',
         ];
     }
 
@@ -73,9 +74,6 @@ class ComunicacionDisciplinariaRequest extends FormRequest
 
             'cod_empleado.required' => 'El código del empleado es obligatorio.',
             'cod_empleado.exists' => 'El código del empleado no existe en la base de datos.',
-
-            'cod_usuario.required' => 'El código del usuario es obligatorio.',
-            'cod_usuario.exists' => 'El código del usuario no existe en la base de datos.',
         ];
     }
 }

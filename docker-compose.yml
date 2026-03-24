@@ -5,7 +5,9 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
+      # Código desde Windows (lento); vendor en volumen Linux (mucho más rápido al autoload)
       - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
     ports:
       - "8000:8000"
     depends_on:
@@ -69,6 +71,7 @@ services:
       - app-network
 
 volumes:
+  vendor_data:
   mysql_data:
   sonarqube_data:
   sonarqube_logs:

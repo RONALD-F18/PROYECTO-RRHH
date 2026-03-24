@@ -30,6 +30,8 @@ class ComunicacionDisciplinariaService
 
     public function updateComunicacionDisciplinaria($id, array $data)
     {
+        unset($data['cod_usuario']);
+
         return $this->comunicacionRepository->updateComunicacionDisciplinaria($id, $data);
     }
 
