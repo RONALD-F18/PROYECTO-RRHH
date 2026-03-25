@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Empleado;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EmpleadoRequest extends FormRequest
 {
@@ -11,9 +13,43 @@ class EmpleadoRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
+            return;
+        }
+
+        $cod = $this->route('empleado');
+        if (! $cod || $this->filled('fecha_nac')) {
+            return;
+        }
+
+        $empleado = Empleado::query()->find($cod);
+        if (! $empleado) {
+            return;
+        }
+
+        if (! $this->filled('fecha_nac') && $empleado->fecha_nac) {
+            $fn = $empleado->fecha_nac;
+            $this->merge([
+                'fecha_nac' => $fn instanceof \DateTimeInterface
+                    ? $fn->format('Y-m-d')
+                    : (string) $fn,
+            ]);
+        }
+
+        if (! $this->filled('tipo_documento') && $empleado->tipo_documento) {
+            $this->merge(['tipo_documento' => $empleado->tipo_documento]);
+        }
+    }
+
     public function rules(): array
     {
         $isMethodPut = $this->isMethod('put') || $this->isMethod('patch');
+
+        $docIgnoreId = $this->route('empleado');
+
+        $limite120 = now()->subYears(120)->format('Y-m-d');
 
         return [
             'nombre_empleado' => $isMethodPut
@@ -24,28 +60,54 @@ class EmpleadoRequest extends FormRequest
                 ? 'bail|sometimes|required|string|max:100|regex:/^[\pL\s]+$/u'
                 : 'bail|required|string|max:100|regex:/^[\pL\s]+$/u',
 
-            'doc_iden' => $isMethodPut
-                ? 'bail|sometimes|required|string|max:20|unique:empleados,doc_iden,' . $this->cod_empleado . ',cod_empleado'
-                : 'bail|required|string|max:20|unique:empleados,doc_iden',
-
             'tipo_documento' => $isMethodPut
                 ? 'bail|sometimes|required|string|in:CC,CE,TI,PASAPORTE'
                 : 'bail|required|string|in:CC,CE,TI,PASAPORTE',
 
+            'doc_iden' => [
+                'bail',
+                $isMethodPut ? 'sometimes' : 'required',
+                'string',
+                $isMethodPut
+                    ? Rule::unique('empleados', 'doc_iden')->ignore((string) $docIgnoreId, 'cod_empleado')
+                    : Rule::unique('empleados', 'doc_iden'),
+                Rule::when(
+                    fn () => in_array($this->input('tipo_documento'), ['CC', 'CE', 'TI'], true),
+                    ['regex:/^[0-9]{5,10}$/']
+                ),
+                Rule::when(
+                    fn () => $this->input('tipo_documento') === 'PASAPORTE',
+                    ['regex:/^[A-Za-z0-9\-]{3,50}$/']
+                ),
+            ],
+
             'fecha_nac' => $isMethodPut
-                ? 'bail|sometimes|required|date|before:today'
-                : 'bail|required|date|before:today',
+                ? [
+                    'bail',
+                    'sometimes',
+                    'required',
+                    'date',
+                    'before:today',
+                    'after_or_equal:'.$limite120,
+                ]
+                : [
+                    'bail',
+                    'required',
+                    'date',
+                    'before:today',
+                    'after_or_equal:'.$limite120,
+                ],
 
             'direccion' => $isMethodPut
                 ? 'bail|sometimes|required|string|max:200'
                 : 'bail|required|string|max:200',
 
             'numero_telefono' => $isMethodPut
-                ? 'bail|sometimes|required|string|regex:/^3[0-9]{9}$/|unique:empleados,numero_telefono,' . $this->cod_empleado . ',cod_empleado'
+                ? 'bail|sometimes|required|string|regex:/^3[0-9]{9}$/|unique:empleados,numero_telefono,'.$docIgnoreId.',cod_empleado'
                 : 'bail|required|string|regex:/^3[0-9]{9}$/|unique:empleados,numero_telefono',
 
             'numero_cuenta' => $isMethodPut
-                ? 'bail|sometimes|required|string|regex:/^[0-9]{8,20}$/|unique:empleados,numero_cuenta,' . $this->cod_empleado . ',cod_empleado'
+                ? 'bail|sometimes|required|string|regex:/^[0-9]{8,20}$/|unique:empleados,numero_cuenta,'.$docIgnoreId.',cod_empleado'
                 : 'bail|required|string|regex:/^[0-9]{8,20}$/|unique:empleados,numero_cuenta',
 
             'tipo_cuenta' => $isMethodPut
@@ -53,11 +115,11 @@ class EmpleadoRequest extends FormRequest
                 : 'bail|required|string|in:AHORROS,CORRIENTE',
 
             'cod_banco' => $isMethodPut
-                ? 'bail|sometimes|required|exists:bancos,cod_banco'
-                : 'bail|required|exists:bancos,cod_banco',
+                ? 'bail|nullable|exists:bancos,cod_banco'
+                : 'bail|nullable|exists:bancos,cod_banco',
 
             'estado_emp' => $isMethodPut
-                ? 'bail|sometimes|required|string|in:ACTIVO,INACTIVO'
+                ? 'bail|nullable|string|in:ACTIVO,INACTIVO'
                 : 'bail|nullable|string|in:ACTIVO,INACTIVO',
 
             'discapacidad' => $isMethodPut
@@ -85,8 +147,8 @@ class EmpleadoRequest extends FormRequest
                 : 'bail|required|date|after:fecha_nac|before_or_equal:today',
 
             'descripcion' => $isMethodPut
-                ? 'bail|sometimes|required|string|max:500'
-                : 'bail|required|string|max:500',
+                ? 'bail|sometimes|nullable|string|max:500'
+                : 'bail|nullable|string|max:500',
         ];
     }
 
@@ -101,12 +163,14 @@ class EmpleadoRequest extends FormRequest
 
             'doc_iden.required' => 'El documento de identidad es obligatorio.',
             'doc_iden.unique' => 'Este documento ya está registrado.',
+            'doc_iden.regex' => 'El documento no cumple el formato según el tipo seleccionado (CC/CE/TI: 5 a 10 dígitos; PASAPORTE: 3 a 50 caracteres alfanuméricos y guion).',
 
             'tipo_documento.required' => 'El tipo de documento es obligatorio.',
             'tipo_documento.in' => 'El tipo de documento debe ser CC, CE, TI o PASAPORTE.',
 
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria.',
-            'fecha_nac.before' => 'La fecha de nacimiento no puede ser futura.',
+            'fecha_nac.before' => 'La fecha de nacimiento no puede ser hoy ni una fecha futura.',
+            'fecha_nac.after_or_equal' => 'La fecha de nacimiento no puede indicar una edad mayor a 120 años.',
 
             'direccion.required' => 'La dirección es obligatoria.',
 
@@ -121,10 +185,8 @@ class EmpleadoRequest extends FormRequest
             'tipo_cuenta.required' => 'El tipo de cuenta es obligatorio.',
             'tipo_cuenta.in' => 'El tipo de cuenta debe ser AHORROS o CORRIENTE.',
 
-            'cod_banco.required' => 'El banco es obligatorio.',
             'cod_banco.exists' => 'El banco seleccionado no existe.',
 
-            'estado_emp.required' => 'El estado del empleado es obligatorio.',
             'estado_emp.in' => 'El estado debe ser ACTIVO o INACTIVO.',
 
             'discapacidad.required' => 'El campo discapacidad es obligatorio.',
@@ -145,8 +207,6 @@ class EmpleadoRequest extends FormRequest
             'fec_exp_doc.required' => 'La fecha de expedición del documento es obligatoria.',
             'fec_exp_doc.after' => 'La fecha de expedición debe ser posterior a la fecha de nacimiento.',
             'fec_exp_doc.before_or_equal' => 'La fecha de expedición no puede ser futura.',
-
-            'descripcion.required' => 'La descripción es obligatoria.',
         ];
     }
 }
