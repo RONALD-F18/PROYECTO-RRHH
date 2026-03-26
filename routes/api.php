@@ -103,6 +103,7 @@ Route::prefix('v1')->group(function () {
         // Certificaciones
         Route::apiResource('certificaciones', CertificacionController::class);
         Route::get('certificaciones/{certificacion}/pdf-laboral', [CertificacionController::class, 'descargarPdfLaboral']);
+        Route::get('certificaciones/{certificacion}/pdf-afiliaciones', [CertificacionController::class, 'descargarPdfAfiliaciones']);
 
         // Reportes generales RRHH (PDF)
         Route::post('reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');

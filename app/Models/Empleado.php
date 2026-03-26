@@ -35,4 +35,9 @@ class Empleado extends Model
     {
         return $this->belongsTo(Banco::class, 'cod_banco', 'cod_banco');
     }
+
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_empleado', 'cod_empleado');
+    }
 }

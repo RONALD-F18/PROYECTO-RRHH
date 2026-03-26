@@ -11,8 +11,8 @@ class EmpresaSeeder extends Seeder
     {
         DB::table('empresas')->insert([
             [
-                'nit'                     => '900456789',
-                'dv'                      => '3',
+                'nit'                     => '901347562',
+                'dv'                      => '1',
                 'razon_social'            => 'DISTRIAGRO DG S.A.S.',
                 'nombre_comercial'        => 'Distriagro DG',
                 'tipo_empresa'            => 'Privada',
@@ -25,8 +25,8 @@ class EmpresaSeeder extends Seeder
                 'telefono'                => '6048123456',
                 'correo'                  => 'contacto@distriagrodg.com',
                 'pagina_web'              => 'https://www.distriagrodg.com',
-                'nombre_representante'    => 'Diana Gómez',
-                'documento_representante' => '1032456789',
+                'nombre_representante'    => 'Ronaldo Franco',
+                'documento_representante' => '1129244160',
                 'fecha_creacion'          => now(),
                 'fecha_actualizacion'     => now(),
                 'created_at'              => now(),

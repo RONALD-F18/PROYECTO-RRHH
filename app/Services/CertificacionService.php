@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Afiliacion;
 use App\Models\Certificacion;
 use App\Models\Contrato;
 use App\Repositories\Interfaces\CertificacionInterface;
@@ -64,6 +65,32 @@ class CertificacionService
         ])->setPaper('letter', 'portrait');
 
         return $pdf->download('certificacion_laboral_' . $certificacion->cod_certificacion . '.pdf');
+    }
+
+    public function generarPdfAfiliaciones(Certificacion $certificacion)
+    {
+        $certificacion->load([
+            'empresa',
+            'empleado',
+            'eps',
+            'arl',
+            'fondoPension',
+            'cajaCompensacion',
+            'fondoCesantias',
+        ]);
+
+        $afiliacionRegistro = Afiliacion::where('cod_empleado', $certificacion->cod_empleado)
+            ->orderByDesc('cod_afiliacion')
+            ->first();
+
+        $pdf = Pdf::loadView('certificaciones.afiliaciones', [
+            'certificacion'      => $certificacion,
+            'empresa'            => $certificacion->empresa,
+            'empleado'           => $certificacion->empleado,
+            'afiliacionRegistro' => $afiliacionRegistro,
+        ])->setPaper('letter', 'portrait');
+
+        return $pdf->download('certificacion_afiliaciones_' . $certificacion->cod_certificacion . '.pdf');
     }
 }
 

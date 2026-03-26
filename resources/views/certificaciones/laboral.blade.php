@@ -2,110 +2,277 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Certificación Laboral</title>
+    <title>Certificación laboral</title>
     <style>
-        @page { margin: 30px 32px 40px 32px; }
+        @page { margin: 2.4cm 2.2cm 2.2cm 2.2cm; }
         * { box-sizing: border-box; }
-        body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11px; line-height: 1.7; color:#111827; }
-        .paper { border: 1px solid #d1d5db; border-radius: 10px; padding: 22px 28px 26px 28px; }
-        .hdr { display:flex; justify-content:space-between; border-bottom:1px solid #e5e7eb; padding-bottom:10px; margin-bottom:16px; }
-        .hdr-left h2 { margin:0 0 2px 0; font-size:16px; font-weight:700; }
-        .hdr-left p { margin:0; font-size:9px; color:#6b7280; }
-        .hdr-right { text-align:right; }
-        .hdr-tag { display:inline-block; padding:2px 9px; border-radius:999px; border:1px solid #2563eb; font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#2563eb; margin-bottom:5px; }
-        .hdr-meta { font-size:9px; color:#6b7280; }
-        .fecha { text-align:right; font-size:10px; margin-bottom:18px; }
-        .titulo { text-align:center; text-transform:uppercase; font-size:14px; margin-bottom:18px; letter-spacing:.08em; }
-        .saludo { margin-bottom:10px; font-weight:700; }
-        p { margin:0 0 10px 0; }
-        .negrita { font-weight:600; }
-        .bloque { margin-bottom:10px; text-align:justify; }
-        .nota { font-size:9px; color:#9ca3af; margin-top:12px; text-align:justify; }
-        .firma { margin-top:40px; text-align:left; }
-        .firma p { margin:0; }
-        .firma-nombre { margin-top:4px; font-weight:700; }
-        .firma-linea { width:170px; border-top:1px solid #374151; margin-bottom:6px; }
+        body {
+            font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.55;
+            color: #111;
+            margin: 0;
+            position: relative;
+        }
+        .watermark {
+            position: fixed;
+            top: 42%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 92pt;
+            font-weight: 700;
+            color: #c8c8c8;
+            opacity: 0.12;
+            z-index: 0;
+            letter-spacing: 0.02em;
+            pointer-events: none;
+        }
+        .doc {
+            position: relative;
+            z-index: 1;
+        }
+        .logo-zone {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .logo-text {
+            font-size: 13pt;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0;
+            color: #1a1a1a;
+        }
+        .rule {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 10px 0 22px 0;
+        }
+        .certifica {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.28em;
+            margin: 18px 0 16px 0;
+        }
+        .a-quien {
+            text-align: center;
+            margin: 0 0 16px 0;
+            font-size: 10.5pt;
+        }
+        p { margin: 0 0 12px 0; }
+        .bloque {
+            text-align: justify;
+            text-justify: inter-word;
+        }
+        .destacado {
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .constancia {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .firmas-wrap {
+            width: 100%;
+            margin-top: 32px;
+            border-collapse: collapse;
+        }
+        .firmas-wrap td {
+            width: 50%;
+            vertical-align: top;
+            padding: 0 12px 0 0;
+        }
+        .firmas-wrap td:last-child {
+            padding: 0 0 0 12px;
+        }
+        .firma-linea {
+            border-top: 1px solid #111;
+            width: 100%;
+            max-width: 240px;
+            margin: 36px 0 8px 0;
+        }
+        .firma-nombre {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 9.5pt;
+            margin: 0 0 2px 0;
+        }
+        .firma-cargo {
+            font-size: 9.5pt;
+            margin: 0;
+        }
+        .sello {
+            border: 2px double #333;
+            padding: 14px 12px;
+            text-align: center;
+            min-height: 100px;
+        }
+        .sello-nombre {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 9pt;
+            line-height: 1.3;
+            margin: 0 0 10px 0;
+        }
+        .sello-nit {
+            font-weight: 700;
+            font-size: 10pt;
+            margin: 0;
+        }
+        .footer-rule {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 28px 0 10px 0;
+        }
+        .footer-info {
+            text-align: center;
+            font-size: 8.5pt;
+            color: #222;
+            line-height: 1.45;
+            margin: 0;
+        }
+        .nota-pie {
+            font-size: 7.5pt;
+            color: #555;
+            text-align: justify;
+            margin-top: 14px;
+        }
     </style>
 </head>
 <body>
-<div class="paper">
-    <div class="hdr">
-        <div class="hdr-left">
-            <h2>{{ $empresa->razon_social }}</h2>
-            <p>NIT {{ $empresa->nit }}-{{ $empresa->dv }}</p>
-            <p>{{ $empresa->direccion }} — {{ $empresa->ciudad }} ({{ $empresa->departamento }}) · {{ $empresa->pais }}</p>
-            @if($empresa->telefono)
-                <p>Teléfono: {{ $empresa->telefono }}</p>
-            @endif
-            @if($empresa->correo)
-                <p>Correo: {{ $empresa->correo }}</p>
-            @endif
-        </div>
-        <div class="hdr-right">
-            <div class="hdr-tag">Certificación laboral</div>
-            <div class="hdr-meta">
-                {{ $certificacion->ciudad_emision }},
-                {{ \Carbon\Carbon::parse($certificacion->fecha_emision)->translatedFormat('d \\de F \\de Y') }}
-            </div>
-        </div>
+@php
+    $fechaEmision = \Carbon\Carbon::parse($certificacion->fecha_emision);
+    $fIngreso = $contrato
+        ? \Carbon\Carbon::parse($contrato->fecha_ingreso ?? $contrato->fecha_inicio ?? $fechaEmision)
+        : $fechaEmision;
+    $fFin = ($contrato && !empty($contrato->fecha_fin)) ? \Carbon\Carbon::parse($contrato->fecha_fin) : null;
+    $nitLinea = $empresa->nit . '-' . $empresa->dv;
+    $razonLimpia = rtrim(trim((string) $empresa->razon_social), ". \t");
+    $razonSocialTitulo = mb_strtoupper($razonLimpia, 'UTF-8');
+    $nombreEmpleado = trim(($empleado->nombre_empleado ?? '') . ' ' . ($empleado->apellidos_empleado ?? '')) ?: ($empleado->nombre_completo ?? '');
+    $docEmpleado = trim((string) ($empleado->doc_iden ?? $empleado->documento ?? ''));
+    $nombreCargo = '';
+    if ($contrato && $contrato->cargo) {
+        $nombreCargo = $contrato->cargo->nomb_cargo ?? $contrato->cargo->nombre_cargo ?? '';
+    }
+    $iniciales = collect(preg_split('/\s+/', $razonLimpia))->filter()->map(fn ($p) => mb_substr($p, 0, 1))->take(5)->implode('');
+    $marcaAgua = $iniciales !== '' ? mb_strtoupper($iniciales, 'UTF-8') : mb_strtoupper(mb_substr($razonLimpia, 0, 3), 'UTF-8');
+@endphp
+
+<div class="watermark">{{ $marcaAgua }}</div>
+
+<div class="doc">
+    <div class="logo-zone">
+        <p class="logo-text">{{ $razonSocialTitulo }}</p>
     </div>
+    <hr class="rule">
 
-    <p class="titulo"><span class="negrita">Certificación laboral</span></p>
+    <p class="certifica">Certifica</p>
 
-    <p class="saludo">A QUIEN INTERESE:</p>
+    <p class="a-quien">A quien interese</p>
 
     <p class="bloque">
-        La empresa <span class="negrita">{{ $empresa->razon_social }}</span>, identificada con NIT
-        <span class="negrita">{{ $empresa->nit }}-{{ $empresa->dv }}</span>, por medio de la presente
-        certifica que el(la) señor(a)
-        <span class="negrita">{{ $empleado->nombre_completo ?? '' }}</span>,
+        @if($empresa->nombre_representante)
+            La empresa <span class="destacado">{{ $razonSocialTitulo }}</span>,
+            en nombre de su representante legal
+            <span class="destacado">{{ mb_strtoupper(trim($empresa->nombre_representante), 'UTF-8') }}</span>,
+            identificado(a) con cédula de ciudadanía No.
+            <span class="destacado">{{ $empresa->documento_representante ?? '—' }}</span>,
+            hace constar que el(la) señor(a)
+        @else
+            La empresa <span class="destacado">{{ $razonSocialTitulo }}</span>,
+            identificada con NIT <span class="destacado">{{ $nitLinea }}</span>, por medio de la presente hace constar que el(la) señor(a)
+        @endif
+        <span class="destacado">{{ mb_strtoupper($nombreEmpleado, 'UTF-8') }}</span>,
         identificado(a) con cédula de ciudadanía No.
-        <span class="negrita">{{ $empleado->documento ?? '' }}</span>,
-        labora en nuestra organización desempeñando el cargo de
-        <span class="negrita">{{ $contrato->cargo->nombre_cargo ?? '' }}</span>,
-        vinculado(a) mediante contrato
-        <span class="negrita">{{ $contrato->tipo_contrato ?? 'Término Indefinido' }}</span>
+        <span class="destacado">{{ $docEmpleado }}</span>,
+        labora para esta empresa desempeñando el cargo de
+        <span class="destacado">{{ mb_strtoupper($nombreCargo, 'UTF-8') }}</span>,
+        vinculado(a) mediante contrato de
+        <span class="destacado">{{ $contrato ? ($contrato->tipo_contrato ?? 'término indefinido') : 'término indefinido' }}</span>
         desde el día
-        <span class="negrita">
-            {{ \Carbon\Carbon::parse($contrato->fecha_ingreso ?? $contrato->fecha_inicio)->translatedFormat('d \\de F \\de Y') }}
-        </span>.
+        <span class="destacado">{{ $fIngreso->translatedFormat('d \\de F \\de Y') }}</span>
+        @if($fFin)
+            hasta el día
+            <span class="destacado">{{ $fFin->translatedFormat('d \\de F \\de Y') }}</span>
+        @endif
+        .
     </p>
 
     @if($certificacion->incluye_salario && $certificacion->salario_certificado)
         <p class="bloque">
             Actualmente devenga un salario básico mensual de
-            <span class="negrita">
-                $ {{ number_format($certificacion->salario_certificado, 0, ',', '.') }} M/CTE
+            <span class="destacado">
+                $ {{ number_format($certificacion->salario_certificado, 0, ',', '.') }}
             </span>,
-            más los recargos y prestaciones de ley.
+            más las prestaciones sociales de ley.
         </p>
     @endif
 
     @if($certificacion->descripcion)
         <p class="bloque">
-            Observaciones: {{ $certificacion->descripcion }}
+            {{ $certificacion->descripcion }}
         </p>
     @endif
 
     <p class="bloque">
-        La presente certificación se expide a solicitud del(la) interesado(a) para los fines que
-        estime convenientes y se ajusta a las disposiciones laborales vigentes en la República de Colombia.
+        La presente certificación se expide a solicitud del(la) interesado(a), para los fines que estime conveniente,
+        y se expide de conformidad con la legislación laboral vigente en la República de Colombia.
     </p>
 
-    <p class="nota">
-        Este documento se emite con base en los registros internos de la empresa a la fecha indicada y
-        no constituye constancia de comportamiento financiero ni referencia comercial.
+    <p class="constancia bloque">
+        Para constancia se firma en
+        <strong>{{ $certificacion->ciudad_emision }}</strong>,
+        a los
+        <strong>{{ $fechaEmision->format('d') }}</strong>
+        días del mes de
+        <strong>{{ mb_strtoupper($fechaEmision->translatedFormat('F'), 'UTF-8') }}</strong>
+        del
+        <strong>{{ $fechaEmision->format('Y') }}</strong>.
     </p>
 
-    <div class="firma">
-        <p>Cordialmente,</p>
-        <br><br>
-        <div class="firma-linea"></div>
-        <p class="firma-nombre">{{ $empresa->nombre_representante }}</p>
-        <p>Representante Legal</p>
-        <p>{{ $empresa->razon_social }}</p>
-    </div>
+    <table class="firmas-wrap">
+        <tr>
+            <td>
+                <div class="firma-linea"></div>
+                <p class="firma-nombre">
+                    @if($empresa->nombre_representante)
+                        {{ mb_strtoupper(trim($empresa->nombre_representante), 'UTF-8') }}
+                    @else
+                        &nbsp;
+                    @endif
+                </p>
+                <p class="firma-cargo">Representante Legal</p>
+            </td>
+            <td>
+                <div class="sello">
+                    <p class="sello-nombre">{{ $razonSocialTitulo }}</p>
+                    <p class="sello-nit">NIT. {{ $nitLinea }}</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <hr class="footer-rule">
+    <p class="footer-info">
+        {{ $razonLimpia }}
+        /
+        @php
+            $dir = array_filter([$empresa->direccion, $empresa->ciudad, $empresa->departamento]);
+        @endphp
+        {{ implode(', ', $dir) }}
+        @if($empresa->pais && strtolower((string) $empresa->pais) !== 'colombia')
+            — {{ $empresa->pais }}
+        @endif
+    </p>
+
+    <p class="nota-pie">
+        Documento expedido con base en los registros internos de la empresa a la fecha indicada. No constituye referencia
+        comercial ni certificación de comportamiento financiero.
+    </p>
 </div>
 </body>
 </html>
-

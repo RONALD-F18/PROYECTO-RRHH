@@ -67,19 +67,19 @@ class CertificacionRequest extends FormRequest
                 'bail',
                 'nullable',
                 'integer',
-                'exists:pensiones,cod_pension',
+                'exists:fondo_pensiones,cod_fondo_pensiones',
             ],
             'cod_caja' => [
                 'bail',
                 'nullable',
                 'integer',
-                'exists:compensaciones,cod_caja',
+                'exists:caja_compensaciones,cod_caja_compensacion',
             ],
             'cod_cesantias' => [
                 'bail',
                 'nullable',
                 'integer',
-                'exists:cesantias,cod_cesantia',
+                'exists:fondo_cesantias,cod_fondo_cesantias',
             ],
             'fecha_emision' => [
                 'bail',
