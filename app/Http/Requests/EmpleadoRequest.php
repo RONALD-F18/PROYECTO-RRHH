@@ -106,6 +106,27 @@ class EmpleadoRequest extends FormRequest
                 ? 'bail|sometimes|required|string|regex:/^3[0-9]{9}$/|unique:empleados,numero_telefono,'.$docIgnoreId.',cod_empleado'
                 : 'bail|required|string|regex:/^3[0-9]{9}$/|unique:empleados,numero_telefono',
 
+            'correo_empleado' => $isMethodPut
+                ? [
+                    'bail',
+                    'sometimes',
+                    'required',
+                    'string',
+                    'email:rfc,dns',
+                    'max:120',
+                    'regex:/^(?!.*\.\.)[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+$/',
+                    'unique:empleados,correo_empleado,'.$docIgnoreId.',cod_empleado',
+                ]
+                : [
+                    'bail',
+                    'required',
+                    'string',
+                    'email:rfc,dns',
+                    'max:120',
+                    'regex:/^(?!.*\.\.)[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+$/',
+                    'unique:empleados,correo_empleado',
+                ],
+
             'numero_cuenta' => $isMethodPut
                 ? 'bail|sometimes|required|string|regex:/^[0-9]{8,20}$/|unique:empleados,numero_cuenta,'.$docIgnoreId.',cod_empleado'
                 : 'bail|required|string|regex:/^[0-9]{8,20}$/|unique:empleados,numero_cuenta',
@@ -177,6 +198,11 @@ class EmpleadoRequest extends FormRequest
             'numero_telefono.required' => 'El número de teléfono es obligatorio.',
             'numero_telefono.regex' => 'El teléfono debe ser un celular colombiano válido (10 dígitos).',
             'numero_telefono.unique' => 'Este número ya está registrado.',
+
+            'correo_empleado.required' => 'El correo del empleado es obligatorio.',
+            'correo_empleado.email' => 'El correo del empleado no tiene un formato válido o el dominio no existe.',
+            'correo_empleado.regex' => 'El correo del empleado contiene un dominio inválido (ejemplo no válido: usuario@gmail..com).',
+            'correo_empleado.unique' => 'Este correo del empleado ya está registrado.',
 
             'numero_cuenta.required' => 'El número de cuenta es obligatorio.',
             'numero_cuenta.regex' => 'El número de cuenta debe contener solo números.',

@@ -17,6 +17,7 @@ class Empleado extends Model
     'fecha_nac',
     'direccion',
     'numero_telefono',
+    'correo_empleado',
     'numero_cuenta',
     'tipo_cuenta',
     'cod_banco',

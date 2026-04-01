@@ -37,6 +37,8 @@ class DatabaseSeeder extends Seeder
             IncapacidadSeeder::class,
             EmpresaSeeder::class,
             CalendarioActividadSeeder::class,
+            InasistenciaSeeder::class,
+            ComunicacionDisciplinariaSeeder::class,
             CertificacionSeeder::class,
             ReporteSeeder::class,
         ]);
