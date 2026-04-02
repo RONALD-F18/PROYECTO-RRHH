@@ -10,12 +10,12 @@ class ReporteRepository implements ReporteInterface
 {
     public function getAllReportes(): Collection
     {
-        return Reporte::with(['empleado', 'contrato'])->orderByDesc('fecha_emision')->get();
+        return Reporte::with(['empleado', 'contrato', 'usuario'])->orderByDesc('fecha_emision')->get();
     }
 
     public function getReporteById($cod_reporte): ?Reporte
     {
-        $reporte = Reporte::with(['empleado', 'contrato'])->find($cod_reporte);
+        $reporte = Reporte::with(['empleado', 'contrato', 'usuario'])->find($cod_reporte);
 
         return $reporte ?: null;
     }

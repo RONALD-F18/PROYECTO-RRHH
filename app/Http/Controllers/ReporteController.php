@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ReporteRequest;
+use App\Models\Empresa;
 use App\Services\ReporteService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -24,11 +25,15 @@ class ReporteController extends Controller
         $reporte = $this->reporteService->generarReporte(
             $validated['modulo'],
             $validated['tipo'],
-            $validated['params'] ?? []
+            $validated['params'] ?? [],
+            auth()->user()?->cod_usuario
         );
+
+        $empresa = Empresa::query()->orderBy('id_empresa')->first();
 
         $pdf = Pdf::loadView('reportes.general', [
             'reporte' => $reporte,
+            'empresa' => $empresa,
         ])->setPaper('letter', 'portrait');
 
         $filename = 'reporte-' . $validated['modulo'] . '-' . now()->format('YmdHis') . '.pdf';
