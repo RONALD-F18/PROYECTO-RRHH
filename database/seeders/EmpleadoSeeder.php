@@ -9,8 +9,12 @@ class EmpleadoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Mismo criterio que FuncionarioUserSeeder: cualquier usuario con rol "funcionario"
         $funcionario = DB::table('usuarios')
-            ->where('email_usuario', 'funcionario@empresa.com')
+            ->join('roles', 'usuarios.cod_rol', '=', 'roles.cod_rol')
+            ->where('roles.nombre_rol', 'funcionario')
+            ->orderBy('usuarios.cod_usuario')
+            ->select('usuarios.*')
             ->first();
 
         if (!$funcionario) {

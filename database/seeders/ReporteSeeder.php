@@ -10,7 +10,12 @@ class ReporteSeeder extends Seeder
 {
     public function run(): void
     {
-        $usuario = DB::table('usuarios')->where('email_usuario', 'funcionario@empresa.com')->first()
+        $usuario = DB::table('usuarios')
+            ->join('roles', 'usuarios.cod_rol', '=', 'roles.cod_rol')
+            ->where('roles.nombre_rol', 'funcionario')
+            ->orderBy('usuarios.cod_usuario')
+            ->select('usuarios.*')
+            ->first()
             ?? DB::table('usuarios')->orderBy('cod_usuario')->first();
 
         if (!$usuario) {

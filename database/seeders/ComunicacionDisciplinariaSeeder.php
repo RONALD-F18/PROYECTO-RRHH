@@ -11,7 +11,12 @@ class ComunicacionDisciplinariaSeeder extends Seeder
     {
         $empleado1 = DB::table('empleados')->where('doc_iden', '7954321012')->first();
         $empleado2 = DB::table('empleados')->where('doc_iden', '5287654321')->first();
-        $funcionario = DB::table('usuarios')->where('email_usuario', 'funcionario@empresa.com')->first();
+        $funcionario = DB::table('usuarios')
+            ->join('roles', 'usuarios.cod_rol', '=', 'roles.cod_rol')
+            ->where('roles.nombre_rol', 'funcionario')
+            ->orderBy('usuarios.cod_usuario')
+            ->select('usuarios.*')
+            ->first();
 
         if (!$empleado1 || !$empleado2 || !$funcionario) {
             return;

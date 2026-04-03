@@ -23,6 +23,15 @@ class CertificacionSeeder extends Seeder
         $afiliacion1 = DB::table('afiliaciones')->where('cod_empleado', $empleado1->cod_empleado)->orderByDesc('cod_afiliacion')->first();
         $afiliacion2 = DB::table('afiliaciones')->where('cod_empleado', $empleado2->cod_empleado)->orderByDesc('cod_afiliacion')->first();
 
+        $a1eps = $afiliacion1->cod_eps ?? null;
+        $a1arl = $afiliacion1->cod_arl ?? null;
+        $a1pen = $afiliacion1->cod_fondo_pensiones ?? null;
+        $a1caja = $afiliacion1->cod_caja_compensacion ?? null;
+        $a1ces = $afiliacion1->cod_fondo_cesantias ?? null;
+        $a2eps = $afiliacion2->cod_eps ?? null;
+        $a2pen = $afiliacion2->cod_fondo_pensiones ?? null;
+        $a2ces = $afiliacion2->cod_fondo_cesantias ?? null;
+
         DB::table('certificaciones')->insert([
             [
                 'id_empresa'          => $empresa->id_empresa,
@@ -67,11 +76,11 @@ class CertificacionSeeder extends Seeder
                 'tipo_certificacion'  => 'AFILIACIONES',
                 'incluye_salario'     => false,
                 'salario_certificado' => null,
-                'cod_eps'             => $afiliacion1->cod_eps ?? null,
-                'cod_arl'             => $afiliacion1->cod_arl ?? null,
-                'cod_pension'         => $afiliacion1->cod_fondo_pensiones ?? null,
-                'cod_caja'            => $afiliacion1->cod_caja_compensacion ?? null,
-                'cod_cesantias'       => $afiliacion1->cod_fondo_cesantias ?? null,
+                'cod_eps'             => $a1eps,
+                'cod_arl'             => $a1arl,
+                'cod_pension'         => $a1pen,
+                'cod_caja'            => $a1caja,
+                'cod_cesantias'       => $a1ces,
                 'fecha_emision'       => now()->subDays(8)->toDateString(),
                 'ciudad_emision'      => 'Medellín',
                 'descripcion'         => 'Constancia de afiliaciones integrales del empleado.',
@@ -85,11 +94,11 @@ class CertificacionSeeder extends Seeder
                 'tipo_certificacion'  => 'AFILIACIONES',
                 'incluye_salario'     => false,
                 'salario_certificado' => null,
-                'cod_eps'             => $afiliacion2->cod_eps ?? null,
+                'cod_eps'             => $a2eps,
                 'cod_arl'             => null,
-                'cod_pension'         => $afiliacion2->cod_fondo_pensiones ?? null,
+                'cod_pension'         => $a2pen,
                 'cod_caja'            => null,
-                'cod_cesantias'       => $afiliacion2->cod_fondo_cesantias ?? null,
+                'cod_cesantias'       => $a2ces,
                 'fecha_emision'       => now()->subDays(4)->toDateString(),
                 'ciudad_emision'      => 'Bogotá D.C.',
                 'descripcion'         => 'Constancia parcial de afiliaciones para actualización de expediente.',
