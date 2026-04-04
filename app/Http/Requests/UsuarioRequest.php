@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Usuario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UsuarioRequest extends FormRequest
@@ -9,6 +10,26 @@ class UsuarioRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Con enlace implícito de ruta, {usuario} puede ser el modelo; las reglas unique
+     * necesitan el código numérico (cod_usuario), no el objeto.
+     */
+    protected function codigoUsuarioDesdeRuta(): string
+    {
+        $parametro = $this->route('usuario');
+        if ($parametro instanceof Usuario) {
+            return (string) $parametro->getRouteKey();
+        }
+
+        return (string) $parametro;
+    }
+
+    /** En pruebas automatizadas se evita validación DNS (entornos sin red fiable). */
+    protected function reglasEmail(): string
+    {
+        return app()->environment('testing') ? 'rfc' : 'rfc,dns';
     }
 
     protected function prepareForValidation(): void
@@ -23,18 +44,20 @@ class UsuarioRequest extends FormRequest
     public function rules(): array
     {
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+        $codUsuario = $isUpdate ? $this->codigoUsuarioDesdeRuta() : '';
+        $emailReglas = $this->reglasEmail();
 
         return [
 
             // nombre_usuario
             'nombre_usuario' => $isUpdate
-                ? 'sometimes|bail|string|max:255|unique:usuarios,nombre_usuario,' . $this->route('usuario') . ',cod_usuario'
+                ? 'sometimes|bail|string|max:255|unique:usuarios,nombre_usuario,' . $codUsuario . ',cod_usuario'
                 : 'required|bail|string|max:255|unique:usuarios,nombre_usuario',
 
             // email_usuario
             'email_usuario' => $isUpdate
-                ? 'sometimes|bail|string|email:rfc,dns|max:255|unique:usuarios,email_usuario,' . $this->route('usuario') . ',cod_usuario'
-                : 'required|bail|string|email:rfc,dns|max:255|unique:usuarios,email_usuario',
+                ? 'sometimes|bail|string|email:' . $emailReglas . '|max:255|unique:usuarios,email_usuario,' . $codUsuario . ',cod_usuario'
+                : 'required|bail|string|email:' . $emailReglas . '|max:255|unique:usuarios,email_usuario',
 
             // contrasena_usuario
             'contrasena_usuario' => $isUpdate

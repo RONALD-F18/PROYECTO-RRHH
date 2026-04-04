@@ -36,4 +36,5 @@ RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
+# Pruebas: ./vendor/bin/phpunit o php artisan test (ver .github/workflows/pruebas.yml para CI con MySQL).
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

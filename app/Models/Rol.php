@@ -9,6 +9,11 @@ class Rol extends Model
 {
     use HasFactory;
 
+    protected static function newFactory(): \Database\Factories\RolFactory
+    {
+        return \Database\Factories\RolFactory::new();
+    }
+
     protected $table = 'roles';
     protected $primaryKey = 'cod_rol';
     protected $fillable = [
