@@ -1,7 +1,19 @@
 @php
     use Illuminate\Support\Carbon;
     /** @var array $reporte */
+    /** @var \App\Models\Empresa|null $empresa */
     $fecha = $reporte['fecha'] instanceof Carbon ? $reporte['fecha'] : Carbon::parse($reporte['fecha']);
+    $nitLinea = $empresa
+        ? trim((string) $empresa->nit) . (filled($empresa->dv ?? null) ? '-' . trim((string) $empresa->dv) : '')
+        : '';
+    $dirLinea = $empresa
+        ? trim(implode(', ', array_filter([
+            $empresa->direccion,
+            trim(implode(', ', array_filter([$empresa->ciudad, $empresa->departamento]))),
+            $empresa->pais,
+        ])))
+        : '';
+    $ciudadDoc = $empresa && filled($empresa->ciudad) ? $empresa->ciudad : 'Ciudad';
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -65,13 +77,25 @@
 <div class="paper">
     <div class="p-empresa">
         <div>
-            <div class="pe-nm">Empresa S.A.S.</div>
-            <div class="pe-nit">NIT 900.123.456-7 · Régimen Común</div>
-            <div class="pe-addr">Carrera 10 # 20-30, Medellín, Antioquia — Colombia</div>
+            <div class="pe-nm">{{ $empresa->razon_social ?? 'Empresa' }}</div>
+            <div class="pe-nit">
+                @if($empresa)
+                    NIT {{ $nitLinea }}
+                    @if(filled($empresa->tipo_empresa))
+                        · {{ $empresa->tipo_empresa }}
+                    @endif
+                    @if(filled($empresa->estado_empresa))
+                        · {{ $empresa->estado_empresa }}
+                    @endif
+                @else
+                    NIT —
+                @endif
+            </div>
+            <div class="pe-addr">{{ $dirLinea !== '' ? $dirLinea : '—' }}</div>
         </div>
         <div class="pe-r">
             <div class="sello">Reporte Oficial</div>
-            <div class="pe-fecha">Medellín, {{ $fecha->translatedFormat('d \\de F \\de Y') }}</div>
+            <div class="pe-fecha">{{ $ciudadDoc }}, {{ $fecha->translatedFormat('d \\de F \\de Y') }}</div>
             <div class="pe-ref">REF: {{ $reporte['codigo'] ?? '' }}</div>
         </div>
     </div>
@@ -184,9 +208,20 @@
             </div>
             <div class="firma-bx">
                 <div class="firma-ln"></div>
-                <div class="firma-n">Jefe de Recursos Humanos</div>
-                <div class="firma-c">Área de Gestión Humana</div>
-                <div class="firma-e">Empresa S.A.S. · NIT 900.123.456-7</div>
+                @if($empresa && filled($empresa->nombre_representante))
+                    <div class="firma-n">{{ $empresa->nombre_representante }}</div>
+                    <div class="firma-c">
+                        Representante legal
+                        @if(filled($empresa->documento_representante))
+                            · C.C. {{ $empresa->documento_representante }}
+                        @endif
+                    </div>
+                    <div class="firma-e">{{ $empresa->razon_social }}@if($nitLinea !== '') · NIT {{ $nitLinea }}@endif</div>
+                @else
+                    <div class="firma-n">Jefe de Recursos Humanos</div>
+                    <div class="firma-c">Área de Gestión Humana</div>
+                    <div class="firma-e">{{ $empresa?->razon_social ?? 'Empresa' }}@if($nitLinea !== '') · NIT {{ $nitLinea }}@endif</div>
+                @endif
             </div>
         </div>
     </div>

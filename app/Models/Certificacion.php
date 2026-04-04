@@ -43,5 +43,30 @@ class Certificacion extends Model
     {
         return $this->belongsTo(Contrato::class, 'cod_contrato', 'cod_contrato');
     }
+
+    public function eps()
+    {
+        return $this->belongsTo(Eps::class, 'cod_eps', 'cod_eps');
+    }
+
+    public function arl()
+    {
+        return $this->belongsTo(Arl::class, 'cod_arl', 'cod_arl');
+    }
+
+    public function fondoPension()
+    {
+        return $this->belongsTo(Pension::class, 'cod_pension', 'cod_fondo_pensiones');
+    }
+
+    public function cajaCompensacion()
+    {
+        return $this->belongsTo(Compensacion::class, 'cod_caja', 'cod_caja_compensacion');
+    }
+
+    public function fondoCesantias()
+    {
+        return $this->belongsTo(Cesantia::class, 'cod_cesantias', 'cod_fondo_cesantias');
+    }
 }
 

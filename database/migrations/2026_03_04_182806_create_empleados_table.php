@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('fecha_nac');
             $table->string('direccion', 200);
             $table->string('numero_telefono', 50);
+            $table->string('correo_empleado', 120)->unique();
             $table->string('numero_cuenta', 50)->unique();
             $table->string('tipo_cuenta', 50);
             $table->foreignId('cod_banco')->constrained('bancos', 'cod_banco')->onDelete('cascade'); // Relación con banco

@@ -10,6 +10,11 @@ class Usuario extends Authenticatable implements JWTSubject
 {
     use HasFactory;
 
+    protected static function newFactory(): \Database\Factories\UsuarioFactory
+    {
+        return \Database\Factories\UsuarioFactory::new();
+    }
+
     protected $table = 'usuarios';
     protected $primaryKey = 'cod_usuario';
     protected $fillable = [

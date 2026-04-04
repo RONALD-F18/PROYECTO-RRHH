@@ -9,8 +9,12 @@ class EmpleadoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Mismo criterio que FuncionarioUserSeeder: cualquier usuario con rol "funcionario"
         $funcionario = DB::table('usuarios')
-            ->where('email_usuario', 'funcionario@empresa.com')
+            ->join('roles', 'usuarios.cod_rol', '=', 'roles.cod_rol')
+            ->where('roles.nombre_rol', 'funcionario')
+            ->orderBy('usuarios.cod_usuario')
+            ->select('usuarios.*')
             ->first();
 
         if (!$funcionario) {
@@ -28,6 +32,7 @@ class EmpleadoSeeder extends Seeder
                 'fecha_nac'         => '1990-02-15',
                 'direccion'         => 'Calle 23 #45-67',
                 'numero_telefono'    => '3101234567',
+                'correo_empleado'    => 'carlos.perez@gmail.com',
                 'numero_cuenta'      => '111222333444',
                 'tipo_cuenta'       => 'AHORROS',
                 'cod_banco'         => 1,
@@ -51,6 +56,7 @@ class EmpleadoSeeder extends Seeder
                 'fecha_nac'         => '1988-07-22',
                 'direccion'         => 'Carrera 56 #78-90',
                 'numero_telefono'    => '3209876543',
+                'correo_empleado'    => 'ana.martinez@gmail.com',
                 'numero_cuenta'      => '555666777888',
                 'tipo_cuenta'       => 'CORRIENTE',
                 'cod_banco'         => 2,

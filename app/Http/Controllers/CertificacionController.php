@@ -80,5 +80,12 @@ class CertificacionController extends Controller
 
         return $this->certificacionService->generarPdfLaboral($modelo);
     }
+
+    public function descargarPdfAfiliaciones($certificacion)
+    {
+        $modelo = Certificacion::findOrFail($certificacion);
+
+        return $this->certificacionService->generarPdfAfiliaciones($modelo);
+    }
 }
 

@@ -19,8 +19,16 @@ class AuthRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    /** En testing se omite comprobación DNS (entornos sin red fiable). */
+    protected function reglasEmail(): string
+    {
+        return app()->environment('testing') ? 'rfc' : 'rfc,dns';
+    }
+
     public function rules(): array
     {
+        $reglasEmail = $this->reglasEmail();
+
         return [
 
             // Validación del campo email
@@ -36,8 +44,7 @@ class AuthRequest extends FormRequest
                 // Debe ser texto
                 'string',
 
-                // Valida formato de correo usando RFC y DNS (más estricto)
-                'email:rfc,dns',
+                'email:'.$reglasEmail,
 
                 // Longitud máxima permitida
                 'max:255',

@@ -17,6 +17,7 @@ class Empleado extends Model
     'fecha_nac',
     'direccion',
     'numero_telefono',
+    'correo_empleado',
     'numero_cuenta',
     'tipo_cuenta',
     'cod_banco',
@@ -34,5 +35,10 @@ class Empleado extends Model
     public function bancos()
     {
         return $this->belongsTo(Banco::class, 'cod_banco', 'cod_banco');
+    }
+
+    public function afiliaciones()
+    {
+        return $this->hasMany(Afiliacion::class, 'cod_empleado', 'cod_empleado');
     }
 }

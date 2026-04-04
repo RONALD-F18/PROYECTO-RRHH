@@ -35,7 +35,7 @@ class ReporteService
      * Punto de entrada genérico. Devuelve un arreglo listo
      * para ser consumido por la vista PDF.
      */
-    public function generarReporte(string $modulo, string $tipo, array $params = []): array
+    public function generarReporte(string $modulo, string $tipo, array $params = [], ?int $codUsuario = null): array
     {
         $payload = match ($modulo) {
             'empleados'       => $this->reporteEmpleados($tipo, $params),
@@ -49,14 +49,12 @@ class ReporteService
         };
 
         $reporte = $this->reporteRepository->createReporte([
-            'cod_empleado'       => $params['cod_empleado'] ?? null,
-            'cod_contrato'       => $params['cod_contrato'] ?? null,
-            'tipo_certificacion' => $params['tipo_certificacion'] ?? null,
-            'fecha_emision'      => now()->toDateString(),
-            'descripcion'        => $params['descripcion'] ?? null,
-            'modulo'             => $modulo,
-            'tipo_reporte'       => $tipo,
-            'estado'             => 'Generado',
+            'cod_usuario'   => $codUsuario,
+            'fecha_emision' => now()->toDateString(),
+            'descripcion'   => $params['descripcion'] ?? null,
+            'modulo'        => $modulo,
+            'tipo_reporte'  => $tipo,
+            'estado'        => 'Generado',
         ]);
 
         $payload['codigo'] = 'RPT-' . str_pad((string) $reporte->cod_reporte, 6, '0', STR_PAD_LEFT);

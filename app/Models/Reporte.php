@@ -15,6 +15,7 @@ class Reporte extends Model
     protected $fillable = [
         'cod_empleado',
         'cod_contrato',
+        'cod_usuario',
         'tipo_certificacion',
         'fecha_emision',
         'descripcion',
@@ -35,6 +36,11 @@ class Reporte extends Model
     public function contrato()
     {
         return $this->belongsTo(Contrato::class, 'cod_contrato', 'cod_contrato');
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'cod_usuario', 'cod_usuario');
     }
 }
 

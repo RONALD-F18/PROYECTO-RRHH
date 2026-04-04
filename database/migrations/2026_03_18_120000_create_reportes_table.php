@@ -16,6 +16,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('cod_empleado')->nullable();
             $table->unsignedBigInteger('cod_contrato')->nullable();
+            $table->unsignedBigInteger('cod_usuario')->nullable();
 
             $table->string('tipo_certificacion', 30)->nullable();
 
@@ -31,6 +32,7 @@ return new class extends Migration
 
             $table->foreign('cod_empleado')->references('cod_empleado')->on('empleados');
             $table->foreign('cod_contrato')->references('cod_contrato')->on('contrato');
+            $table->foreign('cod_usuario')->references('cod_usuario')->on('usuarios');
         });
     }
 
