@@ -4,13 +4,27 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Reporte;
+use Illuminate\Support\Facades\DB;
 
 class ReporteSeeder extends Seeder
 {
     public function run(): void
     {
+        $usuario = DB::table('usuarios')
+            ->join('roles', 'usuarios.cod_rol', '=', 'roles.cod_rol')
+            ->where('roles.nombre_rol', 'funcionario')
+            ->orderBy('usuarios.cod_usuario')
+            ->select('usuarios.*')
+            ->first()
+            ?? DB::table('usuarios')->orderBy('cod_usuario')->first();
+
+        if (!$usuario) {
+            return;
+        }
+
         // Reporte general de empleados
         Reporte::create([
+            'cod_usuario' => $usuario->cod_usuario,
             'cod_empleado' => null,
             'cod_contrato' => null,
             'tipo_certificacion' => 'Resumen general empleados',
@@ -23,6 +37,7 @@ class ReporteSeeder extends Seeder
 
         // Reporte general de contratos
         Reporte::create([
+            'cod_usuario' => $usuario->cod_usuario,
             'cod_empleado' => null,
             'cod_contrato' => null,
             'tipo_certificacion' => 'Resumen general contratos',
@@ -35,6 +50,7 @@ class ReporteSeeder extends Seeder
 
         // Reporte general de prestaciones sociales
         Reporte::create([
+            'cod_usuario' => $usuario->cod_usuario,
             'cod_empleado' => null,
             'cod_contrato' => null,
             'tipo_certificacion' => 'Resumen prestaciones sociales',
@@ -47,6 +63,7 @@ class ReporteSeeder extends Seeder
 
         // Reporte general de incapacidades
         Reporte::create([
+            'cod_usuario' => $usuario->cod_usuario,
             'cod_empleado' => null,
             'cod_contrato' => null,
             'tipo_certificacion' => 'Resumen incapacidades',
@@ -59,6 +76,7 @@ class ReporteSeeder extends Seeder
 
         // Reporte general disciplinario
         Reporte::create([
+            'cod_usuario' => $usuario->cod_usuario,
             'cod_empleado' => null,
             'cod_contrato' => null,
             'tipo_certificacion' => 'Resumen disciplinario',

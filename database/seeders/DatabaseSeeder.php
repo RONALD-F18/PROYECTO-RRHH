@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\ModelUser;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,6 +36,8 @@ class DatabaseSeeder extends Seeder
             IncapacidadSeeder::class,
             EmpresaSeeder::class,
             CalendarioActividadSeeder::class,
+            InasistenciaSeeder::class,
+            ComunicacionDisciplinariaSeeder::class,
             CertificacionSeeder::class,
             ReporteSeeder::class,
         ]);

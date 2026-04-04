@@ -19,11 +19,11 @@ class FuncionarioUserSeeder extends Seeder
         }
 
         DB::table('usuarios')->updateOrInsert(
-            ['email_usuario' => 'funcionario@empresa.com'],
+            ['email_usuario' => 'ronalcrack222@gmail.com'],
             [
                 'cod_rol'            => $rolFuncionario->cod_rol,
-                'nombre_usuario'     => 'funcionario1',
-                'contrasena_usuario' => Hash::make('Funcionario123'),
+                'nombre_usuario'     => 'Funcionario1',
+                'contrasena_usuario' => Hash::make('Ronald1234'),
                 'estado_usuario'     => true,
                 'fecha_registro'     => now(),
                 'created_at'         => now(),

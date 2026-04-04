@@ -1,0 +1,59 @@
+# Ejecuta la suite PHPUnit (Laravel) en cada push y pull request.
+# Si SQLite en memoria falla por alguna migración, definir DB_* de MySQL como variables de entorno del job.
+
+name: Pruebas PHPUnit
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  pruebas-php:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: rrhh_pruebas
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, pdo_mysql, bcmath, gd, intl, zip
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Entorno Laravel
+        run: |
+          cp -n .env.example .env || true
+          php artisan key:generate --force
+
+      - name: Ejecutar pruebas (MySQL, coherente con producción)
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: rrhh_pruebas
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          JWT_SECRET: pruebas-jwt-secreto-minimo-32-caracteres-xx
+        run: php artisan test --no-interaction
