@@ -19,7 +19,15 @@ class ContratoRequest extends FormRequest
         }
 
         if ($this->has('estado_contrato') && is_string($this->estado_contrato)) {
-            $this->merge(['estado_contrato' => strtoupper($this->estado_contrato)]);
+            $v = strtoupper(trim($this->estado_contrato));
+            $sinonimosActivo = ['ACTIVO', 'VIGENTE', 'VIGENCIA'];
+            $sinonimosFinalizado = ['FINALIZADO', 'INACTIVO', 'TERMINADO', 'TERMINADA', 'SUSPENDIDO', 'CANCELADO'];
+            if (in_array($v, $sinonimosActivo, true)) {
+                $v = 'ACTIVO';
+            } elseif (in_array($v, $sinonimosFinalizado, true)) {
+                $v = 'FINALIZADO';
+            }
+            $this->merge(['estado_contrato' => $v]);
         }
 
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
@@ -96,8 +104,8 @@ class ContratoRequest extends FormRequest
                 : 'bail|nullable|string',
 
             'estado_contrato' => $ismethodPut
-                ? 'bail|sometimes|required|string|in:ACTIVO,INACTIVO'
-                : 'bail|required|string|in:ACTIVO,INACTIVO',
+                ? 'bail|sometimes|required|string|in:ACTIVO,FINALIZADO'
+                : 'bail|required|string|in:ACTIVO,FINALIZADO',
         ];
     }
 
@@ -142,7 +150,7 @@ class ContratoRequest extends FormRequest
             'auxilio_transporte.boolean' => 'El auxilio de transporte debe ser un valor booleano.',
 
             'estado_contrato.required' => 'El estado del contrato es obligatorio.',
-            'estado_contrato.in' => 'El estado del contrato debe ser ACTIVO o INACTIVO.',
+            'estado_contrato.in' => 'El estado del contrato debe ser ACTIVO o FINALIZADO.',
         ];
     }
 }

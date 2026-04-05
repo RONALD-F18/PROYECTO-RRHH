@@ -30,6 +30,14 @@ class EmpleadoRequest extends FormRequest
             $this->merge($trimmed);
         }
 
+        if ($this->has('estado_emp') && is_string($this->estado_emp)) {
+            $estado = strtoupper(trim($this->estado_emp));
+            if ($estado === 'INACTIVO') {
+                $estado = 'RETIRADO';
+            }
+            $this->merge(['estado_emp' => $estado]);
+        }
+
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
             return;
         }
@@ -199,8 +207,8 @@ class EmpleadoRequest extends FormRequest
                 : 'bail|nullable|exists:bancos,cod_banco',
 
             'estado_emp' => $isMethodPut
-                ? 'bail|nullable|string|in:ACTIVO,INACTIVO'
-                : 'bail|nullable|string|in:ACTIVO,INACTIVO',
+                ? 'bail|nullable|string|in:ACTIVO,RETIRADO'
+                : 'bail|nullable|string|in:ACTIVO,RETIRADO',
 
             'discapacidad' => $isMethodPut
                 ? 'bail|sometimes|required|string|in:NINGUNA,VISUAL,AUDITIVA,MOTORA,COGNITIVA'
@@ -277,7 +285,7 @@ class EmpleadoRequest extends FormRequest
 
             'cod_banco.exists' => 'El banco seleccionado no existe.',
 
-            'estado_emp.in' => 'El estado debe ser ACTIVO o INACTIVO.',
+            'estado_emp.in' => 'El estado debe ser ACTIVO o RETIRADO.',
 
             'discapacidad.required' => 'El campo discapacidad es obligatorio.',
             'discapacidad.in' => 'La discapacidad debe ser NINGUNA, VISUAL, AUDITIVA, MOTORA o COGNITIVA.',
