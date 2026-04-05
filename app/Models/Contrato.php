@@ -4,6 +4,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * estado_contrato canónico (API / front): ACTIVO | FINALIZADO.
+ */
 class Contrato extends Model
 {
     use HasFactory;

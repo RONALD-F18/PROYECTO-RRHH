@@ -43,7 +43,7 @@ class PrestacionSocialService
         return $this->prestacionSocialRepository->getTotalesPendientes();
     }
 
-    /** Contratos con estado ACTIVO o Vigente (para listarlos en la pantalla principal). */
+    /** Contratos en estado ACTIVO (vigentes; equivalente front “Vigente”). */
     public function getContratosVigentesParaLiquidacion()
     {
         return $this->contratoRepository->GetContratosVigentes();
@@ -81,8 +81,8 @@ class PrestacionSocialService
             throw new \InvalidArgumentException('Contrato no encontrado.');
         }
 
-        if (!in_array($contrato->estado_contrato, ['ACTIVO', 'Vigente'])) {
-            throw new \InvalidArgumentException('Solo se pueden calcular prestaciones para contratos vigentes.');
+        if ($contrato->estado_contrato !== 'ACTIVO') {
+            throw new \InvalidArgumentException('Solo se pueden calcular prestaciones para contratos en estado ACTIVO.');
         }
 
         // Tope: quien gane >= 2 SMMLV no recibe auxilio de transporte

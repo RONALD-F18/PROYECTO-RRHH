@@ -3,6 +3,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/** estado_emp canónico (API / front): ACTIVO | RETIRADO */
 class Empleado extends Model
 {
     use HasFactory;
