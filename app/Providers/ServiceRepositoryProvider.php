@@ -78,7 +78,13 @@ use App\Repositories\Eloquent\ComunicacionDisciplinariaRepository;
 
 // Módulo Reportes (historial de reportes generados)
 use App\Repositories\Interfaces\ReporteInterface;
+use App\Repositories\Interfaces\ReporteRegistroInterface;
 use App\Repositories\Eloquent\ReporteRepository;
+use App\Repositories\Eloquent\ReporteRegistroRepository;
+
+// Módulo Chat (asistente RRHH)
+use App\Repositories\Interfaces\ChatInterface;
+use App\Repositories\Eloquent\ChatRepository;
 
 class ServiceRepositoryProvider extends ServiceProvider
 {
@@ -142,6 +148,10 @@ class ServiceRepositoryProvider extends ServiceProvider
 
         // Módulo Reportes
         $this->app->bind(ReporteInterface::class, ReporteRepository::class);
+        $this->app->bind(ReporteRegistroInterface::class, ReporteRegistroRepository::class);
+
+        // Módulo Chat
+        $this->app->bind(ChatInterface::class, ChatRepository::class);
     }
 
     /**

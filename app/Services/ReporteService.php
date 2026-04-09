@@ -70,10 +70,9 @@ class ReporteService
         // Por ahora solo se expone un tipo general.
         $empleados = $this->empleadoRepository->GetAllEmpleados();
 
-        $total       = $empleados->count();
-        $activos     = $empleados->where('estado_emp', 'ACTIVO')->count();
-        $inactivos   = $empleados->where('estado_emp', 'INACTIVO')->count();
-        $suspendidos = $empleados->where('estado_emp', 'SUSPENDIDO')->count();
+        $total     = $empleados->count();
+        $activos   = $empleados->where('estado_emp', 'ACTIVO')->count();
+        $retirados = $empleados->where('estado_emp', 'RETIRADO')->count();
 
         $porEstado = $empleados
             ->groupBy('estado_emp')
@@ -92,15 +91,14 @@ class ReporteService
             'codigo'     => $this->buildCodigo('EMP'),
             'fecha'      => Carbon::now(),
             'parametros' => [
-                'Estados incluidos' => 'ACTIVO / INACTIVO / SUSPENDIDO',
+                'Estados canónicos' => 'ACTIVO / RETIRADO (INACTIVO u otros legados migrados a RETIRADO)',
             ],
             'titulo'     => 'Resumen General de Empleados',
             'subtitulo'  => 'Totales por estado y principales profesiones',
             'totales'    => [
                 ['label' => 'Total empleados', 'valor' => $total, 'detalle' => 'registros'],
                 ['label' => 'Activos', 'valor' => $activos, 'detalle' => 'empleados'],
-                ['label' => 'Inactivos', 'valor' => $inactivos, 'detalle' => 'empleados'],
-                ['label' => 'Suspendidos', 'valor' => $suspendidos, 'detalle' => 'empleados'],
+                ['label' => 'Retirados', 'valor' => $retirados, 'detalle' => 'empleados'],
             ],
             'secciones'  => [
                 [
@@ -129,9 +127,8 @@ class ReporteService
         $contratos = $this->contratoRepository->GetAllContratos();
 
         $total       = $contratos->count();
-        $vigentes    = $contratos->whereIn('estado_contrato', ['ACTIVO', 'Vigente'])->count();
-        $terminados  = $contratos->whereIn('estado_contrato', ['TERMINADO', 'Terminado'])->count();
-        $suspendidos = $contratos->where('estado_contrato', 'SUSPENDIDO')->count();
+        $activos     = $contratos->where('estado_contrato', 'ACTIVO')->count();
+        $finalizados = $contratos->where('estado_contrato', 'FINALIZADO')->count();
 
         $porEstado = $contratos
             ->groupBy('estado_contrato')
@@ -148,14 +145,15 @@ class ReporteService
             'tipo'       => 'Resumen general de contratos',
             'codigo'     => $this->buildCodigo('CON'),
             'fecha'      => Carbon::now(),
-            'parametros' => [],
+            'parametros' => [
+                'Estados canónicos' => 'ACTIVO / FINALIZADO (legados migrados)',
+            ],
             'titulo'     => 'Resumen General de Contratos',
             'subtitulo'  => 'Totales por estado y tipo de contrato',
             'totales'    => [
                 ['label' => 'Total contratos', 'valor' => $total, 'detalle' => 'registros'],
-                ['label' => 'Vigentes', 'valor' => $vigentes, 'detalle' => 'contratos'],
-                ['label' => 'Terminados', 'valor' => $terminados, 'detalle' => 'contratos'],
-                ['label' => 'Suspendidos', 'valor' => $suspendidos, 'detalle' => 'contratos'],
+                ['label' => 'Activos', 'valor' => $activos, 'detalle' => 'contratos'],
+                ['label' => 'Finalizados', 'valor' => $finalizados, 'detalle' => 'contratos'],
             ],
             'secciones'  => [
                 [

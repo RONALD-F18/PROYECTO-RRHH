@@ -47,6 +47,16 @@ class Usuario extends Authenticatable implements JWTSubject
         return $this->hasMany(CalendarioActividad::class, 'cod_usuario', 'cod_usuario');
     }
 
+    public function chatConversaciones()
+    {
+        return $this->hasMany(ChatConversacion::class, 'cod_usuario', 'cod_usuario');
+    }
+
+    public function reporteRegistros()
+    {
+        return $this->hasMany(ReporteRegistro::class, 'cod_usuario', 'cod_usuario');
+    }
+
     // 🔥 MUY IMPORTANTE (le dice a Laravel cuál es el password real)
 public function getAuthPassword()
 {

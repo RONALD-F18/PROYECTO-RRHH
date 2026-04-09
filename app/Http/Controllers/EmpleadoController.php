@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\EmpleadoRequest;
+use App\Models\Contrato;
 use App\Services\EmpleadoService;
 
 
@@ -50,6 +50,19 @@ class EmpleadoController extends Controller
     public function update(EmpleadoRequest $request, $id)
     {
         $data = $request->validated();
+
+        if (($data['estado_emp'] ?? null) === 'RETIRADO') {
+            $tieneContratoActivo = Contrato::query()
+                ->where('cod_empleado', $id)
+                ->where('estado_contrato', 'ACTIVO')
+                ->exists();
+            if ($tieneContratoActivo) {
+                return response()->json([
+                    'message' => 'No se puede marcar como RETIRADO mientras tenga un contrato en estado ACTIVO. Finalice el contrato primero.',
+                ], 422);
+            }
+        }
+
         $Empleado = $this->empleadoService->updateEmpleado($id, $data);
         if (!$Empleado) {
             return response()->json(['message' => 'Empleado no encontrado'], 404);

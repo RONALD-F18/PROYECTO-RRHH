@@ -4,6 +4,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * estado_contrato canónico (API / front): ACTIVO | FINALIZADO.
+ * fecha_ingreso y cod_empleado deben mantenerse coherentes: el front y las incapacidades
+ * usan contratos ACTIVO (o, si no hay, el ingreso más temprano) como referencia mínima de fechas.
+ */
 class Contrato extends Model
 {
     use HasFactory;

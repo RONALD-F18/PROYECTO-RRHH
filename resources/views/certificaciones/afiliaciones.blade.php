@@ -255,7 +255,7 @@
     </p>
 
     <p class="nota-pie">
-        Las fechas de afiliación provienen del expediente de afiliaciones del empleado cuando la entidad coincide con la consignada en esta certificación; en caso contrario se indica guión (—). Verifique los datos con cada entidad para trámites formales.
+        Las fechas de afiliación provienen del registro de afiliaciones del empleado en el sistema cuando la entidad coincide con la consignada en esta certificación; en caso contrario se indica guión (—). Verifique los datos con cada entidad para trámites formales.
     </p>
 </div>
 </body>
