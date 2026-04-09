@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             PrestacionSocialPeriodoSeeder::class,
             TipoIncapacidadSeeder::class,
             ClasificacionEnfermedadSeeder::class,
+            CatalogosColombiaSuplementoSeeder::class,
             IncapacidadSeeder::class,
             EmpresaSeeder::class,
             CalendarioActividadSeeder::class,
@@ -40,6 +41,7 @@ class DatabaseSeeder extends Seeder
             ComunicacionDisciplinariaSeeder::class,
             CertificacionSeeder::class,
             ReporteSeeder::class,
+            ChatEntradaAyudaSeeder::class,
         ]);
     }
 }

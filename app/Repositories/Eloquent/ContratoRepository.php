@@ -23,8 +23,8 @@ class ContratoRepository implements ContratoInterface
     public function GetContratosVigentes(): Collection
     {
         return Contrato::with('empleado', 'cargo')
-            ->whereIn('estado_contrato', ['ACTIVO', 'Vigente'])
-            ->orderBy('fecha_ingreso', 'desc')
+            ->where('estado_contrato', 'ACTIVO')
+            ->orderByDesc('fecha_ingreso')
             ->get();
     }
 
@@ -32,8 +32,8 @@ class ContratoRepository implements ContratoInterface
     {
         return Contrato::with('empleado', 'cargo')
             ->where('cod_empleado', $cod_empleado)
-            ->whereIn('estado_contrato', ['ACTIVO', 'Vigente'])
-            ->orderBy('fecha_ingreso', 'desc')
+            ->where('estado_contrato', 'ACTIVO')
+            ->orderByDesc('fecha_ingreso')
             ->first();
     }
 

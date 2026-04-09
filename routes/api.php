@@ -43,6 +43,8 @@ use App\Http\Controllers\ComunicacionDisciplinariaController;
 
 // Reportes generales RRHH
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ReporteRegistroController;
+use App\Http\Controllers\ChatController;
 
 Route::prefix('v1')->group(function () {
 
@@ -105,8 +107,19 @@ Route::prefix('v1')->group(function () {
         Route::get('certificaciones/{certificacion}/pdf-laboral', [CertificacionController::class, 'descargarPdfLaboral']);
         Route::get('certificaciones/{certificacion}/pdf-afiliaciones', [CertificacionController::class, 'descargarPdfAfiliaciones']);
 
-        // Reportes generales RRHH (PDF)
+        // Reportes generales RRHH (PDF + historial en React)
+        Route::get('reportes/registros', [ReporteRegistroController::class, 'index'])->name('reportes.registros.index');
+        Route::post('reportes/registros', [ReporteRegistroController::class, 'store'])->name('reportes.registros.store');
+        Route::delete('reportes/registros/{reporte_registro}', [ReporteRegistroController::class, 'destroy'])->name('reportes.registros.destroy');
         Route::post('reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
+
+        // Asistente (búho) — conversaciones y diccionario RRHH
+        Route::get('chat/ayuda', [ChatController::class, 'ayuda']);
+        Route::get('chat/conversaciones', [ChatController::class, 'indexConversaciones']);
+        Route::post('chat/conversaciones', [ChatController::class, 'storeConversacion']);
+        Route::delete('chat/conversaciones/{cod_chat_conversacion}', [ChatController::class, 'destroyConversacion']);
+        Route::get('chat/conversaciones/{cod_chat_conversacion}/mensajes', [ChatController::class, 'indexMensajes']);
+        Route::post('chat/conversaciones/{cod_chat_conversacion}/mensajes', [ChatController::class, 'storeMensaje']);
 
         // ——— Solo administrador: gestión de usuarios y roles ———
         Route::middleware('role:administrador')->group(function () {
