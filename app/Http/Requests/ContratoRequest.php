@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Contrato;
+use App\Models\Empleado;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ContratoRequest extends FormRequest
@@ -107,6 +108,80 @@ class ContratoRequest extends FormRequest
                 ? 'bail|sometimes|required|string|in:ACTIVO,FINALIZADO'
                 : 'bail|required|string|in:ACTIVO,FINALIZADO',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->hasAny(['cod_empleado', 'fecha_ingreso'])) {
+                return;
+            }
+
+            $fechaIngresoRaw = $this->input('fecha_ingreso');
+            if (! $fechaIngresoRaw) {
+                return;
+            }
+
+            $empleado = $this->resolverEmpleadoRelacionado();
+            if (! $empleado || ! $empleado->fecha_nac) {
+                return;
+            }
+
+            $fechaIngreso = \Carbon\Carbon::parse($fechaIngresoRaw)->startOfDay();
+            $fechaNacimiento = \Carbon\Carbon::parse($empleado->fecha_nac)->startOfDay();
+
+            if ($fechaIngreso->lt($fechaNacimiento)) {
+                $validator->errors()->add(
+                    'fecha_ingreso',
+                    'La fecha de ingreso no puede ser anterior a la fecha de nacimiento.'
+                );
+                return;
+            }
+
+            $fechaMinimaLaboral = $fechaNacimiento->copy()->addYears(15);
+            if ($fechaIngreso->lt($fechaMinimaLaboral)) {
+                $validator->errors()->add(
+                    'fecha_ingreso',
+                    'La fecha de ingreso debe ser igual o posterior a cumplir 15 años.'
+                );
+                return;
+            }
+
+            // Regla interna adicional: con CC el empleado debe ser mayor de edad.
+            if (strtoupper((string) $empleado->tipo_documento) === 'CC') {
+                $fechaMinimaMayoria = $fechaNacimiento->copy()->addYears(18);
+                if ($fechaIngreso->lt($fechaMinimaMayoria)) {
+                    $validator->errors()->add(
+                        'fecha_ingreso',
+                        'Para tipo de documento CC, la fecha de ingreso debe ser igual o posterior a cumplir 18 años.'
+                    );
+                }
+            }
+        });
+    }
+
+    private function resolverEmpleadoRelacionado(): ?Empleado
+    {
+        $codEmpleado = $this->input('cod_empleado');
+        if ($codEmpleado) {
+            return Empleado::query()->find($codEmpleado);
+        }
+
+        if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
+            return null;
+        }
+
+        $codContrato = $this->route('contrato');
+        if (! $codContrato) {
+            return null;
+        }
+
+        $contrato = Contrato::query()->find($codContrato);
+        if (! $contrato) {
+            return null;
+        }
+
+        return Empleado::query()->find($contrato->cod_empleado);
     }
 
     public function messages(): array
