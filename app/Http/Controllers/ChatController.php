@@ -90,10 +90,13 @@ class ChatController extends Controller
     public function storeMensaje(ChatMensajeStoreRequest $request, $cod_chat_conversacion)
     {
         $usuario = auth('api')->user();
+        $datos = $request->validated();
+        $moduloAyuda = $this->chatService->normalizarModuloFiltro($datos['modulo_ayuda'] ?? null);
         $resultado = $this->chatService->enviarMensaje(
             (int) $usuario->cod_usuario,
             (int) $cod_chat_conversacion,
-            $request->validated()['contenido']
+            $datos['contenido'],
+            $moduloAyuda
         );
 
         if (! $resultado) {

@@ -15,6 +15,7 @@ class ChatMensajeStoreRequest extends FormRequest
     {
         return [
             'contenido' => 'required|string|min:1|max:8000',
+            'modulo_ayuda' => ['nullable', 'string', 'regex:/^[a-z0-9_]{1,50}$/'],
         ];
     }
 
