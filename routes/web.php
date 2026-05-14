@@ -14,5 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'message' => 'API RRHH en linea',
+        'health' => url('/up'),
+        'api' => url('/api/v1'),
+    ]);
 });

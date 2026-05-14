@@ -23,18 +23,25 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     intl \
     opcache
 
-# instalar composer
 RUN curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 WORKDIR /var/www/html
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
+COPY . .
+
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+COPY docker-entrypoint.sh /usr/local/bin/
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+EXPOSE 8000
 
-# Pruebas: ./vendor/bin/phpunit o php artisan test (ver .github/workflows/pruebas.yml para CI con MySQL).
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
