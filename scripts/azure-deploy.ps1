@@ -141,6 +141,16 @@ if ([string]::IsNullOrWhiteSpace($mailFromName)) {
     $mailFromName = "Sistema RRHH"
 }
 
+$frontendUrl = $envValues["FRONTEND_URL"]
+if ([string]::IsNullOrWhiteSpace($frontendUrl)) {
+    $frontendUrl = "https://ronald-f18.github.io"
+}
+
+$sanctumDomains = $envValues["SANCTUM_STATEFUL_DOMAINS"]
+if ([string]::IsNullOrWhiteSpace($sanctumDomains)) {
+    $sanctumDomains = "localhost:5173,127.0.0.1:5173,ronald-f18.github.io"
+}
+
 Write-Host "4/5 Actualizando imagen y variables de entorno..."
 az containerapp update `
     --name $ContainerApp `
@@ -177,7 +187,9 @@ az containerapp update `
         "CACHE_STORE=$($envValues['CACHE_STORE'])" `
         "QUEUE_CONNECTION=$($envValues['QUEUE_CONNECTION'])" `
         "LOG_CHANNEL=$($envValues['LOG_CHANNEL'])" `
-        "LOG_LEVEL=$($envValues['LOG_LEVEL'])"
+        "LOG_LEVEL=$($envValues['LOG_LEVEL'])" `
+        "FRONTEND_URL=$frontendUrl" `
+        "SANCTUM_STATEFUL_DOMAINS=$sanctumDomains"
 Assert-CommandSuccess "az containerapp update"
 
 Write-Host "5/5 Estado del despliegue..."

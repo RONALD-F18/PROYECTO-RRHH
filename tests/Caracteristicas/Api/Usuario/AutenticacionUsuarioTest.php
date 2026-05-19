@@ -8,7 +8,7 @@ use Tests\Soporte\Concerns\ConCabeceraAutenticacionJwt;
 use Tests\TestCase;
 
 /**
- * Login y logout del flujo de usuarios (JWT + cookie en login).
+ * Login y logout (Sanctum Bearer en JSON).
  */
 class AutenticacionUsuarioTest extends TestCase
 {
@@ -31,9 +31,8 @@ class AutenticacionUsuarioTest extends TestCase
         $respuesta->assertOk()
             ->assertJsonPath('message', 'Acceso Exitoso')
             ->assertJsonPath('role', $usuario->roles->nombre_rol)
-            ->assertJsonStructure(['user']);
-
-        $respuesta->assertCookie('token');
+            ->assertJsonPath('token_type', 'Bearer')
+            ->assertJsonStructure(['user', 'access_token', 'token']);
     }
 
     public function test_login_falla_con_contrasena_incorrecta(): void

@@ -1,30 +1,30 @@
 <?php
 
+$frontendOrigin = env('FRONTEND_URL') ? [rtrim(env('FRONTEND_URL'), '/')] : [];
+
 return [
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-    ],
+    'allowed_origins' => array_values(array_unique(array_merge(
+        [
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'https://ronald-f18.github.io',
+        ],
+        $frontendOrigin
+    ))),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => [
-        'Content-Type',
-        'X-Requested-With',
-        'Authorization',
-        'Accept',
-        'Origin',
-    ],
+    'allowed_headers' => ['*'],
 
     'exposed_headers' => [],
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];

@@ -15,4 +15,6 @@ if [ ! -f vendor/autoload.php ]; then
   composer install --no-interaction --prefer-dist --optimize-autoloader
 fi
 
+php artisan migrate --force --no-interaction 2>/dev/null || true
+
 exec "$@"

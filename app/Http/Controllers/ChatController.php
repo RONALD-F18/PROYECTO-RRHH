@@ -34,11 +34,11 @@ class ChatController extends Controller
     }
 
     /**
-     * Conversaciones del usuario autenticado (JWT).
+     * Conversaciones del usuario autenticado (Bearer Sanctum).
      */
     public function indexConversaciones()
     {
-        $usuario = auth('api')->user();
+        $usuario = auth()->user();
         $data = $this->chatService->listarConversaciones((int) $usuario->cod_usuario);
 
         return response()->json([
@@ -49,7 +49,7 @@ class ChatController extends Controller
 
     public function storeConversacion(ChatConversacionStoreRequest $request)
     {
-        $usuario = auth('api')->user();
+        $usuario = auth()->user();
         $datos = $request->validated();
         $conv = $this->chatService->crearConversacion(
             (int) $usuario->cod_usuario,
@@ -64,7 +64,7 @@ class ChatController extends Controller
 
     public function destroyConversacion($cod_chat_conversacion)
     {
-        $usuario = auth('api')->user();
+        $usuario = auth()->user();
         $ok = $this->chatService->eliminarConversacion((int) $cod_chat_conversacion, (int) $usuario->cod_usuario);
         if (! $ok) {
             return response()->json(['message' => 'Conversación no encontrada'], 404);
@@ -75,7 +75,7 @@ class ChatController extends Controller
 
     public function indexMensajes($cod_chat_conversacion)
     {
-        $usuario = auth('api')->user();
+        $usuario = auth()->user();
         $conv = $this->chatService->obtenerConversacionDeUsuario((int) $cod_chat_conversacion, (int) $usuario->cod_usuario);
         if (! $conv) {
             return response()->json(['message' => 'Conversación no encontrada'], 404);
@@ -89,7 +89,7 @@ class ChatController extends Controller
 
     public function storeMensaje(ChatMensajeStoreRequest $request, $cod_chat_conversacion)
     {
-        $usuario = auth('api')->user();
+        $usuario = auth()->user();
         $datos = $request->validated();
         $moduloAyuda = $this->chatService->normalizarModuloFiltro($datos['modulo_ayuda'] ?? null);
         $resultado = $this->chatService->enviarMensaje(

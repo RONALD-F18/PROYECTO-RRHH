@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\AuthService;
 use App\Http\Requests\AuthRequest as LoginRequest;
+use App\Services\AuthService;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    protected $authService;
+    protected AuthService $authService;
 
- 
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
@@ -19,47 +18,39 @@ class AuthController extends Controller
     public function login(LoginRequest $login)
     {
         $credentials = $login->only('email_usuario', 'contrasena_usuario');
-    
+
         try {
             $result = $this->authService->login(credentials: $credentials);
-            
             $user = $result['user'];
 
-            $token = $result['token'];
-        
             return response()->json([
                 'message' => 'Acceso Exitoso',
-
                 'role' => $user->roles->nombre_rol ?? null,
-
-                'user' => $user
-            ])
-
-            ->cookie('token', $token, 60 * 24, null, null, false, true);
-
+                'user' => $user,
+                'access_token' => $result['access_token'],
+                'token' => $result['token'],
+                'token_type' => $result['token_type'],
+            ]);
         } catch (\Exception $e) {
-
             $invalidCredentials = 'Credenciales inválidas';
-
-
             $statusCode = $e->getMessage() === $invalidCredentials ? 401 : 500;
-
             $errorMessage = $e->getMessage() === $invalidCredentials
                 ? $invalidCredentials
                 : 'Token no generado, error interno del servidor';
 
             return response()->json([
-                'error' => $errorMessage
+                'error' => $errorMessage,
             ], $statusCode);
         }
     }
-    
-    
-		public function logout()
+
+    public function logout(Request $request)
     {
+        $request->user()?->currentAccessToken()?->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Sesión cerrada correctamente'
-        ], 200)->cookie('token', '', -1);
+            'message' => 'Sesión cerrada correctamente',
+        ], 200);
     }
 }

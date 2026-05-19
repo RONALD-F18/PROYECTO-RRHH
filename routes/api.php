@@ -54,7 +54,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
     // ——— Requieren autenticación (administrador y funcionario) ———
-    Route::middleware('auth.api')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
 
