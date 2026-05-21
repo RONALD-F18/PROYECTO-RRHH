@@ -45,6 +45,7 @@ use App\Http\Controllers\ComunicacionDisciplinariaController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ReporteRegistroController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DashboardController;
 
 Route::prefix('v1')->group(function () {
 
@@ -57,6 +58,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
 
         // Cualquier autenticado: ver y editar su propio perfil (policy valida que sea el mismo usuario)
         Route::get('usuarios/{usuario}', [UsuarioController::class, 'show'])->name('usuarios.show');

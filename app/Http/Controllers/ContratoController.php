@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Concerns\ResolvesPagination;
 use App\Services\ContratoService;
 use App\Http\Requests\ContratoRequest;
 
 class ContratoController extends Controller
 {
+    use ResolvesPagination;
     protected $contratoService;
 
     public function __construct(ContratoService $contratoService)
@@ -17,11 +18,15 @@ class ContratoController extends Controller
 
     public function index()
     {
-        $data = $this->contratoService->getAllContratos();
+        $resultado = $this->contratoService->paginateContratos(
+            $this->resolvePage(),
+            $this->resolvePerPage()
+        );
 
         return response()->json([
             'message' => 'Contratos listados exitosamente',
-            'data' => $data
+            'data' => $resultado['data'],
+            'meta' => $resultado['meta'],
         ], 200);
     }
 

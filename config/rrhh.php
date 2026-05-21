@@ -16,4 +16,12 @@ return [
     */
     'empleado_edad_minima' => (int) env('EMPLEADO_EDAD_MINIMA', 15),
 
+    /*
+    | Enlace del botón en el correo (restablecer con token). NO usar /recuperar-contrasena:
+    | esa ruta es solo para pedir el enlace (forgot-password). Usar la ruta del formulario
+    | "cambiar contraseña" del React (token y email se añaden en PasswordResetService).
+    */
+    'password_reset_url' => env('PASSWORD_RESET_URL'),
+    'password_reset_path' => env('PASSWORD_RESET_PATH', '/PROYECTO-REACT-RRHH/#/cambiar-contrasena'),
+
 ];

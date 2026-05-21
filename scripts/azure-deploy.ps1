@@ -151,6 +151,11 @@ if ([string]::IsNullOrWhiteSpace($sanctumDomains)) {
     $sanctumDomains = "localhost:5173,127.0.0.1:5173,ronald-f18.github.io"
 }
 
+$passwordResetUrl = $envValues["PASSWORD_RESET_URL"]
+if ([string]::IsNullOrWhiteSpace($passwordResetUrl)) {
+    $passwordResetUrl = "$frontendUrl/PROYECTO-REACT-RRHH/#/cambiar-contrasena"
+}
+
 Write-Host "4/5 Actualizando imagen y variables de entorno..."
 az containerapp update `
     --name $ContainerApp `
@@ -189,6 +194,7 @@ az containerapp update `
         "LOG_CHANNEL=$($envValues['LOG_CHANNEL'])" `
         "LOG_LEVEL=$($envValues['LOG_LEVEL'])" `
         "FRONTEND_URL=$frontendUrl" `
+        "PASSWORD_RESET_URL=$passwordResetUrl" `
         "SANCTUM_STATEFUL_DOMAINS=$sanctumDomains"
 Assert-CommandSuccess "az containerapp update"
 
