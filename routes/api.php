@@ -47,6 +47,17 @@ use App\Http\Controllers\ReporteRegistroController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 
+Route::get('/debug-db', function () {
+
+    return [
+        'host' => env('DB_HOST'),
+        'port' => env('DB_PORT'),
+        'ssl' => env('MYSQL_ATTR_SSL_CA'),
+        'file_exists' => file_exists(base_path('ca.pem')),
+        'path' => base_path('ca.pem'),
+    ];
+});
+
 Route::prefix('v1')->group(function () {
 
     Route::get('/benchmark', function () {
