@@ -60,6 +60,32 @@ Route::get('/debug-db', function () {
 
 Route::prefix('v1')->group(function () {
 
+    Route::get('/pdo-raw', function () {
+
+    try {
+
+        $pdo = new PDO(
+            "mysql:host=" . env('DB_HOST') . ";port=" . env('DB_PORT') . ";dbname=" . env('DB_DATABASE'),
+            env('DB_USERNAME'),
+            env('DB_PASSWORD'),
+            [
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ]
+        );
+
+        return response()->json([
+            'success' => true
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+        ]);
+    }
+});
 
     Route::get('/socket-test', function () {
 
