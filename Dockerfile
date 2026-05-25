@@ -53,13 +53,12 @@ RUN composer install \
 # Permisos Laravel
 RUN chmod -R 775 storage bootstrap/cache
 
-# Limpiar y regenerar cache
-RUN php artisan optimize:clear \
-    && php artisan config:cache \
+# Cache SOLO de config y rutas
+RUN php artisan config:cache \
     && php artisan route:cache
 
 # Puerto Render
 EXPOSE 10000
 
-# Arranque producción
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+# Arranque
+CMD php artisan serve --host=0.0.0.0 --port=8000
