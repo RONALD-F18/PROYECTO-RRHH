@@ -54,8 +54,7 @@ RUN composer install \
 RUN chmod -R 775 storage bootstrap/cache
 
 # Cache SOLO de config y rutas
-RUN php artisan config:cache \
-    && php artisan route:cache
+RUN php artisan route:cache
 
 # Puerto Render
 EXPOSE 10000
