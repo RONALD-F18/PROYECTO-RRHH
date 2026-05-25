@@ -1,25 +1,65 @@
 FROM php:8.2-cli
 
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# dependencias
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    git curl unzip libzip-dev zip \
-    && docker-php-ext-install pdo pdo_mysql zip
+    git \
+    curl \
+    unzip \
+    zip \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libonig-dev \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# instalar composer
+# Instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    zip \
+    exif \
+    bcmath \
+    intl \
+    gd \
+    opcache
+
+# Configuración OPcache
+RUN echo "opcache.enable=1" > /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=8" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=4000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
+
+# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# copiar proyecto
+# Copiar proyecto
 COPY . .
 
-# instalar dependencias
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Instalar dependencias Laravel
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction
 
-# permisos
+# Permisos Laravel
 RUN chmod -R 775 storage bootstrap/cache
 
-# puerto
-EXPOSE 8000
+# Limpiar y regenerar cache
+RUN php artisan optimize:clear \
+    && php artisan config:cache \
+    && php artisan route:cache
 
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Puerto Render
+EXPOSE 10000
+
+# Arranque producción
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
