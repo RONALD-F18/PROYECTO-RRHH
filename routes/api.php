@@ -60,6 +60,43 @@ Route::get('/debug-db', function () {
 
 Route::prefix('v1')->group(function () {
 
+
+    Route::get('/socket-test', function () {
+
+    $host = env('DB_HOST');
+    $port = env('DB_PORT');
+
+    $start = microtime(true);
+
+    try {
+
+        $fp = fsockopen($host, $port, $errno, $errstr, 10);
+
+        if (!$fp) {
+
+            return response()->json([
+                'success' => false,
+                'errno' => $errno,
+                'error' => $errstr,
+                'time' => microtime(true) - $start,
+            ]);
+        }
+
+        fclose($fp);
+
+        return response()->json([
+            'success' => true,
+            'time' => microtime(true) - $start,
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'exception' => $e->getMessage(),
+        ]);
+    }
+});
+    
     Route::get('/benchmark', function () {
         return response()->json([
             'ok' => true,
