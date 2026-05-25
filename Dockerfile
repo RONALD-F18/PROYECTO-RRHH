@@ -1,46 +1,25 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
-RUN apk add --no-cache \
-    curl \
-    libzip-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    icu-dev \
-    linux-headers \
-    $PHPIZE_DEPS
+WORKDIR /var/www
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip \
-    intl \
-    opcache
+# dependencias
+RUN apt-get update && apt-get install -y \
+    git curl unzip libzip-dev zip \
+    && docker-php-ext-install pdo pdo_mysql zip
 
-RUN echo "opcache.enable=1" > /usr/local/etc/php/conf.d/opcache.ini
-
+# instalar composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/html
-
+# copiar proyecto
 COPY . .
 
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction
+# instalar dependencias
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# permisos
 RUN chmod -R 775 storage bootstrap/cache
 
-RUN php artisan config:cache \
-    && php artisan route:cache
-
-EXPOSE 10000
+# puerto
+EXPOSE 8000
 
 CMD php artisan serve --host=0.0.0.0 --port=8000
