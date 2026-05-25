@@ -49,6 +49,14 @@ use App\Http\Controllers\DashboardController;
 
 Route::prefix('v1')->group(function () {
 
+    Route::get('/benchmark', function () {
+        return response()->json([
+            'ok' => true,
+            'time' => microtime(true)
+        ]);
+    });
+
+    
     // ——— Públicas (sin autenticación) ———
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
