@@ -1,40 +1,63 @@
-FROM php:8.2-fpm-alpine
-
-RUN apk add --no-cache \
-    curl \
-    libzip-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    icu-dev \
-    linux-headers \
-    $PHPIZE_DEPS
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip \
-    intl \
-    opcache
-
-# instalar composer
-RUN curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/composer
+FROM php:8.2-cli
 
 WORKDIR /var/www/html
 
-COPY docker-entrypoint.sh /usr/local/bin/
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    unzip \
+    zip \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libonig-dev \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh
+# Instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    zip \
+    exif \
+    bcmath \
+    intl \
+    gd \
+    opcache
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# Configuración OPcache
+RUN echo "opcache.enable=1" > /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=8" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=4000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
-# Pruebas: ./vendor/bin/phpunit o php artisan test (ver .github/workflows/pruebas.yml para CI con MySQL).
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copiar proyecto
+COPY . .
+
+# Instalar dependencias Laravel
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction
+
+# Permisos Laravel
+RUN chmod -R 775 storage bootstrap/cache
+
+# Cache SOLO de config y rutas
+RUN php artisan route:cache
+
+# Puerto Render
+EXPOSE 10000
+
+# Arranque
+CMD php artisan serve --host=0.0.0.0 --port=8000

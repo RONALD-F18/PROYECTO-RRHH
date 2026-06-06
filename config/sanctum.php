@@ -33,7 +33,8 @@ return [
     |
     */
 
-    'guard' => ['web'],
+    // SPA en GitHub Pages: solo Bearer token, sin sesión/cookies cross-origin.
+    'guard' => [],
 
     /*
     |--------------------------------------------------------------------------

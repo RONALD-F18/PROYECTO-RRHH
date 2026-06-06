@@ -20,8 +20,7 @@ class ChatService
 {
     private const ESTADO_CACHE_SEGUNDOS = 21600; // 6 horas
     private const ESTADO_MAX_TEMAS = 8;
-    private const SUGERENCIAS_MAX = 5;
-    private const CHIPS_POR_TEMA_SECUNDARIOS_MAX = 3;
+    private const CHIPS_POR_TEMA_SECUNDARIOS_MAX = 2;
 
     /** Palabras que no deben mostrarse como chips (UI / técnicas / vacías). El motor de match sigue usando todas las claves del seed. */
     private const KEYWORDS_META_CHIP = [
@@ -32,6 +31,11 @@ class ChatService
     public function __construct(
         protected ChatInterface $chatRepository
     ) {}
+
+    private function limiteSugerenciasRelacionadas(): int
+    {
+        return max(3, min(6, (int) config('chatbot.sugerencias_relacionadas_max', 4)));
+    }
 
     public function listarConversaciones(int $codUsuario): Collection
     {
@@ -57,6 +61,8 @@ class ChatService
     /**
      * Diccionario para el cliente: entradas, sugerencias, catálogo de módulos (menú raíz),
      * contexto y acciones cuando hay `?modulo=`, y temas agrupados con chips por pregunta.
+     * Si `modulo` es un área operativa (≠ `general`), `data` / `sugerencias_rapidas` / `temas_agrupados`
+     * se limitan a ese módulo para que la UI no mezcle ayuda transversal con el flujo del funcionario.
      *
      * @return array{
      *     entradas: list<array<string, mixed>>,
@@ -70,8 +76,9 @@ class ChatService
     public function diccionarioAyudaParaCliente(?string $modulo = null): array
     {
         $conteos = $this->chatRepository->conteoEntradasAyudaActivasPorModulo();
-        $entradas = $this->chatRepository->listarEntradasAyudaActivas($modulo);
-        $entradasArr = $entradas->map(function (ChatEntradaAyuda $e) {
+        $entradasMotor = $this->chatRepository->listarEntradasAyudaActivas($modulo);
+        $entradasVista = $this->entradasSoloModuloActivoParaAyudaUi($entradasMotor, $modulo);
+        $entradasArr = $entradasVista->map(function (ChatEntradaAyuda $e) {
             $row = $e->toArray();
             $row['palabras_sugeridas'] = $this->parsePalabrasClave($e->palabras_clave);
 
@@ -80,12 +87,29 @@ class ChatService
 
         return [
             'entradas' => $entradasArr,
-            'sugerencias_rapidas' => $this->construirSugerenciasRapidas($entradas),
+            'sugerencias_rapidas' => $this->construirSugerenciasRapidas($entradasVista),
             'catalogo_modulos' => $modulo === null ? $this->construirCatalogoModulos($conteos) : [],
             'modulo_contexto' => $this->construirModuloContexto($modulo),
             'acciones_navegacion' => $this->construirAccionesNavegacion($modulo),
-            'temas_agrupados' => $modulo !== null ? $this->construirTemasAgrupados($entradas) : [],
+            'temas_agrupados' => $modulo !== null ? $this->construirTemasAgrupados($entradasVista) : [],
         ];
+    }
+
+    /**
+     * Con `?modulo=empleados` (cualquier área distinta de `general`) el listado del GET /ayuda debe mostrar
+     * **solo** temas de ese módulo: si se mezclan filas `general`, la UI llena la pantalla con “Qué es
+     * Talent Sphere” y tapa el chat. El motor de POST sigue usando el diccionario ampliado en repositorio.
+     *
+     * @param  Collection<int, ChatEntradaAyuda>  $entradas
+     * @return Collection<int, ChatEntradaAyuda>
+     */
+    private function entradasSoloModuloActivoParaAyudaUi(Collection $entradas, ?string $modulo): Collection
+    {
+        if ($modulo === null || $modulo === '' || $modulo === 'general') {
+            return $entradas;
+        }
+
+        return $entradas->filter(fn (ChatEntradaAyuda $e) => $e->modulo === $modulo)->values();
     }
 
     public function crearConversacion(int $codUsuario, ?string $titulo = null): \App\Models\ChatConversacion
@@ -122,25 +146,33 @@ class ChatService
      *     mensaje_usuario: ChatMensaje,
      *     mensaje_asistente: ChatMensaje,
      *     contexto: array{modulo_actual: string|null, tema_principal: string|null, cod_entrada_ayuda_match: int|null},
-     *     sugerencias_relacionadas: list<array{etiqueta: string, enviar: string, cod_entrada_ayuda: int, modulo: string|null, prioridad: int}>
+     *     sugerencias_relacionadas: list<array{etiqueta: string, enviar: string, cod_entrada_ayuda: int, modulo: string|null, prioridad: int}>,
+     *     presentacion_chat: array{registro_estilo: string, sugerencias_relacionadas: array{ubicacion: string, alineacion: string, columna: string, nota: string}}
      * }|null
+     *
+     * @param  string|null  $moduloAyudaCliente  Misma clave que `GET /chat/ayuda?modulo=` (snake_case); acota contexto y estado.
      */
-    public function enviarMensaje(int $codUsuario, int $codChatConversacion, string $contenido): ?array
+    public function enviarMensaje(int $codUsuario, int $codChatConversacion, string $contenido, ?string $moduloAyudaCliente = null): ?array
     {
         $conv = $this->chatRepository->obtenerConversacionDeUsuario($codChatConversacion, $codUsuario);
         if (! $conv) {
             return null;
         }
 
-        return DB::transaction(function () use ($conv, $contenido) {
+        return DB::transaction(function () use ($conv, $contenido, $moduloAyudaCliente) {
             $estadoPrevio = $this->obtenerEstadoConversacion((int) $conv->cod_chat_conversacion);
+            $estadoParaResolver = $estadoPrevio;
+            if ($moduloAyudaCliente !== null) {
+                $estadoParaResolver['ultimo_modulo'] = $moduloAyudaCliente;
+            }
+
             $mensajeUsuario = $this->chatRepository->crearMensaje([
                 'cod_chat_conversacion' => $conv->cod_chat_conversacion,
                 'rol' => ChatMensaje::ROL_USUARIO,
                 'contenido' => $contenido,
             ]);
 
-            $resolucion = $this->resolverRespuestaAsistente((int) $conv->cod_chat_conversacion, $contenido, $estadoPrevio);
+            $resolucion = $this->resolverRespuestaAsistente((int) $conv->cod_chat_conversacion, $contenido, $estadoParaResolver);
 
             $mensajeAsistente = $this->chatRepository->crearMensaje([
                 'cod_chat_conversacion' => $conv->cod_chat_conversacion,
@@ -157,8 +189,27 @@ class ChatService
                 'mensaje_asistente' => $mensajeAsistente,
                 'contexto' => $resolucion['contexto'],
                 'sugerencias_relacionadas' => $resolucion['sugerencias_relacionadas'],
+                'presentacion_chat' => $this->metaPresentacionChat(),
             ];
         });
+    }
+
+    /**
+     * Guía de UX para el cliente (burbujas tipo mensajería y dónde colocar chips de seguimiento).
+     *
+     * @return array{registro_estilo: string, sugerencias_relacionadas: array{ubicacion: string, alineacion: string, columna: string, nota: string}}
+     */
+    private function metaPresentacionChat(): array
+    {
+        return [
+            'registro_estilo' => 'mensajeria',
+            'sugerencias_relacionadas' => [
+                'ubicacion' => 'debajo_ultimo_mensaje_usuario',
+                'alineacion' => 'inicio',
+                'columna' => 'asistente_izquierda',
+                'nota' => 'Burbujas cronológicas usuario/bot. Chips debajo de la última burbuja del bot, alineados a la izquierda, scroll horizontal si desbordan.',
+            ],
+        ];
     }
 
     /**
@@ -197,7 +248,7 @@ class ChatService
         }
 
         if (config('chatbot.openai_enabled') && filled(config('chatbot.openai_key'))) {
-            $openai = $this->intentarOpenAi($codChatConversacion, $entradas);
+            $openai = $this->intentarOpenAi($codChatConversacion, $entradas, $estadoPrevio['ultimo_modulo']);
             if ($openai !== null) {
                 return [
                     'texto' => $openai,
@@ -543,7 +594,8 @@ class ChatService
     }
 
     /**
-     * Chips para UI: sin duplicar el título como primer botón ni mostrar términos meta (chips, sugerencias…).
+     * Chips por tema: solo frases cortas derivadas de palabras clave (estilo “Prima de servicios”),
+     * sin repetir el título del bloque. `enviar` = clave tal cual para el POST.
      *
      * @return list<array{etiqueta: string, enviar: string}>
      */
@@ -551,19 +603,29 @@ class ChatService
     {
         $raw = $this->parsePalabrasClave($e->palabras_clave);
         $filtradas = $this->filtrarKeywordsParaChips($raw);
+        $max = 1 + self::CHIPS_POR_TEMA_SECUNDARIOS_MAX;
         $preguntas = [];
 
         if ($filtradas !== []) {
-            $principal = $filtradas[0];
-            $preguntas[] = [
-                'etiqueta' => 'Abrir esta guía',
-                'enviar' => $principal,
-            ];
-            foreach (array_slice($filtradas, 1, self::CHIPS_POR_TEMA_SECUNDARIOS_MAX) as $kw) {
-                $preguntas[] = [
-                    'etiqueta' => $this->etiquetaLegibleParaChip($kw),
-                    'enviar' => $kw,
-                ];
+            $etiquetasNorm = [];
+            foreach ($filtradas as $kw) {
+                if (count($preguntas) >= $max) {
+                    break;
+                }
+                $kw = trim($kw);
+                if ($kw === '') {
+                    continue;
+                }
+                if (strlen($kw) < 6 || str_word_count($kw) < 2) {
+                    continue;
+                }
+                $etiqueta = $this->etiquetaChipCortaDesdePalabraClave($kw);
+                $claveEt = Str::lower(Str::ascii($etiqueta));
+                if ($claveEt === '' || isset($etiquetasNorm[$claveEt])) {
+                    continue;
+                }
+                $etiquetasNorm[$claveEt] = true;
+                $preguntas[] = ['etiqueta' => $etiqueta, 'enviar' => $kw];
             }
 
             return $preguntas;
@@ -573,11 +635,19 @@ class ChatService
         if ($enviar === null) {
             return [];
         }
+        if (strlen($enviar) < 6 || str_word_count($enviar) < 2) {
+            return [];
+        }
 
         return [[
-            'etiqueta' => 'Abrir esta guía',
+            'etiqueta' => $this->etiquetaChipCortaDesdePalabraClave($enviar),
             'enviar' => $enviar,
         ]];
+    }
+
+    private function etiquetaChipCortaDesdePalabraClave(string $kw): string
+    {
+        return Str::limit($this->etiquetaLegibleParaChip($kw), 44, '…');
     }
 
     /**
@@ -634,8 +704,8 @@ class ChatService
     }
 
     /**
-     * Sugerencias tras un match: primero **otras guías del mismo módulo** (saltos útiles), luego
-     * palabras clave de la guía actual que **no** repiten lo que el usuario ya escribió.
+     * Sugerencias tras un match: solo otras guías del mismo módulo (orden hacia adelante en el catálogo,
+     * luego las anteriores), sin repetir temas recientes ni el texto ya enviado.
      *
      * @param  array{ultimo_modulo: string|null, ultimos_cod_entrada_ayuda: list<int>}  $estadoPrevio
      * @return list<array{etiqueta: string, enviar: string, cod_entrada_ayuda: int, modulo: string|null, prioridad: int}>
@@ -646,11 +716,12 @@ class ChatService
         array $estadoPrevio,
         string $normalizadoUsuario = ''
     ): array {
+        $max = $this->limiteSugerenciasRelacionadas();
         $list = [];
         $seenEnviar = [];
         $recientes = array_flip($estadoPrevio['ultimos_cod_entrada_ayuda']);
 
-        $push = function (string $etiqueta, string $enviar, ChatEntradaAyuda $e) use (&$list, &$seenEnviar): void {
+        $push = function (string $etiqueta, string $enviar, ChatEntradaAyuda $e) use (&$list, &$seenEnviar, $max): void {
             $key = Str::lower(trim($enviar));
             if ($key === '' || isset($seenEnviar[$key])) {
                 return;
@@ -665,42 +736,88 @@ class ChatService
             ];
         };
 
-        foreach ($entradas as $e) {
+        $candidatos = $entradas->filter(function (ChatEntradaAyuda $e) use ($match, $recientes, $estadoPrevio) {
             if ($e->modulo !== $match->modulo || (int) $e->cod_entrada_ayuda === (int) $match->cod_entrada_ayuda) {
-                continue;
+                return false;
             }
             if (isset($recientes[(int) $e->cod_entrada_ayuda])) {
-                continue;
+                return false;
             }
+            if ($this->debeOmitirSugerenciaGeneralPorHilo($match, $e, $estadoPrevio)) {
+                return false;
+            }
+
+            return true;
+        });
+
+        $ordenMatch = (int) $match->orden;
+        $forward = $candidatos->filter(fn (ChatEntradaAyuda $e) => (int) $e->orden > $ordenMatch)
+            ->sortBy(fn (ChatEntradaAyuda $e) => (int) $e->orden)
+            ->values();
+        $backward = $candidatos->filter(fn (ChatEntradaAyuda $e) => (int) $e->orden < $ordenMatch)
+            ->sortByDesc(fn (ChatEntradaAyuda $e) => (int) $e->orden)
+            ->values();
+        $ordenados = $forward->concat($backward);
+
+        foreach ($ordenados as $e) {
             $enviar = $this->textoParaDisparadorChip($e);
             if ($enviar === null) {
                 continue;
             }
+            $envNorm = Str::lower(Str::ascii(trim($enviar)));
+            if ($this->palabraClaveYaCubiertaPorMensaje($normalizadoUsuario, $envNorm)) {
+                continue;
+            }
             $push(Str::limit($e->titulo, 72, '…'), $enviar, $e);
-            if (count($list) >= self::SUGERENCIAS_MAX) {
+            if (count($list) >= $max) {
                 return $list;
             }
         }
 
-        foreach ($this->filtrarKeywordsParaChips($this->parsePalabrasClave($match->palabras_clave)) as $kw) {
-            $kw = trim($kw);
-            if ($kw === '') {
-                continue;
-            }
-            $kwNorm = Str::lower(Str::ascii($kw));
-            if (isset($seenEnviar[Str::lower($kw)])) {
-                continue;
-            }
-            if ($this->palabraClaveYaCubiertaPorMensaje($normalizadoUsuario, $kwNorm)) {
-                continue;
-            }
-            $push($this->etiquetaLegibleParaChip($kw), $kw, $match);
-            if (count($list) >= self::SUGERENCIAS_MAX) {
-                break;
+        return array_slice($list, 0, $max);
+    }
+
+    /**
+     * Si el usuario venía de un módulo operativo y esta respuesta cayó en `general`, no ofrecer
+     * chips de “qué es el sistema” o listados genéricos que desvían del hilo.
+     *
+     * @param  array{ultimo_modulo: string|null, ultimos_cod_entrada_ayuda: list<int>}  $estadoPrevio
+     */
+    private function debeOmitirSugerenciaGeneralPorHilo(
+        ChatEntradaAyuda $match,
+        ChatEntradaAyuda $candidata,
+        array $estadoPrevio
+    ): bool {
+        if ($match->modulo !== 'general' || $candidata->modulo !== 'general') {
+            return false;
+        }
+        $ctx = $estadoPrevio['ultimo_modulo'] ?? null;
+        if ($ctx === null || $ctx === '' || $ctx === 'general') {
+            return false;
+        }
+
+        return $this->esEntradaGeneralIntroductoria($candidata);
+    }
+
+    private function esEntradaGeneralIntroductoria(ChatEntradaAyuda $e): bool
+    {
+        $t = Str::lower(Str::ascii(trim($e->titulo)));
+        if ($t === '') {
+            return false;
+        }
+        $patrones = [
+            'que es talent sphere',
+            'modulos que encontraras',
+            'como usar este asistente',
+            'modulos que encontraras en la aplicacion',
+        ];
+        foreach ($patrones as $p) {
+            if (str_contains($t, $p)) {
+                return true;
             }
         }
 
-        return array_slice($list, 0, self::SUGERENCIAS_MAX);
+        return false;
     }
 
     /**
@@ -734,12 +851,58 @@ class ChatService
         if ($modulo === null || $modulo === '') {
             return [];
         }
-        $base = $entradas->first(fn (ChatEntradaAyuda $e) => $e->modulo === $modulo);
-        if (! $base instanceof ChatEntradaAyuda) {
+        $ancla = $this->resolverEntradaAnclaParaSugerencias($modulo, $estadoPrevio, $entradas, $normalizadoUsuario);
+        if (! $ancla instanceof ChatEntradaAyuda) {
             return [];
         }
 
-        return $this->construirSugerenciasRelacionadas($base, $entradas, $estadoPrevio, $normalizadoUsuario);
+        return $this->construirSugerenciasRelacionadas($ancla, $entradas, $estadoPrevio, $normalizadoUsuario);
+    }
+
+    /**
+     * Tema de referencia para chips cuando no hubo match en diccionario: última guía tocada en este
+     * módulo en el hilo; si no hay, la guía que mejor puntúe con el texto actual; si no, la primera
+     * por orden en ese módulo.
+     *
+     * @param  array{ultimo_modulo: string|null, ultimos_cod_entrada_ayuda: list<int>}  $estadoPrevio
+     */
+    private function resolverEntradaAnclaParaSugerencias(
+        string $modulo,
+        array $estadoPrevio,
+        Collection $entradas,
+        string $normalizadoUsuario
+    ): ?ChatEntradaAyuda {
+        foreach (array_reverse($estadoPrevio['ultimos_cod_entrada_ayuda']) as $cod) {
+            $e = $entradas->first(fn (ChatEntradaAyuda $x) => (int) $x->cod_entrada_ayuda === (int) $cod);
+            if ($e instanceof ChatEntradaAyuda && $e->modulo === $modulo) {
+                return $e;
+            }
+        }
+
+        $estadoNeutro = ['ultimo_modulo' => null, 'ultimos_cod_entrada_ayuda' => []];
+        $mejor = null;
+        $mejorPuntaje = -1;
+        foreach ($entradas as $e) {
+            if ($e->modulo !== $modulo) {
+                continue;
+            }
+            $p = $this->puntuarEntrada($normalizadoUsuario, $e, $estadoNeutro);
+            if ($p > $mejorPuntaje) {
+                $mejorPuntaje = $p;
+                $mejor = $e;
+            }
+        }
+        if ($mejor instanceof ChatEntradaAyuda) {
+            return $mejor;
+        }
+
+        return $entradas->filter(fn (ChatEntradaAyuda $e) => $e->modulo === $modulo)
+            ->sort(function (ChatEntradaAyuda $a, ChatEntradaAyuda $b): int {
+                $o = (int) $a->orden <=> (int) $b->orden;
+
+                return $o !== 0 ? $o : (int) $a->cod_entrada_ayuda <=> (int) $b->cod_entrada_ayuda;
+            })
+            ->first();
     }
 
     /**
@@ -832,13 +995,13 @@ class ChatService
         ];
     }
 
-    private function intentarOpenAi(int $codChatConversacion, Collection $entradas): ?string
+    private function intentarOpenAi(int $codChatConversacion, Collection $entradas, ?string $moduloActivo): ?string
     {
         $max = max(2, (int) config('chatbot.max_mensajes_contexto', 12));
         $historial = $this->chatRepository->listarMensajesDeConversacion($codChatConversacion, 500);
         $ultimos = $historial->slice(-$max)->values();
 
-        $system = $this->construirSystemPrompt($entradas);
+        $system = $this->construirSystemPrompt($entradas, $moduloActivo);
 
         $messages = [['role' => 'system', 'content' => $system]];
         foreach ($ultimos as $m) {
@@ -878,18 +1041,34 @@ class ChatService
         }
     }
 
-    private function construirSystemPrompt(Collection $entradas): string
+    private function construirSystemPrompt(Collection $entradas, ?string $moduloActivo): string
     {
-        $base = 'Eres el asistente virtual de Talent Sphere (gestión de RRHH en Colombia). '
-            .'Respondes en español, con tono profesional y claro. '
-            .'No inventes datos de empleados ni ejecutes acciones: orientas sobre el uso del sistema y la normativa general. '
-            .'Si no sabes algo concreto de un empleado o contrato, indica que revisen el módulo correspondiente en Talent Sphere o a un responsable de RRHH.';
+        $base = trim((string) config('chatbot.system_prompt_base'));
+        if ($base === '') {
+            $base = 'Eres el asistente in-app de Talent Sphere (RRHH, Colombia). Español claro y profesional. '
+                .'No inventes datos de expediente; orienta sobre el uso del sistema.';
+        }
 
-        if ($entradas->isEmpty()) {
+        if ($moduloActivo !== null && $moduloActivo !== '') {
+            $base .= "\n\nEl cliente envió `modulo_ayuda` en esta petición: \"{$moduloActivo}\". "
+                .'Úsalo como área activa salvo que el historial muestre claramente otra intención.';
+        }
+
+        $paraDiccionario = $entradas;
+        if ($moduloActivo !== null && $moduloActivo !== '' && $moduloActivo !== 'general') {
+            $filtradas = $entradas->filter(
+                fn (ChatEntradaAyuda $e) => $e->modulo === $moduloActivo || $e->modulo === 'general'
+            );
+            if ($filtradas->isNotEmpty()) {
+                $paraDiccionario = $filtradas;
+            }
+        }
+
+        if ($paraDiccionario->isEmpty()) {
             return $base;
         }
 
-        $diccionario = $entradas->map(function ($e) {
+        $diccionario = $paraDiccionario->map(function (ChatEntradaAyuda $e) {
             return "### {$e->titulo}\n{$e->contenido}";
         })->implode("\n\n");
 

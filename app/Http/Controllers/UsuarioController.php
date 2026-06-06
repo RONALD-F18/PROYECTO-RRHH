@@ -20,8 +20,15 @@ class UsuarioController extends Controller
     // Otros admins aparecen enmascarados en el listado
     public function index()
     {
-        $userAuth = request()->user('api');
-        $data     = $this->usuarioService->getAllUsuarios();
+        $userAuth = request()->user();
+        if (! $userAuth) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado.',
+            ], 401);
+        }
+
+        $data = $this->usuarioService->getAllUsuarios();
 
         $data = $data->map(function ($usuario) use ($userAuth) {
             $esOtroAdmin = $usuario->roles->nombre_rol === 'administrador'
@@ -123,7 +130,7 @@ class UsuarioController extends Controller
             ], 403);
         }
 
-        $auth = request()->user('api');
+        $auth = request()->user();
         if ($request->filled('cod_rol') && (int) $request->input('cod_rol') !== (int) $usuario->cod_rol) {
             if ($auth->roles->nombre_rol === 'funcionario' && $usuario->cod_usuario === $auth->cod_usuario) {
                 return response()->json([

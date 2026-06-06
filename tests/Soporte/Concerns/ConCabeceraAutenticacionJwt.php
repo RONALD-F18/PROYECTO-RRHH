@@ -3,16 +3,17 @@
 namespace Tests\Soporte\Concerns;
 
 use App\Models\Usuario;
+use App\Services\AuthService;
 
 /**
- * Genera cabecera Authorization Bearer para pruebas de API con guard JWT.
+ * Cabecera Authorization Bearer con token Sanctum (SPA / API).
  */
 trait ConCabeceraAutenticacionJwt
 {
     protected function tokenJwtPara(Usuario $usuario): string
     {
-        $token = auth('api')->login($usuario);
-        $this->assertNotEmpty($token, 'JWT: el guard api debe devolver un token en pruebas.');
+        $token = $usuario->createToken('test')->plainTextToken;
+        $this->assertNotEmpty($token, 'Sanctum: debe generarse un token en pruebas.');
 
         return $token;
     }

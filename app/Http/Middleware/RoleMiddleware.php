@@ -9,7 +9,7 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
 {
-    $user = $request->user('api');
+    $user = $request->user();
 
     $userRole = $user->roles->nombre_rol; 
     

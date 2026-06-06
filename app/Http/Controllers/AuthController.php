@@ -2,64 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\AuthService;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\AuthRequest as LoginRequest;
+use App\Services\AuthService;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    protected $authService;
+    protected AuthService $authService;
 
- 
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
     }
 
-    public function login(LoginRequest $login)
-    {
-        $credentials = $login->only('email_usuario', 'contrasena_usuario');
-    
-        try {
-            $result = $this->authService->login(credentials: $credentials);
-            
-            $user = $result['user'];
+   public function login(LoginRequest $login)
+{
+    $credentials = $login->only('email_usuario', 'contrasena_usuario');
 
-            $token = $result['token'];
-        
-            return response()->json([
-                'message' => 'Acceso Exitoso',
+    try {
 
-                'role' => $user->roles->nombre_rol ?? null,
+        Log::info('Intentando login', [
+            'email_usuario' => $credentials['email_usuario'] ?? null,
+        ]);
 
-                'user' => $user
-            ])
+        $result = $this->authService->login(credentials: $credentials);
 
-            ->cookie('token', $token, 60 * 24, null, null, false, true);
+        Log::info('Login exitoso');
 
-        } catch (\Exception $e) {
+        $user = $result['user'];
 
-            $invalidCredentials = 'Credenciales inválidas';
+        return response()->json([
+            'message' => 'Acceso Exitoso',
+            'role' => $user->roles->nombre_rol ?? null,
+            'user' => $user,
+            'access_token' => $result['access_token'],
+            'token' => $result['token'],
+            'token_type' => $result['token_type'],
+        ]);
 
+    } catch (\Exception $e) {
 
-            $statusCode = $e->getMessage() === $invalidCredentials ? 401 : 500;
+        Log::error('ERROR EN LOGIN JWT', [
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+            'trace' => $e->getTraceAsString(),
+        ]);
 
-            $errorMessage = $e->getMessage() === $invalidCredentials
-                ? $invalidCredentials
-                : 'Token no generado, error interno del servidor';
+        $invalidCredentials = 'Credenciales inválidas';
 
-            return response()->json([
-                'error' => $errorMessage
-            ], $statusCode);
-        }
+        $statusCode = $e->getMessage() === $invalidCredentials
+            ? 401
+            : 500;
+
+        return response()->json([
+            'error' => $e->getMessage(),
+            'debug' => [
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]
+        ], $statusCode);
     }
-    
-    
-		public function logout()
+}
+
+    public function logout(Request $request)
     {
+        $request->user()?->currentAccessToken()?->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Sesión cerrada correctamente'
-        ], 200)->cookie('token', '', -1);
+            'message' => 'Sesión cerrada correctamente',
+        ], 200);
     }
 }

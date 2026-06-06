@@ -72,7 +72,7 @@ class ReporteRegistroController extends Controller
     private function usuarioAutenticado(): Usuario
     {
         /** @var Usuario $u */
-        $u = auth('api')->user();
+        $u = auth()->user();
 
         return $u;
     }

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Concerns\ResolvesPagination;
 use App\Http\Requests\EmpleadoRequest;
 use App\Models\Contrato;
 use App\Services\EmpleadoService;
 
-
-
 class EmpleadoController extends Controller
 {
+    use ResolvesPagination;
     protected $empleadoService;
 
     public function __construct(EmpleadoService $empleadoService)
@@ -19,12 +19,15 @@ class EmpleadoController extends Controller
 
     public function index()
     {
-       
-        $data = $this->empleadoService->getAllEmpleados();
+        $resultado = $this->empleadoService->PaginateEmpleados(
+            $this->resolvePage(),
+            $this->resolvePerPage()
+        );
 
         return response()->json([
             'message' => 'Empleados listados exitosamente',
-            'data' => $data
+            'data' => $resultado['data'],
+            'meta' => $resultado['meta'],
         ], 200);
     }
 
