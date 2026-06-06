@@ -2,6 +2,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Empleado;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use App\Repositories\Interfaces\EmpleadoInterface;
 
@@ -10,8 +11,15 @@ class EmpleadoRepository implements EmpleadoInterface
 {
     public function GetAllEmpleados(): Collection
     {
-        $Empleados = Empleado::all();
-        return $Empleados;
+        return Empleado::query()->orderBy('cod_empleado')->get();
+    }
+
+    public function PaginateEmpleados(int $page, int $perPage): LengthAwarePaginator
+    {
+        return Empleado::query()
+            ->with('bancos')
+            ->orderBy('cod_empleado')
+            ->paginate(perPage: $perPage, page: $page);
     }
 
     public function GetEmpleadoById($id): ?Empleado

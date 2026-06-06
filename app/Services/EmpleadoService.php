@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Empleado;
 use App\Repositories\Interfaces\EmpleadoInterface;
+use App\Support\PaginationMapper;
 
 class EmpleadoService
 {
@@ -17,6 +17,13 @@ class EmpleadoService
     public function GetAllEmpleados()
     {
         return $this->empleadoRepository->GetAllEmpleados();
+    }
+
+    public function PaginateEmpleados(int $page, int $perPage): array
+    {
+        $paginator = $this->empleadoRepository->PaginateEmpleados($page, $perPage);
+
+        return PaginationMapper::toArray($paginator);
     }
 
     public function GetEmpleadoById($id)

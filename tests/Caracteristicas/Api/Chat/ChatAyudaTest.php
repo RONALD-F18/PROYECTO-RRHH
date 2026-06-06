@@ -64,7 +64,7 @@ class ChatAyudaTest extends TestCase
         $this->assertSame([], $res->json('temas_agrupados'));
     }
 
-    public function test_ayuda_filtra_por_modulo_query_incluye_general(): void
+    public function test_ayuda_con_modulo_operativo_no_mezcla_general_en_data_ni_temas(): void
     {
         ChatEntradaAyuda::query()->create([
             'titulo' => 'Tema transversal',
@@ -98,12 +98,11 @@ class ChatAyudaTest extends TestCase
             ->assertOk();
 
         $data = $res->json('data');
-        $this->assertCount(2, $data);
-        $modulos = collect($data)->pluck('modulo')->sort()->values()->all();
-        $this->assertSame(['general', 'modulo_a'], $modulos);
+        $this->assertCount(1, $data);
+        $this->assertSame('modulo_a', $data[0]['modulo']);
 
         $sug = $res->json('sugerencias_rapidas');
-        $this->assertCount(2, $sug);
+        $this->assertCount(1, $sug);
 
         $this->assertSame([], $res->json('catalogo_modulos'));
         $ctx = $res->json('modulo_contexto');
@@ -115,13 +114,14 @@ class ChatAyudaTest extends TestCase
 
         $temas = $res->json('temas_agrupados');
         $this->assertIsArray($temas);
-        $this->assertGreaterThanOrEqual(2, count($temas));
+        $this->assertGreaterThanOrEqual(1, count($temas));
         $primer = $temas[0];
         $this->assertArrayHasKey('titulo', $primer);
         $this->assertArrayHasKey('preguntas', $primer);
         $this->assertNotEmpty($primer['preguntas']);
         $this->assertArrayHasKey('etiqueta', $primer['preguntas'][0]);
         $this->assertArrayHasKey('enviar', $primer['preguntas'][0]);
+        $this->assertNotSame('Abrir esta guía', $primer['preguntas'][0]['etiqueta']);
     }
 
     public function test_modulo_query_invalido_se_ignora_y_devuelve_todo(): void

@@ -47,7 +47,7 @@ class ChatContinuidadConversacionalTest extends TestCase
         $sugerencias = $res->json('data.sugerencias_relacionadas');
         $this->assertIsArray($sugerencias);
         $this->assertGreaterThanOrEqual(1, count($sugerencias));
-        $this->assertLessThanOrEqual(5, count($sugerencias));
+        $this->assertLessThanOrEqual(4, count($sugerencias));
         $this->assertSame('prestaciones_sociales', $sugerencias[0]['modulo']);
     }
 
@@ -195,6 +195,76 @@ class ChatContinuidadConversacionalTest extends TestCase
 
         $this->assertSame('general', $res2->json('data.contexto.modulo_actual'));
         $this->assertStringContainsString('Talent Sphere', $res2->json('data.mensaje_asistente.contenido'));
+    }
+
+    public function test_modulo_ayuda_opcional_afina_contexto_sin_match_diccionario(): void
+    {
+        $usuario = Usuario::factory()->create();
+        $conv = ChatConversacion::query()->create(['cod_usuario' => $usuario->cod_usuario, 'titulo' => 'Mod ayuda']);
+
+        $res = $this->conJwt($usuario)->postJson('/api/v1/chat/conversaciones/'.$conv->cod_chat_conversacion.'/mensajes', [
+            'contenido' => 'zz_no_match_'.uniqid('', true),
+            'modulo_ayuda' => 'empleados',
+        ])->assertCreated();
+
+        $this->assertSame('empleados', $res->json('data.contexto.modulo_actual'));
+    }
+
+    public function test_modulo_ayuda_invalido_devuelve_422(): void
+    {
+        $usuario = Usuario::factory()->create();
+        $conv = ChatConversacion::query()->create(['cod_usuario' => $usuario->cod_usuario, 'titulo' => '422 mod']);
+
+        $this->conJwt($usuario)->postJson('/api/v1/chat/conversaciones/'.$conv->cod_chat_conversacion.'/mensajes', [
+            'contenido' => 'hola',
+            'modulo_ayuda' => 'NoSnakeCase',
+        ])->assertUnprocessable();
+    }
+
+    public function test_sugerencias_sin_match_priorizan_temas_posteriores_a_la_ultima_guia_del_hilo(): void
+    {
+        $tTelefono = ChatEntradaAyuda::query()->create([
+            'titulo' => 'Correo y teléfono del empleado',
+            'modulo' => 'empleados',
+            'palabras_clave' => 'telefono empleado, correo empleado',
+            'contenido' => 'Actualiza contacto en Empleados.',
+            'orden' => 501,
+            'activo' => true,
+        ]);
+        $tCuenta = ChatEntradaAyuda::query()->create([
+            'titulo' => 'Cuenta bancaria para pagos',
+            'modulo' => 'empleados',
+            'palabras_clave' => 'cuenta bancaria empleado',
+            'contenido' => 'Banco y número de cuenta.',
+            'orden' => 502,
+            'activo' => true,
+        ]);
+        ChatEntradaAyuda::query()->create([
+            'titulo' => 'Estado ACTIVO o RETIRADO y documento',
+            'modulo' => 'empleados',
+            'palabras_clave' => 'empleado activo o retirado',
+            'contenido' => 'Texto estado.',
+            'orden' => 500,
+            'activo' => true,
+        ]);
+
+        $usuario = Usuario::factory()->create();
+        $conv = ChatConversacion::query()->create(['cod_usuario' => $usuario->cod_usuario, 'titulo' => 'Ancla hilo']);
+
+        $this->conJwt($usuario)->postJson('/api/v1/chat/conversaciones/'.$conv->cod_chat_conversacion.'/mensajes', [
+            'contenido' => 'telefono empleado',
+        ])->assertCreated();
+
+        $res2 = $this->conJwt($usuario)->postJson('/api/v1/chat/conversaciones/'.$conv->cod_chat_conversacion.'/mensajes', [
+            'contenido' => 'zz_sin_match_'.uniqid('', true),
+            'modulo_ayuda' => 'empleados',
+        ])->assertCreated();
+
+        $primera = $res2->json('data.sugerencias_relacionadas.0');
+        $this->assertNotNull($primera);
+        $this->assertSame((int) $tCuenta->cod_entrada_ayuda, (int) $primera['cod_entrada_ayuda']);
+        $this->assertArrayHasKey('presentacion_chat', $res2->json('data'));
+        $this->assertSame('debajo_ultimo_mensaje_usuario', $res2->json('data.presentacion_chat.sugerencias_relacionadas.ubicacion'));
     }
 }
 

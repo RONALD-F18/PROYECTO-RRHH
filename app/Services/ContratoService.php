@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Services;
+
 use App\Repositories\Interfaces\ContratoInterface;
+use App\Support\PaginationMapper;
 
 class ContratoService
 {
@@ -14,7 +16,14 @@ class ContratoService
 
     public function getAllContratos()
     {
-        return $this->contratoRepository->getAllContratos();
+        return $this->contratoRepository->GetAllContratos();
+    }
+
+    public function paginateContratos(int $page, int $perPage): array
+    {
+        $paginator = $this->contratoRepository->PaginateContratos($page, $perPage);
+
+        return PaginationMapper::toArray($paginator);
     }
 
     public function getContratoById($id)

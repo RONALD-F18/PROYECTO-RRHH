@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Contrato;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use App\Repositories\Interfaces\ContratoInterface;
 
@@ -10,8 +11,15 @@ class ContratoRepository implements ContratoInterface
 {
     public function GetAllContratos(): Collection
     {
-        $Contratos = Contrato::all();
-        return $Contratos;
+        return Contrato::query()->orderByDesc('fecha_ingreso')->get();
+    }
+
+    public function PaginateContratos(int $page, int $perPage): LengthAwarePaginator
+    {
+        return Contrato::query()
+            ->with('empleado', 'cargo')
+            ->orderByDesc('fecha_ingreso')
+            ->paginate(perPage: $perPage, page: $page);
     }
 
     public function GetContratoById($id): ?Contrato

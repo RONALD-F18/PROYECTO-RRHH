@@ -43,7 +43,7 @@ class ComunicacionDisciplinariaController extends Controller
     public function store(ComunicacionDisciplinariaRequest $request)
     {
         $data = $request->validated();
-        $data['cod_usuario'] = auth('api')->id();
+        $data['cod_usuario'] = auth()->user()->cod_usuario;
 
         $comunicacion = $this->service->createComunicacionDisciplinaria($data);
 
