@@ -206,7 +206,7 @@ class ValidacionFechasAfiliacionTest extends TestCase
             ->assertStatus(422)
             ->assertJsonValidationErrors(['fecha_afiliacion_caja']);
 
-        $fechas['fecha_afiliacion_caja'] = '2023-02-28';
+        $fechas['fecha_afiliacion_caja'] = '2023-03-01';
 
         $this->conJwt($u['usuario'])
             ->postJson('/api/v1/afiliaciones', $this->cuerpoAfiliacion(

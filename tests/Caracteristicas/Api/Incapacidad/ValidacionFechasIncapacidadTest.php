@@ -10,11 +10,19 @@ use App\Models\Incapacidad;
 use App\Models\TipoIncapacidad;
 use App\Models\Usuario;
 use Tests\Soporte\Concerns\ConCabeceraAutenticacionJwt;
+use Tests\Soporte\Concerns\ConDatosPruebaRrhh;
 use Tests\TestCase;
 
 class ValidacionFechasIncapacidadTest extends TestCase
 {
     use ConCabeceraAutenticacionJwt;
+    use ConDatosPruebaRrhh;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->sembrarTiposIncapacidad();
+    }
 
     /** @return array{usuario: Usuario, empleado: Empleado, tipo: TipoIncapacidad} */
     private function crearEmpleadoConContrato(string $fechaNac, string $fechaIngreso, string $estadoContrato = 'ACTIVO'): array
