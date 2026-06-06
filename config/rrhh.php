@@ -6,22 +6,27 @@ return [
     |--------------------------------------------------------------------------
     | Edad mínima del empleado (fecha de nacimiento)
     |--------------------------------------------------------------------------
-    |
-    | En Colombia, el contrato de aprendizaje y el trabajo adolescente permiten
-    | vincular a menores de 18 años a partir de los 15 años, con requisitos
-    | (p. ej. autorización del Ministerio del Trabajo para 15–17 años según
-    | normativa vigente, incl. reforma Ley 2466 de 2025). No bajar de 15 salvo
-    | criterio jurídico explícito del proyecto.
-    |
     */
     'empleado_edad_minima' => (int) env('EMPLEADO_EDAD_MINIMA', 15),
 
     /*
-    | Enlace del botón en el correo (restablecer con token). NO usar /recuperar-contrasena:
-    | esa ruta es solo para pedir el enlace (forgot-password). Usar la ruta del formulario
-    | "cambiar contraseña" del React (token y email se añaden en PasswordResetService).
+    |--------------------------------------------------------------------------
+    | Recuperación de contraseña
+    |--------------------------------------------------------------------------
+    |
+    | PASSWORD_RESET_URL: página con formulario (public/reset-password.html).
+    | Si está vacío, se usa APP_URL + /reset-password.html
+    |
+    | PASSWORD_RESET_RETURN_URL: enlace "Ir a iniciar sesión" tras éxito (front SPA).
+    | Si está vacío, usa FRONTEND_URL.
     */
     'password_reset_url' => env('PASSWORD_RESET_URL'),
-    'password_reset_path' => env('PASSWORD_RESET_PATH', '/PROYECTO-REACT-RRHH/#/cambiar-contrasena'),
+
+    'password_reset_return_url' => env('PASSWORD_RESET_RETURN_URL'),
+
+    'password_reset_path' => env(
+        'PASSWORD_RESET_PATH',
+        '/reset-password.html'
+    ),
 
 ];

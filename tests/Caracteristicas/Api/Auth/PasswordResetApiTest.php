@@ -50,15 +50,15 @@ class PasswordResetApiTest extends TestCase
         $this->postJson('/api/v1/reset-password', [
             'email_usuario' => $email,
             'token' => $tokenPlano,
-            'contrasena_usuario' => 'NuevaClave1234',
-            'contrasena_usuario_confirmation' => 'NuevaClave1234',
+            'contrasena_usuario' => 'NuevaClave1234!',
+            'contrasena_usuario_confirmation' => 'NuevaClave1234!',
         ])
             ->assertOk()
             ->assertJsonPath('success', true);
 
         $this->postJson('/api/v1/login', [
             'email_usuario' => $email,
-            'contrasena_usuario' => 'NuevaClave1234',
+            'contrasena_usuario' => 'NuevaClave1234!',
         ])->assertOk();
     }
 
@@ -66,11 +66,13 @@ class PasswordResetApiTest extends TestCase
     {
         Usuario::factory()->create(['email_usuario' => 'invalido@test.local']);
 
+        $tokenInvalido = str_repeat('x', 64);
+
         $this->postJson('/api/v1/reset-password', [
             'email_usuario' => 'invalido@test.local',
-            'token' => 'token-invalido',
-            'contrasena_usuario' => 'NuevaClave1234',
-            'contrasena_usuario_confirmation' => 'NuevaClave1234',
+            'token' => $tokenInvalido,
+            'contrasena_usuario' => 'NuevaClave1234!',
+            'contrasena_usuario_confirmation' => 'NuevaClave1234!',
         ])
             ->assertStatus(422)
             ->assertJsonPath('success', false);

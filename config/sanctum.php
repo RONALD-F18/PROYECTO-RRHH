@@ -33,7 +33,7 @@ return [
     |
     */
 
-    // SPA en GitHub Pages: solo Bearer token, sin sesión/cookies cross-origin.
+    // SPA + Sanctum: dominios en SANCTUM_STATEFUL_DOMAINS (.env).
     'guard' => [],
 
     /*

@@ -17,7 +17,9 @@ class PasswordResetService
     public function sendResetLink(string $email): void
     {
         $usuario = Usuario::where('email_usuario', $email)->first();
-        if (!$usuario) return;
+        if (! $usuario) {
+            return;
+        }
 
         $this->passwordResetRepository->deleteByEmail($email);
 
@@ -45,10 +47,14 @@ class PasswordResetService
             hash('sha256', $token)
         );
 
-        if (!$registro || $registro->isExpired()) return false;
+        if (! $registro || $registro->isExpired()) {
+            return false;
+        }
 
         $usuario = Usuario::where('email_usuario', $email)->first();
-        if (!$usuario) return false;
+        if (! $usuario) {
+            return false;
+        }
 
         $usuario->update(['contrasena_usuario' => Hash::make($nuevaContrasena)]);
 
@@ -58,35 +64,43 @@ class PasswordResetService
     }
 
     /**
-     * URL del botón en el correo (Blade usa $resetUrl tal cual).
-     * Corrige enlaces viejos que apuntaban a #/recuperar-contrasena (solo "olvidé mi clave").
+     * URL del botón en el correo: formulario Laravel en /reset-password.html?token=&email=
      */
     private function buildPasswordResetUrl(string $tokenPlano, string $email): string
     {
         $base = $this->resolvePasswordResetBaseUrl();
-        $separator = str_contains($base, '?') ? '&' : '?';
+        $query = http_build_query([
+            'token'  => $tokenPlano,
+            'email'  => $email,
+            'return' => $this->resolvePasswordResetReturnUrl(),
+        ]);
 
-        return $base . $separator . 'token=' . urlencode($tokenPlano) . '&email=' . urlencode($email);
+        return str_contains($base, '?') ? ($base.'&'.$query) : ($base.'?'.$query);
     }
 
     private function resolvePasswordResetBaseUrl(): string
     {
-        $base = rtrim((string) config('rrhh.password_reset_url'), '/');
-
-        if ($base === '') {
-            $frontend = rtrim((string) env('FRONTEND_URL', 'https://ronald-f18.github.io'), '/');
-            $path = (string) config('rrhh.password_reset_path', '/PROYECTO-REACT-RRHH/#/cambiar-contrasena');
-            if (! str_starts_with($path, '/')) {
-                $path = '/' . $path;
-            }
-            $base = $frontend . $path;
+        $configured = rtrim((string) config('rrhh.password_reset_url'), '/');
+        if ($configured !== '') {
+            return $configured;
         }
 
-        // Producción/Azure quedó con recuperar-contrasena; el correo debe ir al formulario con token.
-        if (str_contains($base, '/recuperar-contrasena')) {
-            $base = str_replace('/recuperar-contrasena', '/cambiar-contrasena', $base);
+        $appUrl = rtrim((string) config('app.url', env('APP_URL', 'http://localhost')), '/');
+        $path = (string) config('rrhh.password_reset_path', '/reset-password.html');
+        if (! str_starts_with($path, '/')) {
+            $path = '/'.$path;
         }
 
-        return $base;
+        return $appUrl.$path;
+    }
+
+    private function resolvePasswordResetReturnUrl(): string
+    {
+        $return = rtrim((string) config('rrhh.password_reset_return_url'), '/');
+        if ($return !== '') {
+            return $return;
+        }
+
+        return rtrim((string) env('FRONTEND_URL', config('app.url')), '/');
     }
 }
