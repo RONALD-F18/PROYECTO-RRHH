@@ -1,17 +1,34 @@
 <?php
 
 namespace App\Repositories\Eloquent;
+
 use App\Models\Inasistencia;
 use Illuminate\Database\Eloquent\Collection;
 use App\Repositories\Interfaces\InasistenciaInterface;
 
 class InasistenciaRepository implements InasistenciaInterface
-
 {
     public function getAllInasistencias(): Collection
     {
-        $inasistencias = Inasistencia::all();
-        return $inasistencias;
+        return Inasistencia::query()->orderBy('fecha_inasistencia', 'desc')->get();
+    }
+
+    public function buscarInasistencias(?int $codEmpleado = null, ?int $mes = null, ?int $anio = null): Collection
+    {
+        $query = Inasistencia::query()->orderBy('fecha_inasistencia', 'desc');
+
+        if ($codEmpleado !== null) {
+            $query->where('cod_empleado', $codEmpleado);
+        }
+
+        if ($mes !== null && $anio !== null) {
+            $query->whereYear('fecha_inasistencia', $anio)
+                ->whereMonth('fecha_inasistencia', $mes);
+        } elseif ($anio !== null) {
+            $query->whereYear('fecha_inasistencia', $anio);
+        }
+
+        return $query->get();
     }
 
     public function getInasistenciaById($cod_inasistencias): ?Inasistencia
@@ -22,8 +39,7 @@ class InasistenciaRepository implements InasistenciaInterface
 
     public function createInasistencia(array $data): Inasistencia
     {
-        $inasistencia = Inasistencia::create($data);
-        return $inasistencia;
+        return Inasistencia::create($data);
     }
 
     public function updateInasistencia($cod_inasistencias, array $data): ?Inasistencia
@@ -44,5 +60,10 @@ class InasistenciaRepository implements InasistenciaInterface
         }
         $inasistencia->delete();
         return true;
+    }
+
+    public function deleteByEmpleadoId(int $codEmpleado): int
+    {
+        return Inasistencia::query()->where('cod_empleado', $codEmpleado)->delete();
     }
 }

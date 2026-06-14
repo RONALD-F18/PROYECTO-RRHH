@@ -9,30 +9,28 @@ class EmpresaSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('empresas')->insert([
+        DB::table('empresas')->updateOrInsert(
+            ['nit' => '901347562'],
             [
-                'nit'                     => '901347562',
                 'dv'                      => '1',
-                'razon_social'            => 'DISTRIAGRO DG S.A.S.',
-                'nombre_comercial'        => 'Distriagro DG',
+                'razon_social'            => 'TALENT SPHERE S.A.S.',
+                'nombre_comercial'        => 'Talent Sphere',
                 'tipo_empresa'            => 'Privada',
                 'estado_empresa'          => 'Activa',
                 'fecha_constitucion'      => '2012-06-01',
-                'direccion'               => 'Km 5 Vía Apartadó – Turbo',
-                'ciudad'                  => 'Apartadó',
-                'departamento'            => 'Antioquia',
+                'direccion'               => 'Carrera 7 # 71-21, Torre Empresarial',
+                'ciudad'                  => 'Bogotá D.C.',
+                'departamento'            => 'Cundinamarca',
                 'pais'                    => 'Colombia',
-                'telefono'                => '6048123456',
-                'correo'                  => 'contacto@distriagrodg.com',
-                'pagina_web'              => 'https://www.distriagrodg.com',
+                'telefono'                => '6011234567',
+                'correo'                  => 'contacto@talentsphere.cloud',
+                'pagina_web'              => 'https://talentsphere.cloud',
                 'nombre_representante'    => 'Ronaldo Franco',
                 'documento_representante' => '1129244160',
                 'fecha_creacion'          => now(),
                 'fecha_actualizacion'     => now(),
-                'created_at'              => now(),
                 'updated_at'              => now(),
-            ],
-        ]);
+            ]
+        );
     }
 }
-

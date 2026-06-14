@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InasistenciaRequest extends FormRequest
 {
@@ -31,14 +32,14 @@ class InasistenciaRequest extends FormRequest
             ? 'bail|sometimes|required|date'
             : 'required|date',
             'cod_empleado' => $isMethodPut
-            ? 'bail|sometimes|nullable|exists:empleados,cod_empleado'
-            : 'bail|nullable|exists:empleados,cod_empleado',
+            ? 'bail|sometimes|required|exists:empleados,cod_empleado'
+            : 'bail|required|exists:empleados,cod_empleado',
             'observaciones' => $isMethodPut
             ? 'bail|sometimes|nullable|string|max:80'
             : 'bail|nullable|string|max:80',
             'justificado' => $isMethodPut
-            ? 'bail|sometimes|nullable|string|max:2'
-            : 'bail|nullable|string|max:2',
+            ? ['bail', 'sometimes', 'nullable', 'string', 'max:2', Rule::in(config('rrhh.justificado_inasistencia'))]
+            : ['bail', 'nullable', 'string', 'max:2', Rule::in(config('rrhh.justificado_inasistencia'))],
         ];
 
     }   

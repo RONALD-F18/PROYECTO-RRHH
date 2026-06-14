@@ -132,17 +132,23 @@ class UsuarioController extends Controller
 
         $auth = request()->user();
         if ($request->filled('cod_rol') && (int) $request->input('cod_rol') !== (int) $usuario->cod_rol) {
-            if ($auth->roles->nombre_rol === 'funcionario' && $usuario->cod_usuario === $auth->cod_usuario) {
+            if ($usuario->cod_usuario === $auth->cod_usuario) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No puedes modificar tu propio rol.',
                 ], 403);
             }
-            if (Rol::find((int) $request->input('cod_rol'))?->nombre_rol === 'administrador'
-                && $usuario->roles->nombre_rol !== 'administrador') {
+            $rolDestino = Rol::find((int) $request->input('cod_rol'))?->nombre_rol;
+            if ($rolDestino === 'administrador') {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se puede asignar el rol administrador por la API.',
+                ], 403);
+            }
+            if ($usuario->roles->nombre_rol === 'administrador') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede cambiar el rol de un administrador.',
                 ], 403);
             }
         }
@@ -170,19 +176,38 @@ class UsuarioController extends Controller
         }
 
         if (Gate::denies('delete', $usuario)) {
+            $mensaje = $usuario->roles->nombre_rol === 'administrador'
+                ? 'No tienes permisos para eliminar un administrador.'
+                : 'No tienes permisos para eliminar este usuario.';
+
             return response()->json([
                 'success' => false,
-                'message' => 'No tienes permisos para eliminar este usuario'
+                'message' => $mensaje,
             ], 403);
         }
 
-        $result = $this->usuarioService->deleteUsuario($id);
+        $auth = request()->user();
+        if ($auth && (int) $usuario->cod_usuario === (int) $auth->cod_usuario) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes eliminar tu propia cuenta.',
+            ], 403);
+        }
+
+        try {
+            $result = $this->usuarioService->deleteUsuario($id);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
 
         if (!$result) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el usuario'
-            ], 500);
+                'message' => 'Usuario no encontrado',
+            ], 404);
         }
 
         return response()->json([

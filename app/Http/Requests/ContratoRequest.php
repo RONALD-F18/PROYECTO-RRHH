@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Contrato;
 use App\Models\Empleado;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ContratoRequest extends FormRequest
 {
@@ -61,16 +62,16 @@ class ContratoRequest extends FormRequest
 
         return [
             'tipo_contrato' => $ismethodPut
-                ? 'bail|sometimes|required|string|max:150'
-                : 'bail|required|string|max:150',
+                ? ['bail', 'sometimes', 'required', 'string', 'max:150', Rule::in(config('rrhh.tipos_contrato'))]
+                : ['bail', 'required', 'string', 'max:150', Rule::in(config('rrhh.tipos_contrato'))],
 
             'cod_empleado' => $ismethodPut
                 ? 'bail|sometimes|required|exists:empleados,cod_empleado'
                 : 'bail|required|exists:empleados,cod_empleado',
 
             'forma_de_pago' => $ismethodPut
-                ? 'bail|sometimes|required|string|max:150'
-                : 'bail|required|string|max:150',
+                ? ['bail', 'sometimes', 'required', 'string', 'max:150', Rule::in(config('rrhh.formas_pago'))]
+                : ['bail', 'required', 'string', 'max:150', Rule::in(config('rrhh.formas_pago'))],
 
             'fecha_ingreso' => $ismethodPut
                 ? 'bail|sometimes|required|date|date_format:Y-m-d'
@@ -89,12 +90,12 @@ class ContratoRequest extends FormRequest
                 : 'bail|required|exists:cargo,cod_cargo',
 
             'modalidad_trabajo' => $ismethodPut
-                ? 'bail|sometimes|required|string|max:150'
-                : 'bail|required|string|max:150',
+                ? ['bail', 'sometimes', 'required', 'string', 'max:150', Rule::in(config('rrhh.modalidades_trabajo'))]
+                : ['bail', 'required', 'string', 'max:150', Rule::in(config('rrhh.modalidades_trabajo'))],
 
             'horario_trabajo' => $ismethodPut
-                ? 'bail|sometimes|required|string|max:150'
-                : 'bail|required|string|max:150',
+                ? ['bail', 'sometimes', 'required', 'string', 'max:150', Rule::in(config('rrhh.horarios_trabajo'))]
+                : ['bail', 'required', 'string', 'max:150', Rule::in(config('rrhh.horarios_trabajo'))],
 
             'auxilio_transporte' => $ismethodPut
                 ? 'bail|sometimes|required|boolean'
@@ -156,6 +157,19 @@ class ContratoRequest extends FormRequest
                         'Para tipo de documento CC, la fecha de ingreso debe ser igual o posterior a cumplir 18 años.'
                     );
                 }
+            }
+
+            $tipoContrato = (string) $this->input('tipo_contrato');
+            if ($tipoContrato === '' && ($this->isMethod('put') || $this->isMethod('patch'))) {
+                $codContrato = $this->route('contrato');
+                $tipoContrato = (string) (Contrato::query()->find($codContrato)?->tipo_contrato ?? '');
+            }
+            $requiereFin = in_array($tipoContrato, config('rrhh.tipos_contrato_con_fecha_fin', []), true);
+            if ($requiereFin && ! $this->filled('fecha_fin')) {
+                $validator->errors()->add(
+                    'fecha_fin',
+                    'Los contratos a término fijo, obra o labor y aprendizaje requieren fecha de finalización.'
+                );
             }
         });
     }

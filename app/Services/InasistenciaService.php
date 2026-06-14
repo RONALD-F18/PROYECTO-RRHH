@@ -1,11 +1,11 @@
-<?php   
+<?php
 namespace App\Services;
 
 use App\Repositories\Interfaces\InasistenciaInterface;
 
 class InasistenciaService
 {
-    protected $inasistenciaRepository;  
+    protected $inasistenciaRepository;
 
     public function __construct(InasistenciaInterface $inasistenciaRepository)
     {
@@ -15,6 +15,11 @@ class InasistenciaService
     public function getAllInasistencias()
     {
         return $this->inasistenciaRepository->getAllInasistencias();
+    }
+
+    public function buscarInasistencias(?int $codEmpleado = null, ?int $mes = null, ?int $anio = null)
+    {
+        return $this->inasistenciaRepository->buscarInasistencias($codEmpleado, $mes, $anio);
     }
 
     public function getInasistenciaById($cod_inasistencias)
@@ -35,5 +40,10 @@ class InasistenciaService
     public function deleteInasistencia($cod_inasistencias)
     {
         return $this->inasistenciaRepository->deleteInasistencia($cod_inasistencias);
+    }
+
+    public function deleteByEmpleadoId(int $codEmpleado): int
+    {
+        return $this->inasistenciaRepository->deleteByEmpleadoId($codEmpleado);
     }
 }

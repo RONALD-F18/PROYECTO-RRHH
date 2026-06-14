@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Usuario;
+use App\Rules\ContrasenaSegura;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UsuarioRequest extends FormRequest
@@ -61,8 +62,8 @@ class UsuarioRequest extends FormRequest
 
             // contrasena_usuario
             'contrasena_usuario' => $isUpdate
-                ? 'sometimes|bail|string|min:8|max:64'
-                : 'required|bail|string|min:8|max:64',
+                ? ['sometimes', 'bail', 'string', 'min:8', 'max:64', new ContrasenaSegura()]
+                : ['required', 'bail', 'string', 'min:8', 'max:64', new ContrasenaSegura()],
 
             // cod_rol
             'cod_rol' => $isUpdate
@@ -96,6 +97,7 @@ class UsuarioRequest extends FormRequest
             'contrasena_usuario.required' => 'La contraseña es obligatoria.',
             'contrasena_usuario.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'contrasena_usuario.max' => 'La contraseña no puede superar los 64 caracteres.',
+            'contrasena_usuario.min' => 'La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula, número y carácter especial.',
 
             // cod_rol
             'cod_rol.required' => 'El rol es obligatorio.',

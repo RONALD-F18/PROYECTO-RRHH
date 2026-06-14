@@ -94,4 +94,33 @@ class MailService
             throw new \RuntimeException('Error al enviar el correo: ' . $this->mailer->ErrorInfo);
         }
     }
+
+    public function sendContactForm(
+        string $destinatario,
+        string $nombre,
+        string $email,
+        string $asunto,
+        string $mensaje
+    ): void {
+        try {
+            $this->mailer->clearAddresses();
+            $this->mailer->addAddress($destinatario);
+            $this->mailer->addReplyTo($email, $nombre);
+            $this->mailer->isHTML(true);
+            $this->mailer->Subject = '[Talent Sphere] Contacto: '.$asunto;
+
+            $this->mailer->Body = view('emails.contacto', [
+                'nombre' => $nombre,
+                'email' => $email,
+                'asunto' => $asunto,
+                'mensaje' => nl2br(e($mensaje)),
+            ])->render();
+
+            $this->mailer->AltBody = "Contacto Talent Sphere\n\nNombre: {$nombre}\nEmail: {$email}\nAsunto: {$asunto}\n\n{$mensaje}";
+
+            $this->mailer->send();
+        } catch (MailerException $e) {
+            throw new \RuntimeException('Error al enviar el correo de contacto: ' . $this->mailer->ErrorInfo);
+        }
+    }
 }

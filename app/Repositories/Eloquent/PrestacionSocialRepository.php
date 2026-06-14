@@ -27,9 +27,10 @@ class PrestacionSocialRepository implements PrestacionSocialInterface
 
     public function getTotalesPendientes(): array
     {
-        $row = DB::table('prestacion_social_periodo')
+        $pendientes = DB::table('prestacion_social_periodo')
             ->where('estado_pago', 'Pendiente')
             ->selectRaw('
+                COUNT(*) AS cantidad_pendientes,
                 COALESCE(SUM(cesantias_valor), 0) AS total_cesantias,
                 COALESCE(SUM(intereses_cesantias_valor), 0) AS total_intereses,
                 COALESCE(SUM(prima_valor), 0) AS total_prima,
@@ -37,11 +38,36 @@ class PrestacionSocialRepository implements PrestacionSocialInterface
             ')
             ->first();
 
+        $pagados = DB::table('prestacion_social_periodo')
+            ->whereIn('estado_pago', ['Pagado', 'Trasladado'])
+            ->selectRaw('
+                COUNT(*) AS cantidad_pagados,
+                COALESCE(SUM(cesantias_valor), 0) AS total_cesantias,
+                COALESCE(SUM(intereses_cesantias_valor), 0) AS total_intereses,
+                COALESCE(SUM(prima_valor), 0) AS total_prima,
+                COALESCE(SUM(vacaciones_valor), 0) AS total_vacaciones
+            ')
+            ->first();
+
+        $totalCesantias = (float) ($pendientes->total_cesantias ?? 0);
+        $totalIntereses = (float) ($pendientes->total_intereses ?? 0);
+        $totalPrima = (float) ($pendientes->total_prima ?? 0);
+        $totalVacaciones = (float) ($pendientes->total_vacaciones ?? 0);
+
         return [
-            'total_cesantias' => (float) ($row->total_cesantias ?? 0),
-            'total_intereses' => (float) ($row->total_intereses ?? 0),
-            'total_prima' => (float) ($row->total_prima ?? 0),
-            'total_vacaciones' => (float) ($row->total_vacaciones ?? 0),
+            'cantidad_periodos_pendientes' => (int) ($pendientes->cantidad_pendientes ?? 0),
+            'cantidad_periodos_pagados' => (int) ($pagados->cantidad_pagados ?? 0),
+            'total_cesantias' => round($totalCesantias, 2),
+            'total_intereses' => round($totalIntereses, 2),
+            'total_prima' => round($totalPrima, 2),
+            'total_vacaciones' => round($totalVacaciones, 2),
+            'total_general_pendiente' => round($totalCesantias + $totalIntereses + $totalPrima + $totalVacaciones, 2),
+            'totales_pagados' => [
+                'total_cesantias' => round((float) ($pagados->total_cesantias ?? 0), 2),
+                'total_intereses' => round((float) ($pagados->total_intereses ?? 0), 2),
+                'total_prima' => round((float) ($pagados->total_prima ?? 0), 2),
+                'total_vacaciones' => round((float) ($pagados->total_vacaciones ?? 0), 2),
+            ],
         ];
     }
 

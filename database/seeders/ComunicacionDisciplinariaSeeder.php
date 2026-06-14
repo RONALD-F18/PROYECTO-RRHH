@@ -24,7 +24,7 @@ class ComunicacionDisciplinariaSeeder extends Seeder
 
         DB::table('comunicaciones_disciplinarias')->insert([
             [
-                'tipo_comunicacion'       => 'Llamado de atencion escrito',
+                'tipo_comunicacion'       => 'Memorando',
                 'fecha_emision'           => now()->subDays(16)->toDateString(),
                 'fecha_inicio_suspension' => null,
                 'fecha_fin_suspension'    => null,

@@ -2,24 +2,8 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Edad mínima del empleado (fecha de nacimiento)
-    |--------------------------------------------------------------------------
-    */
     'empleado_edad_minima' => (int) env('EMPLEADO_EDAD_MINIMA', 15),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Recuperación de contraseña
-    |--------------------------------------------------------------------------
-    |
-    | PASSWORD_RESET_URL: página con formulario (public/reset-password.html).
-    | Si está vacío, se usa APP_URL + /reset-password.html
-    |
-    | PASSWORD_RESET_RETURN_URL: enlace "Ir a iniciar sesión" tras éxito (front SPA).
-    | Si está vacío, usa FRONTEND_URL.
-    */
     'password_reset_url' => env('PASSWORD_RESET_URL'),
 
     'password_reset_return_url' => env('PASSWORD_RESET_RETURN_URL'),
@@ -28,5 +12,88 @@ return [
         'PASSWORD_RESET_PATH',
         '/reset-password.html'
     ),
+
+    'contacto_email' => env('CONTACTO_EMAIL', 'ronaldacademy223@gmail.com'),
+
+    'tipos_contrato' => [
+        'Termino indefinido',
+        'Termino fijo',
+        'Obra o labor',
+        'Aprendizaje',
+        'Prestacion de servicios',
+    ],
+
+    'tipos_contrato_con_fecha_fin' => [
+        'Termino fijo',
+        'Obra o labor',
+        'Aprendizaje',
+    ],
+
+    'formas_pago' => [
+        'Mensual',
+        'Quincenal',
+        'Por hora',
+    ],
+
+    'modalidades_trabajo' => [
+        'Presencial',
+        'Remoto',
+        'Hibrido',
+    ],
+
+    'horarios_trabajo' => [
+        'Tiempo completo',
+        'Medio tiempo',
+        'Por turnos',
+    ],
+
+    'estados_incapacidad' => [
+        'Activa',
+        'Finalizada',
+        'Cancelada',
+    ],
+
+    'estados_comunicacion' => [
+        'Emitida',
+        'En seguimiento',
+        'Cerrada',
+    ],
+
+    'tipos_comunicacion' => [
+        'Memorando',
+        'Apercibimiento formal',
+        'Suspension disciplinaria',
+        'Compromiso de mejora',
+    ],
+
+    'motivos_comunicacion' => [
+        'Incumplimiento',
+        'Desacato',
+        'Reincidencia',
+        'Conducta',
+        'Retraso',
+    ],
+
+    'estados_afiliacion' => [
+        'Activa',
+        'Inactiva',
+        'Suspendida',
+    ],
+
+    'tipos_regimen' => [
+        'Contributivo',
+        'Subsidiado',
+    ],
+
+    'justificado_inasistencia' => [
+        'SI',
+        'NO',
+    ],
+
+    'estados_prestacion_pago' => [
+        'Pendiente',
+        'Pagado',
+        'Trasladado',
+    ],
 
 ];

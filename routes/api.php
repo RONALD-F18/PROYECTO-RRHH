@@ -46,6 +46,8 @@ use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ReporteRegistroController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\ContactoController;
 
 Route::prefix('v1')->group(function () {
 
@@ -53,11 +55,14 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+    Route::post('/contacto', [ContactoController::class, 'enviar']);
 
     // ——— Requieren autenticación (administrador y funcionario) ———
     Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::get('catalogos', [CatalogoController::class, 'index']);
 
         Route::get('dashboard/resumen', [DashboardController::class, 'resumen']);
 
@@ -71,6 +76,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('bancos', BancoController::class);
         Route::apiResource('cargos', CargoController::class);
         Route::apiResource('contratos', ContratoController::class);
+        Route::get('empleados/{cod_empleado}/inasistencias', [InasistenciaController::class, 'byEmpleado']);
+        Route::delete('empleados/{cod_empleado}/inasistencias', [InasistenciaController::class, 'destroyByEmpleado']);
         Route::apiResource('inasistencias', InasistenciaController::class);
         Route::apiResource('empresas', EmpresaController::class);
         Route::apiResource('comunicaciones_disciplinarias', ComunicacionDisciplinariaController::class);

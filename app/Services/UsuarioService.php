@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\Interfaces\UsuarioInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -48,6 +49,12 @@ class UsuarioService
 
     public function deleteUsuario($id)
     {
-        return $this->usuarioRepository->deleteUsuario($id);
+        try {
+            return $this->usuarioRepository->deleteUsuario($id);
+        } catch (QueryException $e) {
+            throw new \RuntimeException(
+                'No se puede eliminar el usuario porque tiene registros asociados (calendario, comunicaciones u otros). Reasigne o elimine esos registros primero.'
+            );
+        }
     }
 }

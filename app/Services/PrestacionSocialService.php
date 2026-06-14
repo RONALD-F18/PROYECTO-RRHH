@@ -171,7 +171,7 @@ class PrestacionSocialService
             $primaTramo = ($baseCesantiasTramo * $diasTramo) / self::DIAS_ANIO_LABORAL;
             $vacacionesTramo = ($salarioBase * $diasTramo) / 720;
 
-            $acumuladoAuxilio += ($auxilioTramo * $diasTramo) / 30;
+            $acumuladoAuxilio += ($auxilioTramo * $diasTramo) / self::DIAS_ANIO_LABORAL;
             $cesantiasValor += $cesantiasTramo;
             $interesesCesantiasValor += $interesesTramo;
             $primaValor += $primaTramo;

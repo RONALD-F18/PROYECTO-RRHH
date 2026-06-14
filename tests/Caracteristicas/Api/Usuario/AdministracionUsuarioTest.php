@@ -52,7 +52,7 @@ class AdministracionUsuarioTest extends TestCase
         $carga = [
             'nombre_usuario' => 'nuevo_funcionario_test',
             'email_usuario' => 'nuevo.func@prueba.local',
-            'contrasena_usuario' => 'PasswordLarga1',
+            'contrasena_usuario' => 'PasswordLarga1@',
             'cod_rol' => $codRolFuncionario,
             'estado_usuario' => true,
         ];
@@ -69,7 +69,7 @@ class AdministracionUsuarioTest extends TestCase
         ]);
 
         $creado = Usuario::query()->where('email_usuario', 'nuevo.func@prueba.local')->first();
-        $this->assertTrue(Hash::check('PasswordLarga1', $creado->contrasena_usuario));
+        $this->assertTrue(Hash::check('PasswordLarga1@', $creado->contrasena_usuario));
     }
 
     public function test_administrador_no_puede_crear_otro_administrador_por_api(): void
@@ -80,7 +80,7 @@ class AdministracionUsuarioTest extends TestCase
         $this->conJwt($admin)->postJson(route('usuarios.store'), [
             'nombre_usuario' => 'admin_nuevo_mal',
             'email_usuario' => 'admin.mal@prueba.local',
-            'contrasena_usuario' => 'PasswordLarga1',
+            'contrasena_usuario' => 'PasswordLarga1@',
             'cod_rol' => $codRolAdmin,
             'estado_usuario' => true,
         ])->assertForbidden()
@@ -95,7 +95,7 @@ class AdministracionUsuarioTest extends TestCase
         $this->conJwt($funcionario)->postJson(route('usuarios.store'), [
             'nombre_usuario' => 'no_debe_existir',
             'email_usuario' => 'no.debe@prueba.local',
-            'contrasena_usuario' => 'PasswordLarga1',
+            'contrasena_usuario' => 'PasswordLarga1@',
             'cod_rol' => $codRolFuncionario,
             'estado_usuario' => true,
         ])->assertForbidden();

@@ -90,9 +90,13 @@ class IncapacidadController extends Controller
         if (!$incapacidad) {
             return response()->json(['message' => 'Incapacidad no encontrada'], 404);
         }
+        $distribucion = $this->incapacidadService->calcularDistribucionPagos($incapacidad);
         return response()->json([
             'message' => 'Incapacidad actualizada correctamente',
-            'data' => $incapacidad,
+            'data' => [
+                'incapacidad' => $incapacidad,
+                'distribucion_pagos' => $distribucion,
+            ],
         ], 200);
     }
 

@@ -15,6 +15,11 @@ class EpsSeeder extends Seeder
             ['nombre_eps' => 'Sanitas EPS', 'descripcion_eps' => 'Entidad promotora de salud con énfasis en atención integral.'],
             ['nombre_eps' => 'Compensar EPS', 'descripcion_eps' => 'Caja de compensación con EPS propia para sus afiliados.'],
             ['nombre_eps' => 'Famisanar EPS', 'descripcion_eps' => 'EPS producto de la alianza entre Cafam y Colsubsidio.'],
+            ['nombre_eps' => 'Salud Total EPS', 'descripcion_eps' => 'EPS con presencia en varias regiones del país.'],
+            ['nombre_eps' => 'Coomeva EPS', 'descripcion_eps' => 'EPS del grupo Coomeva.'],
+            ['nombre_eps' => 'Medimás EPS', 'descripcion_eps' => 'EPS del régimen subsidiado con cobertura regional.'],
+            ['nombre_eps' => 'Aliansalud EPS', 'descripcion_eps' => 'EPS del Grupo Colsanitas.'],
+            ['nombre_eps' => 'SOS EPS', 'descripcion_eps' => 'EPS con enfoque en urgencias y atención básica.'],
         ];
 
         foreach ($epsList as $eps) {

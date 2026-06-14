@@ -60,6 +60,14 @@ class ReporteService
         $payload['codigo'] = 'RPT-' . str_pad((string) $reporte->cod_reporte, 6, '0', STR_PAD_LEFT);
         $payload['fecha']  = $reporte->fecha_emision;
 
+        if (! empty($params['descripcion'])) {
+            $payload['descripcion_usuario'] = $params['descripcion'];
+            $payload['parametros'] = array_merge(
+                $payload['parametros'] ?? [],
+                ['Descripción' => $params['descripcion']]
+            );
+        }
+
         return $payload;
     }
 
@@ -280,8 +288,8 @@ class ReporteService
         $inasistencias = $this->inasistenciaRepository->getAllInasistencias();
         $total         = $inasistencias->count();
 
-        $justificadas   = $inasistencias->where('justificado', true)->count();
-        $noJustificadas = $inasistencias->where('justificado', false)->count();
+        $justificadas   = $inasistencias->filter(fn ($i) => strtoupper((string) ($i->justificado ?? '')) === 'SI')->count();
+        $noJustificadas = $inasistencias->filter(fn ($i) => strtoupper((string) ($i->justificado ?? '')) === 'NO')->count();
 
         $porMes = $inasistencias->groupBy(function ($i) {
             return Carbon::parse($i->fecha_inasistencia)->format('Y-m');

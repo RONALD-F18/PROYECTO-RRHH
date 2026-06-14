@@ -238,6 +238,59 @@ class EmpleadoRequest extends FormRequest
         ];
     }
 
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            if (! $this->filled('fecha_nac') || $validator->errors()->has('fecha_nac')) {
+                return;
+            }
+
+            $codEmpleado = $this->route('empleado');
+            if (! $codEmpleado) {
+                return;
+            }
+
+            $empleado = Empleado::query()->find($codEmpleado);
+            if (! $empleado || ! $empleado->fecha_nac) {
+                return;
+            }
+
+            $fechaNacAnterior = \Carbon\Carbon::parse($empleado->fecha_nac)->toDateString();
+            $fechaNacNueva = \Carbon\Carbon::parse($this->input('fecha_nac'))->toDateString();
+            if ($fechaNacAnterior === $fechaNacNueva) {
+                return;
+            }
+
+            $contratos = Contrato::query()
+                ->where('cod_empleado', $codEmpleado)
+                ->whereNotNull('fecha_ingreso')
+                ->get(['fecha_ingreso']);
+
+            $fechaNac = \Carbon\Carbon::parse($fechaNacNueva)->startOfDay();
+            $edadMinima = max(15, (int) config('rrhh.empleado_edad_minima', 15));
+            $fechaMinimaLaboral = $fechaNac->copy()->addYears($edadMinima);
+            $fechaMinimaCc = $fechaNac->copy()->addYears(18);
+
+            foreach ($contratos as $contrato) {
+                $ingreso = \Carbon\Carbon::parse($contrato->fecha_ingreso)->startOfDay();
+                if ($ingreso->lt($fechaMinimaLaboral)) {
+                    $validator->errors()->add(
+                        'fecha_nac',
+                        'La nueva fecha de nacimiento no es coherente: el empleado tiene contratos con ingreso anterior a cumplir '.$edadMinima.' años.'
+                    );
+                    break;
+                }
+                if (strtoupper((string) $empleado->tipo_documento) === 'CC' && $ingreso->lt($fechaMinimaCc)) {
+                    $validator->errors()->add(
+                        'fecha_nac',
+                        'La nueva fecha de nacimiento no es coherente: con CC los contratos exigen ingreso a partir de los 18 años.'
+                    );
+                    break;
+                }
+            }
+        });
+    }
+
     public function messages(): array
     {
         $edadMin = max(15, (int) config('rrhh.empleado_edad_minima', 15));

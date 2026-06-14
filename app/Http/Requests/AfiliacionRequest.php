@@ -6,6 +6,7 @@ use App\Models\Afiliacion;
 use App\Models\Empleado;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AfiliacionRequest extends FormRequest
 {
@@ -52,8 +53,8 @@ class AfiliacionRequest extends FormRequest
             ? 'sometimes|required|date'
             : 'required|date',
             'estado_afiliacion' => $isMethodPut
-            ? 'sometimes|required|string|max:20'
-            : 'required|string|max:20',
+            ? ['sometimes', 'required', 'string', 'max:20', Rule::in(config('rrhh.estados_afiliacion'))]
+            : ['required', 'string', 'max:20', Rule::in(config('rrhh.estados_afiliacion'))],
             'cod_eps' => $isMethodPut
             ? 'sometimes|required|integer|exists:eps,cod_eps'
             : 'required|integer|exists:eps,cod_eps',
@@ -79,8 +80,8 @@ class AfiliacionRequest extends FormRequest
             ? 'sometimes|required|string|max:200'
             : 'required|string|max:200',
             'tipo_regimen' => $isMethodPut
-            ? 'sometimes|required|string|max:12'
-            : 'required|string|max:12',
+            ? ['sometimes', 'required', 'string', 'max:12', Rule::in(config('rrhh.tipos_regimen'))]
+            : ['required', 'string', 'max:12', Rule::in(config('rrhh.tipos_regimen'))],
 ];
     }
 

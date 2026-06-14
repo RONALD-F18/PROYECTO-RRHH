@@ -7,6 +7,7 @@ use App\Models\Empleado;
 use App\Models\Incapacidad;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IncapacidadRequest extends FormRequest
 {
@@ -17,6 +18,21 @@ class IncapacidadRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if ($this->has('estado_incapacidad') && is_string($this->estado_incapacidad)) {
+            $map = [
+                'activa' => 'Activa',
+                'activo' => 'Activa',
+                'finalizada' => 'Finalizada',
+                'finalizado' => 'Finalizada',
+                'cancelada' => 'Cancelada',
+                'cancelado' => 'Cancelada',
+            ];
+            $clave = mb_strtolower(trim($this->estado_incapacidad));
+            if (isset($map[$clave])) {
+                $this->merge(['estado_incapacidad' => $map[$clave]]);
+            }
+        }
+
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
             return;
         }
@@ -67,7 +83,9 @@ class IncapacidadRequest extends FormRequest
             'cod_tipo_incapacidad' => $isUpdate ? 'bail|sometimes|required|integer|exists:tipo_incapacidad,cod_tipo_incapacidad' : 'required|integer|exists:tipo_incapacidad,cod_tipo_incapacidad',
             'cod_empleado' => $isUpdate ? 'bail|sometimes|required|integer|exists:empleados,cod_empleado' : 'required|integer|exists:empleados,cod_empleado',
             'cod_clasificacion_enfermedad' => 'nullable|integer|exists:clasificacion_enfermedad,cod_clasificacion_enfermedad',
-            'estado_incapacidad' => $isUpdate ? 'bail|sometimes|nullable|string|max:25|in:Activa,Finalizada,Cancelada' : 'nullable|string|max:25|in:Activa,Finalizada,Cancelada',
+            'estado_incapacidad' => $isUpdate
+                ? ['bail', 'sometimes', 'nullable', 'string', 'max:25', Rule::in(config('rrhh.estados_incapacidad'))]
+                : ['nullable', 'string', 'max:25', Rule::in(config('rrhh.estados_incapacidad'))],
         ];
     }
 

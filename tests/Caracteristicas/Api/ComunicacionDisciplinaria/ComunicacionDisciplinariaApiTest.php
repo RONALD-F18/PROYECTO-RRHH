@@ -22,7 +22,7 @@ class ComunicacionDisciplinariaApiTest extends TestCase
             $base['usuario'],
             '/api/v1/comunicaciones_disciplinarias',
             [
-                'tipo_comunicacion' => 'Llamado de atencion',
+                'tipo_comunicacion' => 'Memorando',
                 'fecha_emision' => '2024-05-01',
                 'estado_comunicacion' => 'Activa',
                 'motivo_comunicacion' => 'Retraso',
