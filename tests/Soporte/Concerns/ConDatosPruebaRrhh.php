@@ -137,7 +137,7 @@ trait ConDatosPruebaRrhh
             'tipo_documento' => 'CC',
             'doc_iden' => (string) random_int(10000000, 99999999),
             'fecha_nac' => '1992-03-10',
-            'sexo' => 'FEMENINO',
+            'sexo' => 'Femenino',
             'direccion' => 'Carrera 45 Numero 12 Bogota',
             'numero_telefono' => '3'.random_int(100000000, 999999999),
             'correo_empleado' => 'api_emp_'.uniqid('', true).'@gmail.com',

@@ -82,8 +82,9 @@ return [
     ],
 
     'sexos_empleado' => [
-        'MASCULINO',
-        'FEMENINO',
+        'Masculino',
+        'Femenino',
+        'Otro',
     ],
 
     'tipos_documento' => [

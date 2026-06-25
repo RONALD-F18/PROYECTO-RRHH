@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Contrato;
 use App\Models\Empleado;
+use App\Support\RrhhCatalog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -40,49 +41,77 @@ class EmpleadoRequest extends FormRequest
         }
 
         if ($this->has('sexo') && is_string($this->sexo)) {
-            $this->merge(['sexo' => strtoupper(trim($this->sexo))]);
+            $mapaLegacy = [
+                'masculino' => 'Masculino',
+                'femenino' => 'Femenino',
+                'otro' => 'Otro',
+                'm' => 'Masculino',
+                'f' => 'Femenino',
+            ];
+            $raw = trim($this->sexo);
+            $clave = mb_strtolower($raw);
+            $normalizado = $mapaLegacy[$clave]
+                ?? RrhhCatalog::normalizar($raw, config('rrhh.sexos_empleado', []));
+            if ($normalizado !== null) {
+                $this->merge(['sexo' => $normalizado]);
+            }
         }
 
         if ($this->has('tipo_documento') && is_string($this->tipo_documento)) {
             $this->merge(['tipo_documento' => strtoupper(trim($this->tipo_documento))]);
         }
+    }
 
+    private function empleadoEnEdicion(): ?Empleado
+    {
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
-            return;
+            return null;
         }
 
         $cod = $this->route('empleado');
-        if (! $cod) {
-            return;
+
+        return $cod ? Empleado::query()->find($cod) : null;
+    }
+
+    private function tipoDocumentoParaValidacion(?Empleado $empleado = null): ?string
+    {
+        if ($this->filled('tipo_documento')) {
+            return strtoupper((string) $this->input('tipo_documento'));
         }
 
-        $empleado = Empleado::query()->find($cod);
-        if (! $empleado) {
-            return;
+        $empleado ??= $this->empleadoEnEdicion();
+
+        return $empleado?->tipo_documento
+            ? strtoupper((string) $empleado->tipo_documento)
+            : null;
+    }
+
+    private function fechaNacimientoParaValidacion(?Empleado $empleado = null): ?string
+    {
+        if ($this->filled('fecha_nac')) {
+            try {
+                return Carbon::parse($this->input('fecha_nac'))->toDateString();
+            } catch (\Throwable) {
+                return null;
+            }
         }
 
-        $merge = [];
-        if (! $this->filled('fecha_nac') && $empleado->fecha_nac) {
-            $fn = $empleado->fecha_nac;
-            $merge['fecha_nac'] = $fn instanceof \DateTimeInterface
-                ? $fn->format('Y-m-d')
-                : (string) $fn;
+        $empleado ??= $this->empleadoEnEdicion();
+        if (! $empleado?->fecha_nac) {
+            return null;
         }
-        if (! $this->filled('tipo_documento') && $empleado->tipo_documento) {
-            $merge['tipo_documento'] = $empleado->tipo_documento;
-        }
-        if (! $this->filled('fec_exp_doc') && $empleado->fec_exp_doc) {
-            $fe = $empleado->fec_exp_doc;
-            $merge['fec_exp_doc'] = $fe instanceof \DateTimeInterface
-                ? $fe->format('Y-m-d')
-                : (string) $fe;
-        }
-        if (! $this->filled('sexo') && $empleado->sexo) {
-            $merge['sexo'] = $empleado->sexo;
-        }
-        if ($merge !== []) {
-            $this->merge($merge);
-        }
+
+        $fn = $empleado->fecha_nac;
+
+        return $fn instanceof \DateTimeInterface
+            ? $fn->format('Y-m-d')
+            : (string) $fn;
+    }
+
+    private function campoEnviado(string $campo): bool
+    {
+        return $this->isMethod('post')
+            || $this->exists($campo);
     }
 
     public function rules(): array
@@ -99,17 +128,33 @@ class EmpleadoRequest extends FormRequest
 
         $fecExpRules = [
             'bail',
-            $isMethodPut ? 'sometimes' : null,
-            $isMethodPut ? 'required' : 'required',
+            $isMethodPut ? 'sometimes' : 'required',
             'date',
-            'after:fecha_nac',
             'before_or_equal:today',
             Rule::when(
-                fn () => $this->input('tipo_documento') === 'CC' && $this->filled('fecha_nac'),
+                fn () => $this->campoEnviado('fec_exp_doc') && $this->fechaNacimientoParaValidacion() !== null,
                 [
                     function (string $attribute, mixed $value, \Closure $fail): void {
                         try {
-                            $nac = Carbon::parse($this->input('fecha_nac'));
+                            $nac = Carbon::parse((string) $this->fechaNacimientoParaValidacion())->startOfDay();
+                            $exp = Carbon::parse($value)->startOfDay();
+                            if ($exp->lte($nac)) {
+                                $fail('La fecha de expedición debe ser posterior a la fecha de nacimiento.');
+                            }
+                        } catch (\Throwable) {
+                            $fail('Las fechas de nacimiento y expedición no son válidas.');
+                        }
+                    },
+                ]
+            ),
+            Rule::when(
+                fn () => $this->campoEnviado('fec_exp_doc')
+                    && $this->tipoDocumentoParaValidacion() === 'CC'
+                    && $this->fechaNacimientoParaValidacion() !== null,
+                [
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        try {
+                            $nac = Carbon::parse((string) $this->fechaNacimientoParaValidacion());
                             $exp = Carbon::parse($value);
                             if ($exp->lt($nac->copy()->addYearsNoOverflow(18))) {
                                 $fail('Con cédula de ciudadanía (CC), la expedición debe ser en o después de cumplir 18 años.');
@@ -121,11 +166,13 @@ class EmpleadoRequest extends FormRequest
                 ]
             ),
             Rule::when(
-                fn () => $this->input('tipo_documento') === 'TI' && $this->filled('fecha_nac'),
+                fn () => $this->campoEnviado('fec_exp_doc')
+                    && $this->tipoDocumentoParaValidacion() === 'TI'
+                    && $this->fechaNacimientoParaValidacion() !== null,
                 [
                     function (string $attribute, mixed $value, \Closure $fail): void {
                         try {
-                            $nac = Carbon::parse($this->input('fecha_nac'));
+                            $nac = Carbon::parse((string) $this->fechaNacimientoParaValidacion());
                             $exp = Carbon::parse($value);
                             if ($exp->lt($nac->copy()->addYearsNoOverflow(7))) {
                                 $fail('Con tarjeta de identidad (TI), la expedición debe ser en o después de cumplir 7 años.');
@@ -137,8 +184,6 @@ class EmpleadoRequest extends FormRequest
                 ]
             ),
         ];
-
-        $fecExpRules = array_values(array_filter($fecExpRules, fn ($r) => $r !== null));
 
         return [
             'nombre_empleado' => $isMethodPut
@@ -161,32 +206,35 @@ class EmpleadoRequest extends FormRequest
                     ? Rule::unique('empleados', 'doc_iden')->ignore((string) $docIgnoreId, 'cod_empleado')
                     : Rule::unique('empleados', 'doc_iden'),
                 Rule::when(
-                    fn () => in_array($this->input('tipo_documento'), ['CC', 'CE', 'TI'], true),
+                    fn () => $this->campoEnviado('doc_iden')
+                        && in_array($this->tipoDocumentoParaValidacion(), ['CC', 'CE', 'TI'], true),
                     ['regex:/^[0-9]{5,10}$/']
                 ),
                 Rule::when(
-                    fn () => $this->input('tipo_documento') === 'PASAPORTE',
+                    fn () => $this->campoEnviado('doc_iden')
+                        && $this->tipoDocumentoParaValidacion() === 'PASAPORTE',
                     ['regex:/^[A-Za-z0-9\-]{3,50}$/']
                 ),
             ],
 
             'fecha_nac' => array_values(array_filter([
                 'bail',
-                $isMethodPut ? 'sometimes' : null,
-                $isMethodPut ? 'required' : 'required',
+                $isMethodPut ? 'sometimes' : 'required',
+                ! $isMethodPut ? 'required' : null,
                 'date',
                 'before:today',
                 'after_or_equal:'.$limite120,
                 Rule::when(
-                    fn () => ! in_array($this->input('tipo_documento'), ['CC', 'TI'], true),
+                    fn () => $this->campoEnviado('fecha_nac')
+                        && ! in_array($this->tipoDocumentoParaValidacion(), ['CC', 'TI'], true),
                     ['before_or_equal:'.$fechaTopeEdadMin]
                 ),
                 Rule::when(
-                    fn () => $this->input('tipo_documento') === 'CC',
+                    fn () => $this->campoEnviado('fecha_nac') && $this->tipoDocumentoParaValidacion() === 'CC',
                     ['before_or_equal:'.$fechaTopeMayoria18]
                 ),
                 Rule::when(
-                    fn () => $this->input('tipo_documento') === 'TI',
+                    fn () => $this->campoEnviado('fecha_nac') && $this->tipoDocumentoParaValidacion() === 'TI',
                     [
                         'before_or_equal:'.$fechaTopeMayoria18,
                         'after_or_equal:'.$fechaTopeTiMin,
@@ -195,8 +243,8 @@ class EmpleadoRequest extends FormRequest
             ], fn ($r) => $r !== null)),
 
             'sexo' => $isMethodPut
-                ? 'bail|sometimes|required|string|in:MASCULINO,FEMENINO'
-                : 'bail|required|string|in:MASCULINO,FEMENINO',
+                ? ['bail', 'sometimes', 'required', 'string', Rule::in(config('rrhh.sexos_empleado'))]
+                : ['bail', 'required', 'string', Rule::in(config('rrhh.sexos_empleado'))],
 
             'direccion' => $isMethodPut
                 ? 'bail|sometimes|required|string|min:10|max:200'
@@ -294,7 +342,7 @@ class EmpleadoRequest extends FormRequest
                     ];
 
                     foreach ($camposProtegidos as $campo => $etiqueta) {
-                        if (! $this->filled($campo) || $validator->errors()->has($campo)) {
+                        if (! $this->campoEnviado($campo) || $validator->errors()->has($campo)) {
                             continue;
                         }
 
@@ -322,12 +370,16 @@ class EmpleadoRequest extends FormRequest
                     }
                 }
 
-                if ($this->filled('tipo_documento') && $this->filled('fecha_nac') && ! $validator->errors()->has('fecha_nac')) {
+                if ($this->campoEnviado('tipo_documento') && ! $validator->errors()->has('fecha_nac')) {
                     $tipoNuevo = strtoupper((string) $this->input('tipo_documento'));
                     $tipoAnterior = strtoupper((string) $empleado->tipo_documento);
                     if ($tipoNuevo !== $tipoAnterior) {
+                        $fechaRef = $this->fechaNacimientoParaValidacion($empleado);
+                        if ($fechaRef === null) {
+                            return;
+                        }
                         try {
-                            $nac = Carbon::parse($this->input('fecha_nac'));
+                            $nac = Carbon::parse($fechaRef);
                             $hoy = now()->startOfDay();
                             if ($tipoNuevo === 'TI' && $nac->lte($hoy->copy()->subYears(18))) {
                                 $validator->errors()->add(
@@ -348,7 +400,7 @@ class EmpleadoRequest extends FormRequest
                 }
             }
 
-            if (! $this->filled('fecha_nac') || $validator->errors()->has('fecha_nac')) {
+            if (! $this->campoEnviado('fecha_nac') || $validator->errors()->has('fecha_nac')) {
                 return;
             }
 
@@ -413,7 +465,7 @@ class EmpleadoRequest extends FormRequest
             'tipo_documento.in' => 'El tipo de documento debe ser CC, CE, TI o PASAPORTE.',
 
             'sexo.required' => 'El sexo es obligatorio.',
-            'sexo.in' => 'El sexo debe ser MASCULINO o FEMENINO.',
+            'sexo.in' => 'El sexo debe ser: '.implode(', ', config('rrhh.sexos_empleado')).'.',
 
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nac.before' => 'La fecha de nacimiento no puede ser hoy ni una fecha futura.',

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('empleados', function (Blueprint $table) {
-            $table->string('sexo', 20)->default('MASCULINO')->after('fecha_nac');
+            $table->string('sexo', 20)->default('Masculino')->after('fecha_nac');
         });
     }
 
