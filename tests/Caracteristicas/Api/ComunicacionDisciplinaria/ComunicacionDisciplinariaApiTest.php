@@ -24,13 +24,16 @@ class ComunicacionDisciplinariaApiTest extends TestCase
             [
                 'tipo_comunicacion' => 'MEMORANDO',
                 'fecha_emision' => '2024-05-01',
-                'estado_comunicacion' => 'Activa',
+                'fecha_inicio_suspension' => '2024-05-02',
+                'fecha_fin_suspension' => '2024-05-02',
+                'dias_suspension' => 1,
+                'estado_comunicacion' => 'EMITIDO',
                 'motivo_comunicacion' => 'Retraso',
                 'descripcion' => 'Retardo reiterado',
                 'cod_empleado' => $base['empleado']->cod_empleado,
             ],
             [
-                'estado_comunicacion' => 'Cerrada',
+                'estado_comunicacion' => 'NOTIFICADO',
                 'motivo_comunicacion' => 'Retraso',
             ],
             'cod_disciplinario'

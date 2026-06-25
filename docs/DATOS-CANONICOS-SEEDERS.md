@@ -30,9 +30,10 @@ Tras `php artisan migrate:fresh --seed`, la BD y `GET /api/v1/catalogos` usan **
 
 ## Comunicaciones disciplinarias
 
-- Solo `tipo_comunicacion`: `Memorando`
-- `estado_comunicacion`: `Emitida` | `En seguimiento` | `Cerrada`
-- `motivo_comunicacion`: `Incumplimiento` | `Desacato` | `Reincidencia` | `Conducta` | `Retraso`
+- `tipo_comunicacion`: `LLAMADO_VERBAL` | `MEMORANDO` | `FELICITACION`
+- `estado_comunicacion`: `EMITIDO` | `NOTIFICADO`
+- `motivo_comunicacion`: texto libre (máx. 20 caracteres)
+- Memorando: requiere `fecha_inicio_suspension`, `fecha_fin_suspension` y `dias_suspension` ≥ 1
 
 ## Usuarios demo (login)
 
