@@ -15,9 +15,14 @@ class ComunicacionDisciplinariaRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $mapTipos = [
-            'llamado de atencion escrito' => 'Memorando',
-            'llamado de atencion' => 'Memorando',
-            'memorando' => 'Memorando',
+            'llamado de atencion escrito' => 'MEMORANDO',
+            'llamado de atencion' => 'MEMORANDO',
+            'memorando' => 'MEMORANDO',
+            'suspension' => 'SUSPENSION',
+            'suspensión' => 'SUSPENSION',
+            'suspension disciplinaria' => 'SUSPENSION',
+            'felicitacion' => 'FELICITACION',
+            'felicitación' => 'FELICITACION',
         ];
 
         if ($this->has('tipo_comunicacion') && is_string($this->tipo_comunicacion)) {

@@ -54,13 +54,14 @@ return [
     ],
 
     'estados_comunicacion' => [
-        'Emitida',
-        'En seguimiento',
-        'Cerrada',
+        'EMITIDO',
+        'NOTIFICADO',
     ],
 
     'tipos_comunicacion' => [
-        'Memorando',
+        'MEMORANDO',
+        'SUSPENSION',
+        'FELICITACION',
     ],
 
     'motivos_comunicacion' => [
