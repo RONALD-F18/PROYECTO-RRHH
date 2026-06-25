@@ -13,6 +13,6 @@
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]
 
-    # React SPA (HashRouter: /#/login)
+    # React SPA (BrowserRouter: /login, /dashboard, etc.)
     RewriteRule ^ index.html [L]
 </IfModule>
