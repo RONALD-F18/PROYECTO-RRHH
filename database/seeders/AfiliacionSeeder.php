@@ -4,16 +4,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Afiliacion;
 
 class AfiliacionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Usamos los primeros registros de cada tabla relacionada
-        $empleados = DB::table('empleados')->orderBy('cod_empleado')->take(2)->get();
+        $empleado1 = DB::table('empleados')->where('doc_iden', '7954321012')->first();
+        $empleado2 = DB::table('empleados')->where('doc_iden', '5287654321')->first();
 
-        if ($empleados->isEmpty()) {
+        if (! $empleado1 || ! $empleado2) {
             return;
         }
 
@@ -35,16 +34,13 @@ class AfiliacionSeeder extends Seeder
             return;
         }
 
-        $empleado1 = $empleados[0];
-        $empleado2 = $empleados[count($empleados) > 1 ? 1 : 0];
-
         $afiliaciones = [
             [
                 'fecha_afiliacion_eps' => '2024-01-15',
-                'fecha_afiliacion_arl' => '2024-01-16',
-                'fecha_afiliacion_caja' => '2024-01-17',
-                'fecha_afiliacion_fondo_pensiones' => '2024-01-18',
-                'fecha_afiliacion_fondo_cesantias' => '2024-01-19',
+                'fecha_afiliacion_arl' => '2024-01-15',
+                'fecha_afiliacion_caja' => '2024-01-15',
+                'fecha_afiliacion_fondo_pensiones' => '2024-01-15',
+                'fecha_afiliacion_fondo_cesantias' => '2024-01-15',
                 'estado_afiliacion' => 'Activa',
                 'cod_eps' => $epsIds[0],
                 'cod_arl' => $arlIds[0],
@@ -53,15 +49,17 @@ class AfiliacionSeeder extends Seeder
                 'cod_fondo_cesantias' => $cesantiaIds[0],
                 'cod_caja_compensacion' => $cajaIds[0],
                 'cod_empleado' => $empleado1->cod_empleado,
-                'descripcion' => 'Afiliación integral para empleado del área de operaciones.',
+                'descripcion' => 'Afiliacion integral empleado operaciones.',
                 'tipo_regimen' => 'Contributivo',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'fecha_afiliacion_eps' => '2024-02-01',
-                'fecha_afiliacion_arl' => '2024-02-02',
-                'fecha_afiliacion_caja' => '2024-02-03',
-                'fecha_afiliacion_fondo_pensiones' => '2024-02-04',
-                'fecha_afiliacion_fondo_cesantias' => '2024-02-05',
+                'fecha_afiliacion_eps' => '2024-03-01',
+                'fecha_afiliacion_arl' => '2024-03-01',
+                'fecha_afiliacion_caja' => '2024-03-01',
+                'fecha_afiliacion_fondo_pensiones' => '2024-03-01',
+                'fecha_afiliacion_fondo_cesantias' => '2024-03-01',
                 'estado_afiliacion' => 'Activa',
                 'cod_eps' => $epsIds[1] ?? $epsIds[0],
                 'cod_arl' => $arlIds[1] ?? $arlIds[0],
@@ -70,14 +68,18 @@ class AfiliacionSeeder extends Seeder
                 'cod_fondo_cesantias' => $cesantiaIds[1] ?? $cesantiaIds[0],
                 'cod_caja_compensacion' => $cajaIds[1] ?? $cajaIds[0],
                 'cod_empleado' => $empleado2->cod_empleado,
-                'descripcion' => 'Afiliación integral para empleada del área financiera.',
+                'descripcion' => 'Afiliacion integral empleada financiera.',
                 'tipo_regimen' => 'Contributivo',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ];
 
         foreach ($afiliaciones as $data) {
-            Afiliacion::create($data);
+            DB::table('afiliaciones')->updateOrInsert(
+                ['cod_empleado' => $data['cod_empleado']],
+                $data
+            );
         }
     }
 }
-

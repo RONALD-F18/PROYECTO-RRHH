@@ -13,7 +13,7 @@ class CertificacionSeeder extends Seeder
         $empleado1 = DB::table('empleados')->where('doc_iden', '7954321012')->first();
         $empleado2 = DB::table('empleados')->where('doc_iden', '5287654321')->first();
 
-        if (!$empresa || !$empleado1 || !$empleado2) {
+        if (! $empresa || ! $empleado1 || ! $empleado2) {
             return;
         }
 
@@ -23,89 +23,92 @@ class CertificacionSeeder extends Seeder
         $afiliacion1 = DB::table('afiliaciones')->where('cod_empleado', $empleado1->cod_empleado)->orderByDesc('cod_afiliacion')->first();
         $afiliacion2 = DB::table('afiliaciones')->where('cod_empleado', $empleado2->cod_empleado)->orderByDesc('cod_afiliacion')->first();
 
-        $a1eps = $afiliacion1->cod_eps ?? null;
-        $a1arl = $afiliacion1->cod_arl ?? null;
-        $a1pen = $afiliacion1->cod_fondo_pensiones ?? null;
-        $a1caja = $afiliacion1->cod_caja_compensacion ?? null;
-        $a1ces = $afiliacion1->cod_fondo_cesantias ?? null;
-        $a2eps = $afiliacion2->cod_eps ?? null;
-        $a2pen = $afiliacion2->cod_fondo_pensiones ?? null;
-        $a2ces = $afiliacion2->cod_fondo_cesantias ?? null;
-
-        DB::table('certificaciones')->insert([
+        $certificaciones = [
             [
-                'id_empresa'          => $empresa->id_empresa,
-                'cod_empleado'        => $empleado1->cod_empleado,
-                'cod_contrato'        => $contrato1->cod_contrato ?? null,
-                'tipo_certificacion'  => 'LABORAL',
-                'incluye_salario'     => true,
+                'clave' => 'laboral-carlos',
+                'id_empresa' => $empresa->id_empresa,
+                'cod_empleado' => $empleado1->cod_empleado,
+                'cod_contrato' => $contrato1->cod_contrato ?? null,
+                'tipo_certificacion' => 'LABORAL',
+                'incluye_salario' => true,
                 'salario_certificado' => 2800000,
-                'cod_eps'             => null,
-                'cod_arl'             => null,
-                'cod_pension'         => null,
-                'cod_caja'            => null,
-                'cod_cesantias'       => null,
-                'fecha_emision'       => now()->subDays(20)->toDateString(),
-                'ciudad_emision'      => 'Medellín',
-                'descripcion'         => 'Certificación laboral para trámite bancario.',
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'cod_eps' => null,
+                'cod_arl' => null,
+                'cod_pension' => null,
+                'cod_caja' => null,
+                'cod_cesantias' => null,
+                'fecha_emision' => now()->subDays(20)->toDateString(),
+                'ciudad_emision' => 'Medellin',
+                'descripcion' => 'Certificacion laboral para tramite bancario.',
             ],
             [
-                'id_empresa'          => $empresa->id_empresa,
-                'cod_empleado'        => $empleado2->cod_empleado,
-                'cod_contrato'        => $contrato2->cod_contrato ?? null,
-                'tipo_certificacion'  => 'LABORAL',
-                'incluye_salario'     => false,
+                'clave' => 'laboral-ana',
+                'id_empresa' => $empresa->id_empresa,
+                'cod_empleado' => $empleado2->cod_empleado,
+                'cod_contrato' => $contrato2->cod_contrato ?? null,
+                'tipo_certificacion' => 'LABORAL',
+                'incluye_salario' => false,
                 'salario_certificado' => null,
-                'cod_eps'             => null,
-                'cod_arl'             => null,
-                'cod_pension'         => null,
-                'cod_caja'            => null,
-                'cod_cesantias'       => null,
-                'fecha_emision'       => now()->subDays(12)->toDateString(),
-                'ciudad_emision'      => 'Bogotá D.C.',
-                'descripcion'         => 'Certificación laboral emitida para trámite de vivienda.',
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'cod_eps' => null,
+                'cod_arl' => null,
+                'cod_pension' => null,
+                'cod_caja' => null,
+                'cod_cesantias' => null,
+                'fecha_emision' => now()->subDays(12)->toDateString(),
+                'ciudad_emision' => 'Bogota D.C.',
+                'descripcion' => 'Certificacion laboral para tramite de vivienda.',
             ],
             [
-                'id_empresa'          => $empresa->id_empresa,
-                'cod_empleado'        => $empleado1->cod_empleado,
-                'cod_contrato'        => $contrato1->cod_contrato ?? null,
-                'tipo_certificacion'  => 'AFILIACIONES',
-                'incluye_salario'     => false,
+                'clave' => 'afiliaciones-carlos',
+                'id_empresa' => $empresa->id_empresa,
+                'cod_empleado' => $empleado1->cod_empleado,
+                'cod_contrato' => $contrato1->cod_contrato ?? null,
+                'tipo_certificacion' => 'AFILIACIONES',
+                'incluye_salario' => false,
                 'salario_certificado' => null,
-                'cod_eps'             => $a1eps,
-                'cod_arl'             => $a1arl,
-                'cod_pension'         => $a1pen,
-                'cod_caja'            => $a1caja,
-                'cod_cesantias'       => $a1ces,
-                'fecha_emision'       => now()->subDays(8)->toDateString(),
-                'ciudad_emision'      => 'Medellín',
-                'descripcion'         => 'Constancia de afiliaciones integrales del empleado.',
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'cod_eps' => $afiliacion1->cod_eps ?? null,
+                'cod_arl' => $afiliacion1->cod_arl ?? null,
+                'cod_pension' => $afiliacion1->cod_fondo_pensiones ?? null,
+                'cod_caja' => $afiliacion1->cod_caja_compensacion ?? null,
+                'cod_cesantias' => $afiliacion1->cod_fondo_cesantias ?? null,
+                'fecha_emision' => now()->subDays(8)->toDateString(),
+                'ciudad_emision' => 'Medellin',
+                'descripcion' => 'Constancia de afiliaciones integrales del empleado.',
             ],
             [
-                'id_empresa'          => $empresa->id_empresa,
-                'cod_empleado'        => $empleado2->cod_empleado,
-                'cod_contrato'        => $contrato2->cod_contrato ?? null,
-                'tipo_certificacion'  => 'AFILIACIONES',
-                'incluye_salario'     => false,
+                'clave' => 'afiliaciones-ana',
+                'id_empresa' => $empresa->id_empresa,
+                'cod_empleado' => $empleado2->cod_empleado,
+                'cod_contrato' => $contrato2->cod_contrato ?? null,
+                'tipo_certificacion' => 'AFILIACIONES',
+                'incluye_salario' => false,
                 'salario_certificado' => null,
-                'cod_eps'             => $a2eps,
-                'cod_arl'             => null,
-                'cod_pension'         => $a2pen,
-                'cod_caja'            => null,
-                'cod_cesantias'       => $a2ces,
-                'fecha_emision'       => now()->subDays(4)->toDateString(),
-                'ciudad_emision'      => 'Bogotá D.C.',
-                'descripcion'         => 'Constancia parcial de afiliaciones para actualización de expediente.',
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'cod_eps' => $afiliacion2->cod_eps ?? null,
+                'cod_arl' => null,
+                'cod_pension' => $afiliacion2->cod_fondo_pensiones ?? null,
+                'cod_caja' => null,
+                'cod_cesantias' => $afiliacion2->cod_fondo_cesantias ?? null,
+                'fecha_emision' => now()->subDays(4)->toDateString(),
+                'ciudad_emision' => 'Bogota D.C.',
+                'descripcion' => 'Constancia parcial de afiliaciones.',
             ],
-        ]);
+        ];
+
+        foreach ($certificaciones as $cert) {
+            $clave = $cert['clave'];
+            unset($cert['clave']);
+            $cert['created_at'] = now();
+            $cert['updated_at'] = now();
+
+            DB::table('certificaciones')->updateOrInsert(
+                [
+                    'cod_empleado' => $cert['cod_empleado'],
+                    'tipo_certificacion' => $cert['tipo_certificacion'],
+                    'fecha_emision' => $cert['fecha_emision'],
+                    'descripcion' => $cert['descripcion'],
+                ],
+                $cert
+            );
+        }
     }
 }
-

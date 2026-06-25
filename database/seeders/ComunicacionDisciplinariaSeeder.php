@@ -18,11 +18,11 @@ class ComunicacionDisciplinariaSeeder extends Seeder
             ->select('usuarios.*')
             ->first();
 
-        if (!$empleado1 || !$empleado2 || !$funcionario) {
+        if (! $empleado1 || ! $empleado2 || ! $funcionario) {
             return;
         }
 
-        DB::table('comunicaciones_disciplinarias')->insert([
+        $registros = [
             [
                 'tipo_comunicacion'       => 'Memorando',
                 'fecha_emision'           => now()->subDays(16)->toDateString(),
@@ -34,11 +34,9 @@ class ComunicacionDisciplinariaSeeder extends Seeder
                 'dias_suspension'         => null,
                 'cod_empleado'            => $empleado1->cod_empleado,
                 'cod_usuario'             => $funcionario->cod_usuario,
-                'created_at'              => now(),
-                'updated_at'              => now(),
             ],
             [
-                'tipo_comunicacion'       => 'Apercibimiento formal',
+                'tipo_comunicacion'       => 'Memorando',
                 'fecha_emision'           => now()->subDays(10)->toDateString(),
                 'fecha_inicio_suspension' => null,
                 'fecha_fin_suspension'    => null,
@@ -48,38 +46,45 @@ class ComunicacionDisciplinariaSeeder extends Seeder
                 'dias_suspension'         => null,
                 'cod_empleado'            => $empleado2->cod_empleado,
                 'cod_usuario'             => $funcionario->cod_usuario,
-                'created_at'              => now(),
-                'updated_at'              => now(),
             ],
             [
-                'tipo_comunicacion'       => 'Suspension disciplinaria',
+                'tipo_comunicacion'       => 'Memorando',
                 'fecha_emision'           => now()->subDays(7)->toDateString(),
-                'fecha_inicio_suspension' => now()->subDays(6)->toDateString(),
-                'fecha_fin_suspension'    => now()->subDays(4)->toDateString(),
-                'estado_comunicacion'     => 'Cerrada',
+                'fecha_inicio_suspension' => null,
+                'fecha_fin_suspension'    => null,
+                'estado_comunicacion'     => 'En seguimiento',
                 'motivo_comunicacion'     => 'Reincidencia',
                 'descripcion'             => 'Reincidencia en faltas leves luego de llamado de atencion previo.',
-                'dias_suspension'         => 3,
+                'dias_suspension'         => null,
                 'cod_empleado'            => $empleado1->cod_empleado,
                 'cod_usuario'             => $funcionario->cod_usuario,
-                'created_at'              => now(),
-                'updated_at'              => now(),
             ],
             [
-                'tipo_comunicacion'       => 'Compromiso de mejora',
+                'tipo_comunicacion'       => 'Memorando',
                 'fecha_emision'           => now()->subDays(2)->toDateString(),
                 'fecha_inicio_suspension' => null,
                 'fecha_fin_suspension'    => null,
                 'estado_comunicacion'     => 'En seguimiento',
                 'motivo_comunicacion'     => 'Conducta',
-                'descripcion'             => 'Se acuerda plan de mejora por comportamiento inadecuado en atencion interna.',
+                'descripcion'             => 'Plan de mejora por comportamiento inadecuado en atencion interna.',
                 'dias_suspension'         => null,
                 'cod_empleado'            => $empleado2->cod_empleado,
                 'cod_usuario'             => $funcionario->cod_usuario,
-                'created_at'              => now(),
-                'updated_at'              => now(),
             ],
-        ]);
+        ];
+
+        foreach ($registros as $data) {
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+
+            DB::table('comunicaciones_disciplinarias')->updateOrInsert(
+                [
+                    'cod_empleado' => $data['cod_empleado'],
+                    'fecha_emision' => $data['fecha_emision'],
+                    'motivo_comunicacion' => $data['motivo_comunicacion'],
+                ],
+                $data
+            );
+        }
     }
 }
-
