@@ -34,4 +34,24 @@ class EmpleadoApiTest extends TestCase
             'cod_empleado'
         );
     }
+
+    public function test_empleado_ti_menor_18_con_edad_laboral_valida(): void
+    {
+        $usuario = Usuario::factory()->create();
+        $banco = $this->crearBanco();
+
+        $payload = $this->payloadEmpleadoApi((int) $banco->cod_banco, [
+            'tipo_documento' => 'TI',
+            'doc_iden' => (string) random_int(1000000000, 9999999999),
+            'fecha_nac' => '2010-01-02',
+            'fec_exp_doc' => '2017-02-04',
+            'nombre_empleado' => 'Darwin',
+            'apellidos_empleado' => 'Gomez',
+        ]);
+
+        $response = $this->conJwt($usuario)
+            ->postJson('/api/v1/empleados', $payload);
+
+        $response->assertCreated();
+    }
 }

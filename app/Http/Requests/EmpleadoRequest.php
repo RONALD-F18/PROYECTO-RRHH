@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Contrato;
 use App\Models\Empleado;
 use App\Support\RrhhCatalog;
+use App\Support\RrhhDates;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -151,17 +152,13 @@ class EmpleadoRequest extends FormRequest
 
         $docIgnoreId = $this->route('empleado');
 
-        $limite120 = now()->subYears(120)->format('Y-m-d');
-        $edadMinima = max(15, (int) config('rrhh.empleado_edad_minima', 15));
-        $fechaTopeEdadMin = now()->subYears($edadMinima)->format('Y-m-d');
-        $fechaTopeMayoria18 = now()->subYears(18)->format('Y-m-d');
-        $fechaTopeTiMin = now()->subYears(7)->format('Y-m-d');
+        $hoyColombia = RrhhDates::hoy()->format('Y-m-d');
 
         $fecExpRules = [
             'bail',
             $isMethodPut ? 'sometimes' : 'required',
             'date',
-            'before_or_equal:today',
+            'before_or_equal:'.$hoyColombia,
             Rule::when(
                 fn () => $this->campoEnviado('fec_exp_doc') && $this->fechaNacimientoParaValidacion() !== null,
                 [
@@ -248,30 +245,23 @@ class EmpleadoRequest extends FormRequest
                 ),
             ],
 
-            'fecha_nac' => array_values(array_filter([
+            'fecha_nac' => [
                 'bail',
                 $isMethodPut ? 'sometimes' : 'required',
-                ! $isMethodPut ? 'required' : null,
                 'date',
-                'before:today',
-                'after_or_equal:'.$limite120,
-                Rule::when(
-                    fn () => $this->campoEnviado('fecha_nac')
-                        && ! in_array($this->tipoDocumentoParaValidacion(), ['CC', 'TI'], true),
-                    ['before_or_equal:'.$fechaTopeEdadMin]
-                ),
-                Rule::when(
-                    fn () => $this->campoEnviado('fecha_nac') && $this->tipoDocumentoParaValidacion() === 'CC',
-                    ['before_or_equal:'.$fechaTopeMayoria18]
-                ),
-                Rule::when(
-                    fn () => $this->campoEnviado('fecha_nac') && $this->tipoDocumentoParaValidacion() === 'TI',
-                    [
-                        'before_or_equal:'.$fechaTopeMayoria18,
-                        'after_or_equal:'.$fechaTopeTiMin,
-                    ]
-                ),
-            ], fn ($r) => $r !== null)),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! $this->campoEnviado('fecha_nac')) {
+                        return;
+                    }
+
+                    $tipo = $this->tipoDocumentoParaValidacion();
+                    if ($tipo === null) {
+                        return;
+                    }
+
+                    RrhhDates::validarFechaNacEmpleado($tipo, (string) $value, $fail);
+                },
+            ],
 
             'sexo' => $isMethodPut
                 ? ['bail', 'sometimes', 'required', 'string', Rule::in($this->sexosPermitidos())]
@@ -411,7 +401,7 @@ class EmpleadoRequest extends FormRequest
                         }
                         try {
                             $nac = Carbon::parse($fechaRef);
-                            $hoy = now()->startOfDay();
+                            $hoy = RrhhDates::hoy();
                             if ($tipoNuevo === 'TI' && $nac->lte($hoy->copy()->subYears(18))) {
                                 $validator->errors()->add(
                                     'tipo_documento',
@@ -477,8 +467,6 @@ class EmpleadoRequest extends FormRequest
 
     public function messages(): array
     {
-        $edadMin = max(15, (int) config('rrhh.empleado_edad_minima', 15));
-
         return [
             'nombre_empleado.required' => 'El nombre del empleado es obligatorio.',
             'nombre_empleado.min' => 'El nombre debe tener al menos 2 caracteres.',
@@ -499,9 +487,6 @@ class EmpleadoRequest extends FormRequest
             'sexo.in' => 'El sexo debe ser: '.implode(', ', $this->sexosPermitidos()).'.',
 
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria.',
-            'fecha_nac.before' => 'La fecha de nacimiento no puede ser hoy ni una fecha futura.',
-            'fecha_nac.before_or_equal' => "La fecha de nacimiento no es coherente con el tipo de documento: mínimo {$edadMin} años para vínculo laboral; con CC debe ser mayor de edad (18+); con TI debe ser menor de 18 y al menos 7 años.",
-            'fecha_nac.after_or_equal' => 'La fecha de nacimiento no es válida: verifique edad mínima (7 años con TI) y máxima (120 años).',
 
             'direccion.required' => 'La dirección es obligatoria.',
             'direccion.min' => 'Indique una dirección completa (mínimo 10 caracteres), acorde a registros de ubicación del trabajador.',

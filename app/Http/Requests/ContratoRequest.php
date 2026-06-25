@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Contrato;
 use App\Models\Empleado;
 use App\Support\RrhhCatalog;
-use Carbon\Carbon;
+use App\Support\RrhhDates;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -149,8 +149,8 @@ class ContratoRequest extends FormRequest
                 return;
             }
 
-            $fechaIngreso = Carbon::parse($fechaIngresoRaw)->startOfDay();
-            $fechaNacimiento = Carbon::parse($empleado->fecha_nac)->startOfDay();
+            $fechaIngreso = RrhhDates::parseFecha($fechaIngresoRaw);
+            $fechaNacimiento = RrhhDates::parseFecha((string) $empleado->fecha_nac);
 
             if ($fechaIngreso->lt($fechaNacimiento)) {
                 $validator->errors()->add(
@@ -162,11 +162,7 @@ class ContratoRequest extends FormRequest
             }
 
             $tipoDocumento = strtoupper((string) $empleado->tipo_documento);
-            $edadMinima = match ($tipoDocumento) {
-                'TI' => 15,
-                'CC', 'CE', 'PASAPORTE' => 18,
-                default => 15,
-            };
+            $edadMinima = RrhhDates::edadMinimaContrato($tipoDocumento);
 
             $fechaMinimaIngreso = $fechaNacimiento->copy()->addYears($edadMinima);
             if ($fechaIngreso->lt($fechaMinimaIngreso)) {
