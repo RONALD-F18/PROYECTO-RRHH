@@ -59,8 +59,8 @@ return [
     ],
 
     'tipos_comunicacion' => [
+        'LLAMADO_VERBAL',
         'MEMORANDO',
-        'SUSPENSION',
         'FELICITACION',
     ],
 

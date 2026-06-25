@@ -17,10 +17,11 @@ class ComunicacionDisciplinariaRequest extends FormRequest
         $mapTipos = [
             'llamado de atencion escrito' => 'MEMORANDO',
             'llamado de atencion' => 'MEMORANDO',
+            'llamado verbal' => 'LLAMADO_VERBAL',
             'memorando' => 'MEMORANDO',
-            'suspension' => 'SUSPENSION',
-            'suspensión' => 'SUSPENSION',
-            'suspension disciplinaria' => 'SUSPENSION',
+            'suspension' => 'MEMORANDO',
+            'suspensión' => 'MEMORANDO',
+            'suspension disciplinaria' => 'MEMORANDO',
             'felicitacion' => 'FELICITACION',
             'felicitación' => 'FELICITACION',
         ];
@@ -54,8 +55,8 @@ class ComunicacionDisciplinariaRequest extends FormRequest
                 ? ['bail', 'sometimes', 'required', 'string', 'max:20', Rule::in(config('rrhh.estados_comunicacion'))]
                 : ['bail', 'required', 'string', 'max:20', Rule::in(config('rrhh.estados_comunicacion'))],
             'motivo_comunicacion' => $isUpdate
-                ? ['bail', 'sometimes', 'required', 'string', 'max:20', Rule::in(config('rrhh.motivos_comunicacion'))]
-                : ['bail', 'required', 'string', 'max:20', Rule::in(config('rrhh.motivos_comunicacion'))],
+                ? 'bail|sometimes|required|string|max:20'
+                : 'bail|required|string|max:20',
             'descripcion' => $isUpdate
                 ? 'bail|sometimes|nullable|string'
                 : 'bail|nullable|string',
@@ -81,7 +82,7 @@ class ComunicacionDisciplinariaRequest extends FormRequest
             'estado_comunicacion.required' => 'El estado de la comunicación es obligatorio.',
             'estado_comunicacion.in' => 'El estado debe ser: '.implode(', ', config('rrhh.estados_comunicacion')).'.',
             'motivo_comunicacion.required' => 'El motivo de la comunicación es obligatorio.',
-            'motivo_comunicacion.in' => 'El motivo debe ser: '.implode(', ', config('rrhh.motivos_comunicacion')).'.',
+            'motivo_comunicacion.max' => 'El motivo no puede superar 20 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'dias_suspension.integer' => 'Los días de suspensión deben ser un número entero.',
             'dias_suspension.min' => 'Los días de suspensión no pueden ser negativos.',
