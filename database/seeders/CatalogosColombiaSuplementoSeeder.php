@@ -18,6 +18,10 @@ class CatalogosColombiaSuplementoSeeder extends Seeder
         $now = now();
 
         foreach ($data['bancos'] as [$cod, $nombre, $desc]) {
+            if (DB::table('bancos')->where('nombre_banco', $nombre)->exists()) {
+                continue;
+            }
+
             DB::table('bancos')->updateOrInsert(
                 ['cod_banco' => $cod],
                 [
@@ -30,6 +34,10 @@ class CatalogosColombiaSuplementoSeeder extends Seeder
         }
 
         foreach ($data['eps'] as [$cod, $nombre, $desc]) {
+            if (DB::table('eps')->where('nombre_eps', $nombre)->exists()) {
+                continue;
+            }
+
             DB::table('eps')->updateOrInsert(
                 ['cod_eps' => $cod],
                 [
@@ -42,6 +50,10 @@ class CatalogosColombiaSuplementoSeeder extends Seeder
         }
 
         foreach ($data['tipos_incapacidad'] as [$cod, $nombre, $descripcion, $clave]) {
+            if (DB::table('tipo_incapacidad')->where('nombre_tipo', $nombre)->exists()) {
+                continue;
+            }
+
             DB::table('tipo_incapacidad')->updateOrInsert(
                 ['cod_tipo_incapacidad' => $cod],
                 [
