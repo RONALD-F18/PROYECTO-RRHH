@@ -61,9 +61,6 @@ return [
 
     'tipos_comunicacion' => [
         'Memorando',
-        'Apercibimiento formal',
-        'Suspension disciplinaria',
-        'Compromiso de mejora',
     ],
 
     'motivos_comunicacion' => [
@@ -82,7 +79,18 @@ return [
 
     'tipos_regimen' => [
         'Contributivo',
-        'Subsidiado',
+    ],
+
+    'sexos_empleado' => [
+        'MASCULINO',
+        'FEMENINO',
+    ],
+
+    'tipos_documento' => [
+        'CC',
+        'CE',
+        'TI',
+        'PASAPORTE',
     ],
 
     'justificado_inasistencia' => [

@@ -39,7 +39,16 @@ class IncapacidadService
 
     public function getAllIncapacidades()
     {
-        return $this->incapacidadRepository->getAllIncapacidades();
+        $items = $this->incapacidadRepository->getAllIncapacidades();
+
+        return $items->map(function (Incapacidad $inc) {
+            $dist = $this->calcularDistribucionPagos($inc);
+            $arr = $inc->toArray();
+            $arr['dias_incapacidad'] = $dist['dias_totales'];
+            $arr['costo_estimado'] = $dist['total_pagado'];
+
+            return $arr;
+        });
     }
 
     public function getIncapacidadById($cod_incapacidad)
@@ -192,7 +201,9 @@ class IncapacidadService
     public function getResumen(): array
     {
         $todas = $this->incapacidadRepository->getAllIncapacidades();
-        $activas = $todas->where('estado_incapacidad', 'Activa');
+        $activas = $todas->filter(function ($i) {
+            return strcasecmp((string) $i->estado_incapacidad, 'Activa') === 0;
+        });
         $totalDias = 0;
         $costoTotal = 0.0;
         foreach ($activas as $inc) {

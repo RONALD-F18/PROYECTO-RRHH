@@ -45,7 +45,7 @@ class AfiliacionSeeder extends Seeder
                 'fecha_afiliacion_caja' => '2024-01-17',
                 'fecha_afiliacion_fondo_pensiones' => '2024-01-18',
                 'fecha_afiliacion_fondo_cesantias' => '2024-01-19',
-                'estado_afiliacion' => 'ACTIVA',
+                'estado_afiliacion' => 'Activa',
                 'cod_eps' => $epsIds[0],
                 'cod_arl' => $arlIds[0],
                 'cod_riesgo' => $riesgoIds[0],
@@ -54,7 +54,7 @@ class AfiliacionSeeder extends Seeder
                 'cod_caja_compensacion' => $cajaIds[0],
                 'cod_empleado' => $empleado1->cod_empleado,
                 'descripcion' => 'Afiliación integral para empleado del área de operaciones.',
-                'tipo_regimen' => 'CONTRIBUTIVO',
+                'tipo_regimen' => 'Contributivo',
             ],
             [
                 'fecha_afiliacion_eps' => '2024-02-01',
@@ -62,7 +62,7 @@ class AfiliacionSeeder extends Seeder
                 'fecha_afiliacion_caja' => '2024-02-03',
                 'fecha_afiliacion_fondo_pensiones' => '2024-02-04',
                 'fecha_afiliacion_fondo_cesantias' => '2024-02-05',
-                'estado_afiliacion' => 'ACTIVA',
+                'estado_afiliacion' => 'Activa',
                 'cod_eps' => $epsIds[1] ?? $epsIds[0],
                 'cod_arl' => $arlIds[1] ?? $arlIds[0],
                 'cod_riesgo' => $riesgoIds[1] ?? $riesgoIds[0],
@@ -71,7 +71,7 @@ class AfiliacionSeeder extends Seeder
                 'cod_caja_compensacion' => $cajaIds[1] ?? $cajaIds[0],
                 'cod_empleado' => $empleado2->cod_empleado,
                 'descripcion' => 'Afiliación integral para empleada del área financiera.',
-                'tipo_regimen' => 'CONTRIBUTIVO',
+                'tipo_regimen' => 'Contributivo',
             ],
         ];
 

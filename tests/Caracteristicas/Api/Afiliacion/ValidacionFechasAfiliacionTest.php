@@ -97,7 +97,7 @@ class ValidacionFechasAfiliacionTest extends TestCase
     private function cuerpoAfiliacion(int $codEmpleado, array $ids, array $fechasAfiliacion): array
     {
         return array_merge([
-            'estado_afiliacion' => 'ACTIVA',
+            'estado_afiliacion' => 'Activa',
             'cod_eps' => $ids['cod_eps'],
             'cod_arl' => $ids['cod_arl'],
             'cod_riesgo' => $ids['cod_riesgo'],
@@ -106,7 +106,7 @@ class ValidacionFechasAfiliacionTest extends TestCase
             'cod_caja_compensacion' => $ids['cod_caja_compensacion'],
             'cod_empleado' => $codEmpleado,
             'descripcion' => 'Afiliación de prueba',
-            'tipo_regimen' => 'CONTRIBUTIVO',
+            'tipo_regimen' => 'Contributivo',
         ], $fechasAfiliacion);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Contrato;
 use App\Models\Empleado;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,6 +39,14 @@ class EmpleadoRequest extends FormRequest
             $this->merge(['estado_emp' => $estado]);
         }
 
+        if ($this->has('sexo') && is_string($this->sexo)) {
+            $this->merge(['sexo' => strtoupper(trim($this->sexo))]);
+        }
+
+        if ($this->has('tipo_documento') && is_string($this->tipo_documento)) {
+            $this->merge(['tipo_documento' => strtoupper(trim($this->tipo_documento))]);
+        }
+
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
             return;
         }
@@ -68,6 +77,9 @@ class EmpleadoRequest extends FormRequest
                 ? $fe->format('Y-m-d')
                 : (string) $fe;
         }
+        if (! $this->filled('sexo') && $empleado->sexo) {
+            $merge['sexo'] = $empleado->sexo;
+        }
         if ($merge !== []) {
             $this->merge($merge);
         }
@@ -83,6 +95,7 @@ class EmpleadoRequest extends FormRequest
         $edadMinima = max(15, (int) config('rrhh.empleado_edad_minima', 15));
         $fechaTopeEdadMin = now()->subYears($edadMinima)->format('Y-m-d');
         $fechaTopeMayoria18 = now()->subYears(18)->format('Y-m-d');
+        $fechaTopeTiMin = now()->subYears(7)->format('Y-m-d');
 
         $fecExpRules = [
             'bail',
@@ -99,7 +112,23 @@ class EmpleadoRequest extends FormRequest
                             $nac = Carbon::parse($this->input('fecha_nac'));
                             $exp = Carbon::parse($value);
                             if ($exp->lt($nac->copy()->addYearsNoOverflow(18))) {
-                                $fail('Con cédula de ciudadanía (CC), la expedición debe ser en o después de cumplir 18 años (Decreto 1260 de 1970 y normas de identificación vigentes).');
+                                $fail('Con cédula de ciudadanía (CC), la expedición debe ser en o después de cumplir 18 años.');
+                            }
+                        } catch (\Throwable) {
+                            $fail('Las fechas de nacimiento y expedición no son válidas.');
+                        }
+                    },
+                ]
+            ),
+            Rule::when(
+                fn () => $this->input('tipo_documento') === 'TI' && $this->filled('fecha_nac'),
+                [
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        try {
+                            $nac = Carbon::parse($this->input('fecha_nac'));
+                            $exp = Carbon::parse($value);
+                            if ($exp->lt($nac->copy()->addYearsNoOverflow(7))) {
+                                $fail('Con tarjeta de identidad (TI), la expedición debe ser en o después de cumplir 7 años.');
                             }
                         } catch (\Throwable) {
                             $fail('Las fechas de nacimiento y expedición no son válidas.');
@@ -159,11 +188,15 @@ class EmpleadoRequest extends FormRequest
                 Rule::when(
                     fn () => $this->input('tipo_documento') === 'TI',
                     [
-                        'before_or_equal:'.$fechaTopeEdadMin,
-                        'after:'.$fechaTopeMayoria18,
+                        'before_or_equal:'.$fechaTopeMayoria18,
+                        'after_or_equal:'.$fechaTopeTiMin,
                     ]
                 ),
             ], fn ($r) => $r !== null)),
+
+            'sexo' => $isMethodPut
+                ? 'bail|sometimes|required|string|in:MASCULINO,FEMENINO'
+                : 'bail|required|string|in:MASCULINO,FEMENINO',
 
             'direccion' => $isMethodPut
                 ? 'bail|sometimes|required|string|min:10|max:200'
@@ -241,17 +274,85 @@ class EmpleadoRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator): void {
+            $codEmpleado = $this->route('empleado');
+            $empleado = $codEmpleado ? Empleado::query()->find($codEmpleado) : null;
+
+            if ($empleado && ($this->isMethod('put') || $this->isMethod('patch'))) {
+                $tieneContratoActivo = Contrato::query()
+                    ->where('cod_empleado', $codEmpleado)
+                    ->where('estado_contrato', 'ACTIVO')
+                    ->exists();
+
+                if ($tieneContratoActivo) {
+                    $camposProtegidos = [
+                        'tipo_documento' => 'tipo de documento',
+                        'doc_iden' => 'número de documento',
+                        'fecha_nac' => 'fecha de nacimiento',
+                        'fec_exp_doc' => 'fecha de expedición del documento',
+                        'nombre_empleado' => 'nombre',
+                        'apellidos_empleado' => 'apellidos',
+                    ];
+
+                    foreach ($camposProtegidos as $campo => $etiqueta) {
+                        if (! $this->filled($campo) || $validator->errors()->has($campo)) {
+                            continue;
+                        }
+
+                        $valorActual = $empleado->{$campo};
+                        if ($valorActual instanceof \DateTimeInterface) {
+                            $valorActual = $valorActual->format('Y-m-d');
+                        }
+
+                        $valorNuevo = $this->input($campo);
+                        if ($campo === 'fecha_nac' || $campo === 'fec_exp_doc') {
+                            try {
+                                $valorActual = Carbon::parse((string) $valorActual)->toDateString();
+                                $valorNuevo = Carbon::parse((string) $valorNuevo)->toDateString();
+                            } catch (\Throwable) {
+                                continue;
+                            }
+                        }
+
+                        if ((string) $valorActual !== (string) $valorNuevo) {
+                            $validator->errors()->add(
+                                $campo,
+                                "No se puede modificar el {$etiqueta} mientras el empleado tenga un contrato ACTIVO."
+                            );
+                        }
+                    }
+                }
+
+                if ($this->filled('tipo_documento') && $this->filled('fecha_nac') && ! $validator->errors()->has('fecha_nac')) {
+                    $tipoNuevo = strtoupper((string) $this->input('tipo_documento'));
+                    $tipoAnterior = strtoupper((string) $empleado->tipo_documento);
+                    if ($tipoNuevo !== $tipoAnterior) {
+                        try {
+                            $nac = Carbon::parse($this->input('fecha_nac'));
+                            $hoy = now()->startOfDay();
+                            if ($tipoNuevo === 'TI' && $nac->lte($hoy->copy()->subYears(18))) {
+                                $validator->errors()->add(
+                                    'tipo_documento',
+                                    'No puede cambiar a tarjeta de identidad (TI): el empleado debe ser menor de 18 años. Actualice la fecha de nacimiento si corresponde.'
+                                );
+                            }
+                            if ($tipoNuevo === 'CC' && $nac->gt($hoy->copy()->subYears(18))) {
+                                $validator->errors()->add(
+                                    'tipo_documento',
+                                    'No puede cambiar a cédula de ciudadanía (CC): el empleado debe ser mayor de edad (18 años o más).'
+                                );
+                            }
+                        } catch (\Throwable) {
+                            // omitir
+                        }
+                    }
+                }
+            }
+
             if (! $this->filled('fecha_nac') || $validator->errors()->has('fecha_nac')) {
                 return;
             }
 
-            $codEmpleado = $this->route('empleado');
-            if (! $codEmpleado) {
-                return;
-            }
-
-            $empleado = Empleado::query()->find($codEmpleado);
-            if (! $empleado || ! $empleado->fecha_nac) {
+            if (! $codEmpleado || ! $empleado || ! $empleado->fecha_nac) {
                 return;
             }
 
@@ -311,11 +412,13 @@ class EmpleadoRequest extends FormRequest
             'tipo_documento.required' => 'El tipo de documento es obligatorio.',
             'tipo_documento.in' => 'El tipo de documento debe ser CC, CE, TI o PASAPORTE.',
 
+            'sexo.required' => 'El sexo es obligatorio.',
+            'sexo.in' => 'El sexo debe ser MASCULINO o FEMENINO.',
+
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nac.before' => 'La fecha de nacimiento no puede ser hoy ni una fecha futura.',
-            'fecha_nac.before_or_equal' => "La fecha de nacimiento no es coherente con el tipo de documento y la edad: mínimo {$edadMin} años para vínculo laboral; con CC debe ser mayor de edad (18+); con TI debe ser menor de 18 y al menos {$edadMin} años.",
-            'fecha_nac.after' => 'Con tarjeta de identidad (TI) el titular debe ser menor de 18 años.',
-            'fecha_nac.after_or_equal' => 'La fecha de nacimiento no puede indicar una edad mayor a 120 años.',
+            'fecha_nac.before_or_equal' => "La fecha de nacimiento no es coherente con el tipo de documento: mínimo {$edadMin} años para vínculo laboral; con CC debe ser mayor de edad (18+); con TI debe ser menor de 18 y al menos 7 años.",
+            'fecha_nac.after_or_equal' => 'La fecha de nacimiento no es válida: verifique edad mínima (7 años con TI) y máxima (120 años).',
 
             'direccion.required' => 'La dirección es obligatoria.',
             'direccion.min' => 'Indique una dirección completa (mínimo 10 caracteres), acorde a registros de ubicación del trabajador.',

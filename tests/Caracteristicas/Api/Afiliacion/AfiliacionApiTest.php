@@ -25,7 +25,7 @@ class AfiliacionApiTest extends TestCase
         );
         $payloadUpdate = array_merge($payload, [
             'descripcion' => 'Afiliacion actualizada por test',
-            'estado_afiliacion' => 'INACTIVA',
+            'estado_afiliacion' => 'Inactiva',
         ]);
 
         $this->probarCrudModuloApi(

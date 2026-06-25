@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Models\Contrato;
 use App\Models\Empleado;
+use App\Support\RrhhCatalog;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +18,20 @@ class ContratoRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        foreach ([
+            'tipo_contrato' => config('rrhh.tipos_contrato', []),
+            'forma_de_pago' => config('rrhh.formas_pago', []),
+            'modalidad_trabajo' => config('rrhh.modalidades_trabajo', []),
+            'horario_trabajo' => config('rrhh.horarios_trabajo', []),
+        ] as $campo => $opciones) {
+            if ($this->has($campo) && is_string($this->input($campo))) {
+                $normalizado = RrhhCatalog::normalizar($this->input($campo), $opciones);
+                if ($normalizado !== null) {
+                    $this->merge([$campo => $normalizado]);
+                }
+            }
+        }
+
         if ($this->has('fecha_fin') && $this->fecha_fin === '') {
             $this->merge(['fecha_fin' => null]);
         }
@@ -114,49 +130,52 @@ class ContratoRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            $empleado = $this->resolverEmpleadoRelacionado();
+            $estadoContrato = strtoupper((string) $this->input('estado_contrato', 'ACTIVO'));
+
+            if ($empleado && $estadoContrato === 'ACTIVO' && strtoupper((string) $empleado->estado_emp) !== 'ACTIVO') {
+                $validator->errors()->add(
+                    'estado_contrato',
+                    'No se puede activar un contrato si el empleado no está en estado ACTIVO.'
+                );
+            }
+
             if ($validator->errors()->hasAny(['cod_empleado', 'fecha_ingreso'])) {
                 return;
             }
 
             $fechaIngresoRaw = $this->input('fecha_ingreso');
-            if (! $fechaIngresoRaw) {
+            if (! $fechaIngresoRaw || ! $empleado || ! $empleado->fecha_nac) {
                 return;
             }
 
-            $empleado = $this->resolverEmpleadoRelacionado();
-            if (! $empleado || ! $empleado->fecha_nac) {
-                return;
-            }
-
-            $fechaIngreso = \Carbon\Carbon::parse($fechaIngresoRaw)->startOfDay();
-            $fechaNacimiento = \Carbon\Carbon::parse($empleado->fecha_nac)->startOfDay();
+            $fechaIngreso = Carbon::parse($fechaIngresoRaw)->startOfDay();
+            $fechaNacimiento = Carbon::parse($empleado->fecha_nac)->startOfDay();
 
             if ($fechaIngreso->lt($fechaNacimiento)) {
                 $validator->errors()->add(
                     'fecha_ingreso',
                     'La fecha de ingreso no puede ser anterior a la fecha de nacimiento.'
                 );
+
                 return;
             }
 
-            $fechaMinimaLaboral = $fechaNacimiento->copy()->addYears(15);
-            if ($fechaIngreso->lt($fechaMinimaLaboral)) {
+            $tipoDocumento = strtoupper((string) $empleado->tipo_documento);
+            $edadMinima = match ($tipoDocumento) {
+                'TI' => 15,
+                'CC', 'CE', 'PASAPORTE' => 18,
+                default => 15,
+            };
+
+            $fechaMinimaIngreso = $fechaNacimiento->copy()->addYears($edadMinima);
+            if ($fechaIngreso->lt($fechaMinimaIngreso)) {
                 $validator->errors()->add(
                     'fecha_ingreso',
-                    'La fecha de ingreso debe ser igual o posterior a cumplir 15 años.'
+                    "Para tipo de documento {$tipoDocumento}, la fecha de ingreso debe ser igual o posterior a cumplir {$edadMinima} años."
                 );
-                return;
-            }
 
-            // Regla interna adicional: con CC el empleado debe ser mayor de edad.
-            if (strtoupper((string) $empleado->tipo_documento) === 'CC') {
-                $fechaMinimaMayoria = $fechaNacimiento->copy()->addYears(18);
-                if ($fechaIngreso->lt($fechaMinimaMayoria)) {
-                    $validator->errors()->add(
-                        'fecha_ingreso',
-                        'Para tipo de documento CC, la fecha de ingreso debe ser igual o posterior a cumplir 18 años.'
-                    );
-                }
+                return;
             }
 
             $tipoContrato = (string) $this->input('tipo_contrato');
@@ -164,6 +183,7 @@ class ContratoRequest extends FormRequest
                 $codContrato = $this->route('contrato');
                 $tipoContrato = (string) (Contrato::query()->find($codContrato)?->tipo_contrato ?? '');
             }
+
             $requiereFin = in_array($tipoContrato, config('rrhh.tipos_contrato_con_fecha_fin', []), true);
             if ($requiereFin && ! $this->filled('fecha_fin')) {
                 $validator->errors()->add(
@@ -202,42 +222,28 @@ class ContratoRequest extends FormRequest
     {
         return [
             'tipo_contrato.required' => 'El tipo de contrato es obligatorio.',
-            'tipo_contrato.string' => 'El tipo de contrato debe ser una cadena de texto.',
-            'tipo_contrato.max' => 'El tipo de contrato no puede exceder los 150 caracteres.',
-
+            'tipo_contrato.in' => 'El tipo de contrato debe ser: '.implode(', ', config('rrhh.tipos_contrato')).'.',
             'cod_empleado.required' => 'El código del empleado es obligatorio.',
             'cod_empleado.exists' => 'El código del empleado no existe en la base de datos.',
-
             'forma_de_pago.required' => 'La forma de pago es obligatoria.',
-            'forma_de_pago.string' => 'La forma de pago debe ser una cadena de texto.',
-            'forma_de_pago.max' => 'La forma de pago no puede exceder los 150 caracteres.',
-
+            'forma_de_pago.in' => 'La forma de pago debe ser: '.implode(', ', config('rrhh.formas_pago')).'.',
             'fecha_ingreso.required' => 'La fecha de ingreso es obligatoria.',
             'fecha_ingreso.date' => 'La fecha de ingreso debe ser una fecha válida.',
             'fecha_ingreso.date_format' => 'La fecha de ingreso debe tener formato YYYY-MM-DD.',
-
             'fecha_fin.date' => 'La fecha de fin debe ser una fecha válida.',
             'fecha_fin.date_format' => 'La fecha de fin debe tener formato YYYY-MM-DD.',
-            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de ingreso.',
-
+            'fecha_fin.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de ingreso (puede ser el mismo día).',
             'salario_base.required' => 'El salario base es obligatorio.',
             'salario_base.numeric' => 'El salario base debe ser un número.',
             'salario_base.min' => 'El salario base no puede ser negativo.',
-
             'cod_cargo.required' => 'El código del cargo es obligatorio.',
             'cod_cargo.exists' => 'El código del cargo no existe en la base de datos.',
-
             'modalidad_trabajo.required' => 'La modalidad de trabajo es obligatoria.',
-            'modalidad_trabajo.string' => 'La modalidad de trabajo debe ser una cadena de texto.',
-            'modalidad_trabajo.max' => 'La modalidad de trabajo no puede exceder los 150 caracteres.',
-
+            'modalidad_trabajo.in' => 'La modalidad debe ser: '.implode(', ', config('rrhh.modalidades_trabajo')).'.',
             'horario_trabajo.required' => 'El horario de trabajo es obligatorio.',
-            'horario_trabajo.string' => 'El horario de trabajo debe ser una cadena de texto.',
-            'horario_trabajo.max' => 'El horario de trabajo no puede exceder los 150 caracteres.',
-
+            'horario_trabajo.in' => 'El horario debe ser: '.implode(', ', config('rrhh.horarios_trabajo')).'.',
             'auxilio_transporte.required' => 'El auxilio de transporte es obligatorio.',
             'auxilio_transporte.boolean' => 'El auxilio de transporte debe ser un valor booleano.',
-
             'estado_contrato.required' => 'El estado del contrato es obligatorio.',
             'estado_contrato.in' => 'El estado del contrato debe ser ACTIVO o FINALIZADO.',
         ];

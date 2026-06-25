@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Afiliacion;
 use App\Models\Empleado;
+use App\Support\RrhhCatalog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,29 @@ class AfiliacionRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('estado_afiliacion') && is_string($this->estado_afiliacion)) {
+            $normalizado = RrhhCatalog::normalizar(
+                $this->estado_afiliacion,
+                config('rrhh.estados_afiliacion', [])
+            );
+            if ($normalizado !== null) {
+                $this->merge(['estado_afiliacion' => $normalizado]);
+            }
+        }
+
+        if ($this->has('tipo_regimen') && is_string($this->tipo_regimen)) {
+            $normalizado = RrhhCatalog::normalizar(
+                $this->tipo_regimen,
+                config('rrhh.tipos_regimen', [])
+            );
+            if ($normalizado !== null) {
+                $this->merge(['tipo_regimen' => $normalizado]);
+            }
+        }
     }
 
     /**
@@ -199,7 +223,8 @@ class AfiliacionRequest extends FormRequest
             'fecha_afiliacion_fondo_cesantias.date' => 'La fecha de afiliación a los fondos de cesantías debe ser una fecha válida.',
             'estado_afiliacion.required' => 'El estado de la afiliación es obligatorio.',
             'estado_afiliacion.string' => 'El estado de la afiliación debe ser una cadena de texto.',
-            'estado_afiliacion.max' => 'El estado de la afiliación no debe exceder los 20 caracteres.',
+            'estado_afiliacion.in' => 'El estado de la afiliación debe ser: '.implode(', ', config('rrhh.estados_afiliacion')).'.',
+            'tipo_regimen.in' => 'El tipo de régimen debe ser: '.implode(', ', config('rrhh.tipos_regimen')).'.',
             'cod_eps.required' => 'El código de la EPS es obligatorio.',
             'cod_eps.integer' => 'El código de la EPS debe ser un número entero.',
             'cod_eps.exists' => 'El código de la EPS no existe.',

@@ -40,6 +40,10 @@ class UsuarioRequest extends FormRequest
                 $this->request->remove('contrasena_usuario');
             }
         }
+
+        if ($this->has('email_usuario') && is_string($this->email_usuario)) {
+            $this->merge(['email_usuario' => mb_strtolower(trim($this->email_usuario))]);
+        }
     }
 
     public function rules(): array

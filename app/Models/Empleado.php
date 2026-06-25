@@ -16,6 +16,7 @@ class Empleado extends Model
     'doc_iden',
     'tipo_documento',
     'fecha_nac',
+    'sexo',
     'direccion',
     'numero_telefono',
     'correo_empleado',

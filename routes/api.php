@@ -52,7 +52,7 @@ use App\Http\Controllers\ContactoController;
 Route::prefix('v1')->group(function () {
 
     // ——— Públicas (sin autenticación) ———
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
     Route::post('/contacto', [ContactoController::class, 'enviar']);

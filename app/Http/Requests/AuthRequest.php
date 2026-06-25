@@ -30,45 +30,29 @@ class AuthRequest extends FormRequest
         $reglasEmail = $this->reglasEmail();
 
         return [
-
-            // Validación del campo email
             'email_usuario' => [
-
-                // bail: detiene la validación en el primer error encontrado
-                // evita validar reglas innecesarias y mejora rendimiento/seguridad
                 'bail',
-
-                // El campo es obligatorio
                 'required',
-
-                // Debe ser texto
                 'string',
-
                 'email:'.$reglasEmail,
-
-                // Longitud máxima permitida
                 'max:255',
+                'regex:/^(?!.*\.\.)[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+$/',
             ],
-
-            // Validación del campo password
             'contrasena_usuario' => [
-
-                // Detiene validación al primer fallo
                 'bail',
-
-                // Campo obligatorio
                 'required',
-
-                // Debe ser texto
                 'string',
-
-                // Longitud mínima de contraseña
                 'min:8',
-
-                // Longitud máxima permitida
                 'max:64',
             ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email_usuario') && is_string($this->email_usuario)) {
+            $this->merge(['email_usuario' => mb_strtolower(trim($this->email_usuario))]);
+        }
     }
 
     // Mensajes personalizados de error
@@ -80,6 +64,7 @@ class AuthRequest extends FormRequest
             // Mensajes para email
             'email_usuario.required' => 'El correo electrónico es obligatorio.',
             'email_usuario.email'    => 'El correo electrónico no es válido.',
+            'email_usuario.regex'    => 'El correo electrónico contiene un formato inválido.',
             'email_usuario.max'      => 'El correo electrónico es demasiado largo.',
 
             // Mensajes para password
