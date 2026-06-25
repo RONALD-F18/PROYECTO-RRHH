@@ -61,6 +61,20 @@ class EmpleadoRequest extends FormRequest
             $this->merge(['tipo_documento' => strtoupper(trim($this->tipo_documento))]);
         }
 
+        foreach (['tipo_cuenta', 'estado_emp', 'discapacidad', 'estado_civil', 'grupo_sanguineo'] as $campo) {
+            if ($this->has($campo) && is_string($this->input($campo))) {
+                $valor = strtoupper(trim($this->input($campo)));
+                if ($campo === 'estado_civil') {
+                    $valor = str_replace(' ', '_', $valor);
+                }
+                $this->merge([$campo => $valor]);
+            }
+        }
+
+        if ($this->has('cod_banco') && $this->input('cod_banco') !== null && $this->input('cod_banco') !== '') {
+            $this->merge(['cod_banco' => (int) $this->input('cod_banco')]);
+        }
+
         if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
             if (! $this->filled('descripcion')) {
                 $this->merge(['descripcion' => '']);
@@ -68,7 +82,15 @@ class EmpleadoRequest extends FormRequest
             if (! $this->filled('estado_emp')) {
                 $this->merge(['estado_emp' => 'ACTIVO']);
             }
+            if (! $this->filled('discapacidad')) {
+                $this->merge(['discapacidad' => 'NINGUNA']);
+            }
         }
+    }
+
+    private function sexosPermitidos(): array
+    {
+        return config('rrhh.sexos_empleado', ['Masculino', 'Femenino', 'Otro']);
     }
 
     private function empleadoEnEdicion(): ?Empleado
@@ -252,8 +274,8 @@ class EmpleadoRequest extends FormRequest
             ], fn ($r) => $r !== null)),
 
             'sexo' => $isMethodPut
-                ? ['bail', 'sometimes', 'required', 'string', Rule::in(config('rrhh.sexos_empleado'))]
-                : ['bail', 'required', 'string', Rule::in(config('rrhh.sexos_empleado'))],
+                ? ['bail', 'sometimes', 'required', 'string', Rule::in($this->sexosPermitidos())]
+                : ['bail', 'required', 'string', Rule::in($this->sexosPermitidos())],
 
             'direccion' => $isMethodPut
                 ? 'bail|sometimes|required|string|min:10|max:200'
@@ -269,7 +291,7 @@ class EmpleadoRequest extends FormRequest
                     'sometimes',
                     'required',
                     'string',
-                    'email:rfc,dns',
+                    'email:rfc',
                     'max:120',
                     'regex:/^(?!.*\.\.)[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+$/',
                     'unique:empleados,correo_empleado,'.$docIgnoreId.',cod_empleado',
@@ -278,7 +300,7 @@ class EmpleadoRequest extends FormRequest
                     'bail',
                     'required',
                     'string',
-                    'email:rfc,dns',
+                    'email:rfc',
                     'max:120',
                     'regex:/^(?!.*\.\.)[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+$/',
                     'unique:empleados,correo_empleado',
@@ -293,7 +315,7 @@ class EmpleadoRequest extends FormRequest
                 : 'bail|required|string|in:AHORROS,CORRIENTE',
 
             'cod_banco' => $isMethodPut
-                ? 'bail|sometimes|nullable|exists:bancos,cod_banco'
+                ? 'bail|sometimes|nullable|integer|exists:bancos,cod_banco'
                 : 'bail|required|integer|exists:bancos,cod_banco',
 
             'estado_emp' => $isMethodPut
@@ -474,7 +496,7 @@ class EmpleadoRequest extends FormRequest
             'tipo_documento.in' => 'El tipo de documento debe ser CC, CE, TI o PASAPORTE.',
 
             'sexo.required' => 'El sexo es obligatorio.',
-            'sexo.in' => 'El sexo debe ser: '.implode(', ', config('rrhh.sexos_empleado')).'.',
+            'sexo.in' => 'El sexo debe ser: '.implode(', ', $this->sexosPermitidos()).'.',
 
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria.',
             'fecha_nac.before' => 'La fecha de nacimiento no puede ser hoy ni una fecha futura.',
@@ -489,7 +511,7 @@ class EmpleadoRequest extends FormRequest
             'numero_telefono.unique' => 'Este número ya está registrado.',
 
             'correo_empleado.required' => 'El correo del empleado es obligatorio.',
-            'correo_empleado.email' => 'El correo del empleado no tiene un formato válido o el dominio no existe.',
+            'correo_empleado.email' => 'El correo del empleado no tiene un formato válido.',
             'correo_empleado.regex' => 'El correo del empleado contiene un dominio inválido (ejemplo no válido: usuario@gmail..com).',
             'correo_empleado.unique' => 'Este correo del empleado ya está registrado.',
 

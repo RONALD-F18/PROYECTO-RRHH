@@ -17,22 +17,6 @@ class CatalogosColombiaSuplementoSeeder extends Seeder
 
         $now = now();
 
-        foreach ($data['bancos'] as [$cod, $nombre, $desc]) {
-            if (DB::table('bancos')->where('nombre_banco', $nombre)->exists()) {
-                continue;
-            }
-
-            DB::table('bancos')->updateOrInsert(
-                ['cod_banco' => $cod],
-                [
-                    'nombre_banco' => $nombre,
-                    'descripcion_banco' => $desc,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-            );
-        }
-
         foreach ($data['eps'] as [$cod, $nombre, $desc]) {
             if (DB::table('eps')->where('nombre_eps', $nombre)->exists()) {
                 continue;

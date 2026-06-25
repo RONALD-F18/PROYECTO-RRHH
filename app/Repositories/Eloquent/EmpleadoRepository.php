@@ -30,18 +30,18 @@ class EmpleadoRepository implements EmpleadoInterface
 
     public function CreateEmpleado(array $data): Empleado
     {
-        $Empleado = Empleado::create($data);
-        return $Empleado;
+        return Empleado::query()->create($data);
     }
 
     public function UpdateEmpleado($id, array $data): ?Empleado
     {
-        $Empleado = Empleado::find($id);
-        if (!$Empleado) {
+        $Empleado = Empleado::query()->find($id);
+        if (! $Empleado) {
             return null;
         }
         $Empleado->update($data);
-        return $Empleado;
+
+        return $Empleado->fresh();
     }
 
     public function DeleteEmpleado($id): bool

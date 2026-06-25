@@ -6,6 +6,8 @@ use App\Http\Concerns\ResolvesPagination;
 use App\Http\Requests\EmpleadoRequest;
 use App\Models\Contrato;
 use App\Services\EmpleadoService;
+use App\Support\EmpleadoPayload;
+use Illuminate\Http\JsonResponse;
 
 class EmpleadoController extends Controller
 {
@@ -40,19 +42,26 @@ class EmpleadoController extends Controller
         return response()->json($Empleado);
     }
 
-    public function store(EmpleadoRequest $request)
+    public function store(EmpleadoRequest $request): JsonResponse
     {
-        $data = array_merge($request->validated(), [
-            'cod_usuario' => auth()->user()->cod_usuario,
-            'estado_emp'  => $request->input('estado_emp', 'ACTIVO'),
-        ]);
-        $Empleado = $this->empleadoService->createEmpleado($data);
-        return response()->json($Empleado, 201);
+        $usuario = $request->user();
+        if (! $usuario?->cod_usuario) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        }
+
+        $data = EmpleadoPayload::paraCrear(
+            $request->validated(),
+            (int) $usuario->cod_usuario
+        );
+
+        $empleado = $this->empleadoService->createEmpleado($data);
+
+        return response()->json($empleado, 201);
     }
 
-    public function update(EmpleadoRequest $request, $id)
+    public function update(EmpleadoRequest $request, $id): JsonResponse
     {
-        $data = $request->validated();
+        $data = EmpleadoPayload::paraActualizar($request->validated());
 
         if (($data['estado_emp'] ?? null) === 'RETIRADO') {
             $tieneContratoActivo = Contrato::query()
@@ -73,7 +82,7 @@ class EmpleadoController extends Controller
         return response()->json($Empleado);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $deleted = $this->empleadoService->deleteEmpleado($id);
         if (!$deleted) {

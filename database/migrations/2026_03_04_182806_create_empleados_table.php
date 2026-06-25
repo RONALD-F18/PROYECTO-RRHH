@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('doc_iden', 50)->unique();             // Documento de identidad único
             $table->string('tipo_documento', 50);
             $table->date('fecha_nac');
+            $table->string('sexo', 20)->default('Masculino');
             $table->string('direccion', 200);
             $table->string('numero_telefono', 50);
             $table->string('correo_empleado', 120)->unique();
