@@ -60,6 +60,15 @@ class EmpleadoRequest extends FormRequest
         if ($this->has('tipo_documento') && is_string($this->tipo_documento)) {
             $this->merge(['tipo_documento' => strtoupper(trim($this->tipo_documento))]);
         }
+
+        if (! $this->isMethod('put') && ! $this->isMethod('patch')) {
+            if (! $this->filled('descripcion')) {
+                $this->merge(['descripcion' => '']);
+            }
+            if (! $this->filled('estado_emp')) {
+                $this->merge(['estado_emp' => 'ACTIVO']);
+            }
+        }
     }
 
     private function empleadoEnEdicion(): ?Empleado
@@ -284,8 +293,8 @@ class EmpleadoRequest extends FormRequest
                 : 'bail|required|string|in:AHORROS,CORRIENTE',
 
             'cod_banco' => $isMethodPut
-                ? 'bail|nullable|exists:bancos,cod_banco'
-                : 'bail|nullable|exists:bancos,cod_banco',
+                ? 'bail|sometimes|nullable|exists:bancos,cod_banco'
+                : 'bail|required|integer|exists:bancos,cod_banco',
 
             'estado_emp' => $isMethodPut
                 ? 'bail|nullable|string|in:ACTIVO,RETIRADO'
@@ -491,6 +500,7 @@ class EmpleadoRequest extends FormRequest
             'tipo_cuenta.required' => 'El tipo de cuenta es obligatorio.',
             'tipo_cuenta.in' => 'El tipo de cuenta debe ser AHORROS o CORRIENTE.',
 
+            'cod_banco.required' => 'El banco es obligatorio.',
             'cod_banco.exists' => 'El banco seleccionado no existe.',
 
             'estado_emp.in' => 'El estado debe ser ACTIVO o RETIRADO.',

@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use App\Http\Middleware\AuthenticateApi;
 use App\Http\Middleware\RoleMiddleware;
 
@@ -29,6 +30,26 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return null;
+        });
+
+        $exceptions->render(function (QueryException $e, $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            $sqlState = $e->errorInfo[1] ?? null;
+
+            $mensaje = match ($sqlState) {
+                1062 => 'Ya existe un registro con esos datos (documento, correo, teléfono o cuenta duplicados).',
+                1048 => 'Faltan datos obligatorios para guardar el registro.',
+                1452 => 'Una referencia no es válida (banco, usuario u otro catálogo inexistente).',
+                default => 'No se pudo guardar el registro. Verifique los datos enviados.',
+            };
+
+            return response()->json([
+                'message' => $mensaje,
+                'errors' => ['general' => [$mensaje]],
+            ], 422);
         });
     })
     ->create();
